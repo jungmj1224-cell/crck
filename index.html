@@ -219,10 +219,10 @@
       background: var(--accent-soft);
       border-color: var(--accent);
     }
-/* 📱 모바일 최적화 레이아웃 (간격 초기화 + 글씨 위치만 조정) */
+/* 📱 모바일 최적화 레이아웃 */
     @media (max-width: 768px) {
       body { 
-        flex-direction: column; 
+        flex-direction: column; /* 사이드바를 위로, 메인을 아래로 배치 */
       }
       
       aside { 
@@ -235,27 +235,29 @@
       }
 
       .nav { 
-        flex-direction: row; 
-        overflow-x: auto;   
+        flex-direction: row; /* 메뉴를 가로로 나열 */
+        overflow-x: auto;   /* 메뉴가 많으면 옆으로 밀어서 보게 설정 */
         padding-bottom: 5px; 
         gap: 10px; 
         -webkit-overflow-scrolling: touch;
       }
 
       .nav button { 
-        white-space: nowrap; 
+        white-space: nowrap; /* 글자 줄바꿈 방지 */
         padding: 10px 18px; 
         flex-shrink: 0; 
         background: var(--panel-soft); 
+        font-size: 13px;
       }
 
       header { 
         justify-content: center; 
-        height: 60px; /* 원래 높이로 복구 */
+        height: 50px; 
         font-size: 14px; 
         position: sticky;
         top: 0;
       }
+
       .home { 
         margin-top: -80px; /* 기존보다 더 과감하게 위로 올림 */
       }
@@ -272,6 +274,27 @@
 
       .subgrid {
         grid-template-columns: 1fr; 
+      }
+/* 1️⃣ 상세 페이지가 나타나는 컨텐츠 영역의 여백 최소화 */
+      .content { 
+        padding: 10px 20px; /* 상하 여백을 10px로 확 줄임 */
+        align-items: flex-start; /* 중앙 정렬 대신 위에서부터 시작하게 함 */
+      }
+
+      /* 2️⃣ 월드 상세 박스 위치 조정 */
+      .world-view {
+        margin-top: 0; /* 헤더와의 간격 제거 */
+      }
+
+      .world-box {
+        padding: 20px;   /* 내부 여백을 줄여서 한 화면에 더 많이 보이게 함 */
+        margin-top: 5px; /* 헤더 줄(CRACK ARCHIVE)과 아주 약간의 간격만 둠 */
+      }
+
+      .world-box h2 {
+        font-size: 22px;
+        margin-top: 0;   /* 제목 위쪽 여백 제거 */
+        margin-bottom: 20px;
       }
     }
   </style>
