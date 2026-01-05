@@ -3,11 +3,11 @@
 <head>
   <meta charset="UTF-8" />
   <title>CRACK ARCHIVE</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@500;600;700&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@500;600;700&family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
 
   <style>
     :root {
@@ -21,202 +21,235 @@
       --border: rgba(255,255,255,0.08);
     }
 
-    * { box-sizing: border-box; }
+    * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
 
     body {
       margin: 0;
       background: var(--bg);
       color: var(--text);
-      font-family: "Montserrat", "Noto Sans KR", system-ui, sans-serif;
+      font-family: "Montserrat", "Noto Sans KR", sans-serif;
       height: 100vh;
       display: flex;
+      flex-direction: row; /* 기본 가로 배치 */
       overflow: hidden;
-      position: relative;
     }
 
-    /* 🔹 전체 배경 그라데이션 (좌우 안 잘림) */
+    /* 배경 그라데이션 */
     body::before {
       content: "";
       position: fixed;
       inset: 0;
-      background: linear-gradient(
-        to top,
-        rgba(235,235,235,0.18) 0%,
-        rgba(235,235,235,0.08) 30%,
-        rgba(235,235,235,0.0) 60%
-      );
+      background: linear-gradient(to top, rgba(79,124,255,0.05) 0%, transparent 100%);
       z-index: 0;
       pointer-events: none;
     }
 
-    /* Sidebar */
+    /* 사이드바 (모바일 대응) */
     aside {
       width: 260px;
       background: var(--panel);
       border-right: 1px solid var(--border);
-      padding: 24px 18px;
+      padding: 24px 16px;
       display: flex;
       flex-direction: column;
-      gap: 18px;
-      z-index: 1;
+      gap: 20px;
+      z-index: 10;
+      overflow-y: auto;
     }
 
     .site-title {
       font-weight: 700;
-      letter-spacing: 0.12em;
+      letter-spacing: 0.1em;
       font-size: 18px;
+      padding-left: 8px;
+      color: var(--accent);
     }
 
     .nav {
       display: flex;
       flex-direction: column;
-      gap: 6px;
+      gap: 8px;
     }
 
     .nav button {
       background: transparent;
       border: 1px solid transparent;
-      color: var(--text);
+      color: var(--muted);
       text-align: left;
-      padding: 10px 12px;
-      border-radius: 8px;
+      padding: 12px 14px;
+      border-radius: 10px;
       cursor: pointer;
       font-size: 14px;
+      transition: 0.2s;
+      white-space: nowrap;
     }
 
-    .nav button:hover {
+    .nav button:hover, .nav button.active {
       background: var(--panel-soft);
+      color: var(--text);
       border-color: var(--border);
     }
 
-    /* Main */
+    /* 메인 영역 */
     main {
       flex: 1;
       display: flex;
       flex-direction: column;
-      margin-top: 56px;
+      position: relative;
+      overflow-y: auto;
     }
 
     header {
-      height: 56px;
+      height: 60px;
+      min-height: 60px;
       display: flex;
       align-items: center;
-      padding: 0 20px;
+      padding: 0 24px;
       border-bottom: 1px solid var(--border);
-      font-weight: 600;
-      letter-spacing: 0.14em;
-      background: var(--panel);
-      position: fixed;
+      font-weight: 700;
+      letter-spacing: 0.15em;
+      background: rgba(22, 24, 29, 0.8);
+      backdrop-filter: blur(10px);
+      position: sticky;
       top: 0;
-      left: 0;
-      right: 0;
-      z-index: 10;
+      z-index: 20;
     }
 
     .content {
-      flex: 1;
+      padding: 24px;
       display: flex;
-      align-items: center;
       justify-content: center;
-      padding: 40px;
+      align-items: flex-start;
+      min-height: calc(100vh - 60px);
     }
 
-    /* Home */
+    /* 홈 타이틀 화면 */
     .home {
       display: flex;
+      flex-direction: column;
       align-items: center;
       justify-content: center;
-      width: 100%;
-      height: 100%;
-    }
-
-    .crack-title {
+      margin-top: 15vh;
       text-align: center;
     }
 
     .crack-title h1 {
       margin: 0;
-      font-size: 64px;
-      letter-spacing: 0.22em;
-      font-weight: 700;
+      font-size: clamp(32px, 8vw, 64px); /* 화면 크기에 따라 폰트 크기 자동 조절 */
+      letter-spacing: 0.15em;
+      font-weight: 800;
     }
 
     .crack-title .c { color: var(--accent); }
-    .crack-title .w { color: var(--text); }
 
     .crack-line {
-      margin: 18px auto 0;
-      width: 260px;
-      height: 3px;
+      margin: 20px auto;
+      width: 100px;
+      height: 4px;
       background: var(--accent);
       border-radius: 2px;
     }
 
-    /* World view */
+    /* 월드 상세 뷰 */
     .world-view {
       display: none;
       width: 100%;
-      max-width: 1000px;
+      max-width: 800px;
+      animation: fadeIn 0.4s ease-out;
     }
 
-    .world-box {
-      width: 100%;
-      border: 1px solid var(--border);
-      border-radius: 12px;
-      padding: 32px;
-      background: var(--panel);
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
     }
 
-    .world-view h2 {
+    .world-box h2 {
       font-size: 28px;
-      margin-bottom: 24px;
-      letter-spacing: 0.12em;
+      margin-bottom: 30px;
+      border-left: 5px solid var(--accent);
+      padding-left: 15px;
     }
 
     .subgrid {
       display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 24px;
+      grid-template-columns: 1fr; /* 기본 1줄 (모바일) */
+      gap: 20px;
     }
 
     .sub {
-      border: 1px solid var(--border);
-      border-radius: 10px;
-      padding: 18px;
       background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 20px;
     }
 
     .sub h3 {
-      margin-top: 0;
-      font-size: 15px;
-      letter-spacing: 0.18em;
+      margin: 0 0 15px 0;
+      font-size: 14px;
+      letter-spacing: 0.1em;
       color: var(--accent);
+      text-transform: uppercase;
     }
 
     .sub ul {
       list-style: none;
       padding: 0;
       margin: 0;
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
-      gap: 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
     }
 
     .sub a {
       display: block;
       background: var(--panel-soft);
       border: 1px solid var(--border);
-      border-radius: 8px;
-      padding: 14px;
+      border-radius: 12px;
+      padding: 16px;
       text-decoration: none;
       color: var(--text);
-      font-size: 14px;
-      text-align: center;
+      font-size: 15px;
+      transition: 0.2s;
     }
 
-    .sub a:hover {
-      background: var(--accent-soft);
-      border-color: var(--accent);
+    .sub a:active { transform: scale(0.98); }
+
+    /* 📱 모바일 화면 최적화 (768px 이하) */
+    @media (max-width: 768px) {
+      body { flex-direction: column; } /* 세로로 배치 */
+
+      aside {
+        width: 100%;
+        height: auto;
+        border-right: none;
+        border-bottom: 1px solid var(--border);
+        padding: 15px;
+      }
+
+      .nav {
+        flex-direction: row; /* 메뉴를 가로로 배치 */
+        overflow-x: auto; /* 좌우 스크롤 가능하게 */
+        padding-bottom: 5px;
+      }
+
+      .nav button {
+        padding: 8px 15px;
+        font-size: 13px;
+      }
+
+      header {
+        font-size: 14px;
+        justify-content: center;
+      }
+
+      .content { padding: 15px; }
+
+      .crack-title h1 { font-size: 36px; }
+    }
+
+    /* 🖥️ 데스크탑 이상에서는 2열로 */
+    @media (min-width: 900px) {
+      .subgrid { grid-template-columns: 1fr 1fr; }
     }
   </style>
 </head>
@@ -256,29 +289,32 @@
     worlds.forEach(name => {
       const btn = document.createElement('button');
       btn.textContent = name;
-      btn.onclick = () => openWorld(name);
+      btn.onclick = (e) => {
+        // 활성화 버튼 표시
+        document.querySelectorAll('.nav button').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        openWorld(name);
+      };
       nav.appendChild(btn);
     });
 
     function openWorld(name) {
       home.style.display = 'none';
       view.style.display = 'block';
+      // 클릭 시 본문 상단으로 스크롤
+      window.scrollTo({ top: 0, behavior: 'smooth' });
 
       let storyItems = '<li><a href="#">페이지 추가 예정</a></li>';
 
       if (name === '하이틴 에이지') {
-        storyItems = `
-          <li><a href="하이틴 에이지_bookmarks-darkmode.html">메인 루트</a></li>
-        `;
+        storyItems = `<li><a href="하이틴 에이지_bookmarks-darkmode.html">메인 루트</a></li>`;
       }
-
       if (name === '성대한 집착') {
         storyItems = `
           <li><a href="성대한 집착_bookmarks-darkmode.html">메인 2</a></li>
           <li><a href="성대한집착1_fixed.html">메인 3</a></li>
         `;
       }
-
       if (name === '구룡성채') {
         storyItems = `
           <li><a href="구룡성채-아이작 회귀.html" target="_blank">아이작 회귀</a></li>
