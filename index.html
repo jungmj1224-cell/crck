@@ -219,7 +219,8 @@
       background: var(--accent-soft);
       border-color: var(--accent);
     }
-@media (max-width: 768px) {
+/* 📱 모바일 최적화 레이아웃 (간격 초기화 + 글씨 위치만 조정) */
+    @media (max-width: 768px) {
       body { 
         flex-direction: column; 
       }
@@ -229,7 +230,7 @@
         height: auto; 
         border-right: none; 
         border-bottom: 1px solid var(--border); 
-        padding: 15px 15px 10px 15px; /* 하단 패딩 살짝 줄임 */
+        padding: 15px; 
         flex-shrink: 0; 
       }
 
@@ -246,36 +247,27 @@
         padding: 10px 18px; 
         flex-shrink: 0; 
         background: var(--panel-soft); 
-        font-size: 13px;
       }
 
-      /* 1️⃣ 카테고리와의 공백 제거: 상단 고정 및 여백 수정 */
       header { 
         justify-content: center; 
-        height: 50px; 
+        height: 60px; /* 원래 높이로 복구 */
         font-size: 14px; 
-        position: relative; /* sticky 대신 relative로 설정하여 aside와 밀착 */
-        margin-top: 0;      /* 상단 여백 제거 */
-        border-top: none;   /* 위쪽 테두리 제거 */
+        position: sticky;
+        top: 0;
       }
-
-      /* 2️⃣ 메인 글씨 위치 위로 올리기 */
       .home { 
-        margin-top: -30px;  /* 음수 값을 주어 위로 끌어올림 */
+        margin-top: -80px; /* 기존보다 더 과감하게 위로 올림 */
       }
 
       .content { 
-        align-items: center; /* 로고가 화면 가운데 오도록 변경 */
-        padding: 0 20px;     /* 상하 패딩 제거하고 좌우만 유지 */
-        min-height: 50vh;    /* 로고 영역 확보 */
+        align-items: center; 
+        padding: 0 20px;
+        min-height: 40vh; /* 로고가 차지하는 세로 영역 조절 */
       }
 
       .crack-title h1 { 
-        font-size: clamp(28px, 10vw, 40px); /* 모바일에서 글씨 크기 최적화 */
-      }
-
-      .world-box h2 { 
-        font-size: 22px; 
+        font-size: clamp(26px, 9vw, 36px); 
       }
 
       .subgrid {
