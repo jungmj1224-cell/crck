@@ -219,6 +219,61 @@
       background: var(--accent-soft);
       border-color: var(--accent);
     }
+@media (max-width: 768px) {
+      body { 
+        flex-direction: column; /* 사이드바를 위로, 메인을 아래로 배치 */
+      }
+      
+      aside { 
+        width: 100%; 
+        height: auto; 
+        border-right: none; 
+        border-bottom: 1px solid var(--border); 
+        padding: 15px; 
+        flex-shrink: 0; 
+      }
+
+      .nav { 
+        flex-direction: row; /* 메뉴를 가로로 나열 */
+        overflow-x: auto;   /* 메뉴가 많으면 옆으로 밀어서 보게 설정 */
+        padding-bottom: 5px; 
+        gap: 10px; 
+        -webkit-overflow-scrolling: touch;
+      }
+
+      .nav button { 
+        white-space: nowrap; /* 글자 줄바꿈 방지 */
+        padding: 10px 18px; 
+        flex-shrink: 0; 
+        background: var(--panel-soft); 
+        font-size: 13px;
+      }
+
+      header { 
+        justify-content: center; 
+        height: 50px; 
+        font-size: 14px; 
+        position: sticky;
+        top: 0;
+      }
+
+      .home { 
+        margin-top: 20px; 
+      }
+
+      .content { 
+        align-items: flex-start; 
+        padding: 20px; 
+      }
+
+      .world-box h2 { 
+        font-size: 22px; 
+      }
+
+      .subgrid {
+        grid-template-columns: 1fr; /* 모바일에서는 박스를 한 줄로 */
+      }
+    }
   </style>
 </head>
 <body>
