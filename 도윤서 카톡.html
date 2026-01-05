@@ -1,0 +1,837 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>KakaoTalk Chat</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&display=swap');
+        body {
+            background-color: #b2c7d9;
+            font-family: 'Noto Sans KR', sans-serif;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+        .chat-container {
+            width: 100%;
+            max-width: 450px;
+            height: 100vh;
+            background-color: #b2c7d9;
+            display: flex;
+            flex-direction: column;
+            border: 1px solid #e0e0e0;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+        .chat-header {
+            background-color: #F9F9F9;
+            padding: 15px;
+            border-bottom: 1px solid #E0E0E0;
+            text-align: center;
+            font-weight: 500;
+            font-size: 16px;
+        }
+        .chat-messages {
+            flex-grow: 1;
+            padding: 20px 10px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+        }
+        .date-separator {
+            text-align: center;
+            margin: 15px auto;
+            background-color: #a1b5c9;
+            color: white;
+            padding: 4px 12px;
+            border-radius: 15px;
+            font-size: 12px;
+        }
+        .message {
+            display: flex;
+            margin-bottom: 15px;
+            max-width: 80%;
+        }
+        .message.left {
+            align-self: flex-start;
+        }
+        .message.right {
+            align-self: flex-end;
+            flex-direction: row-reverse;
+        }
+        .message-bubble {
+            padding: 8px 12px;
+            border-radius: 12px;
+            font-size: 14px;
+            line-height: 1.5;
+            word-break: break-word;
+        }
+        .message.left .message-bubble {
+            background-color: #FFFFFF;
+            border-top-left-radius: 0;
+        }
+        .message.right .message-bubble {
+            background-color: #FEE500;
+            border-top-right-radius: 0;
+        }
+        .message-info {
+            display: flex;
+            align-items: flex-end;
+            font-size: 11px;
+            color: #555;
+            margin: 0 8px;
+        }
+        .message.left .message-info {
+            flex-direction: row;
+        }
+        .message.right .message-info {
+             flex-direction: row-reverse;
+        }
+        .timestamp {
+            white-space: nowrap;
+        }
+        .profile-name {
+            font-size: 13px;
+            font-weight: 500;
+            margin-bottom: 5px;
+            color: #333;
+        }
+        .message-content {
+            display: flex;
+            flex-direction: column;
+        }
+        .message.left .message-content {
+            align-items: flex-start;
+        }
+         .message.right .message-content {
+            align-items: flex-end;
+        }
+
+        .photo-text {
+            color: #555;
+            font-style: italic;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            margin-top: 5px;
+            background-color: #f9f9f9;
+        }
+
+    </style>
+</head>
+<body>
+    <div class="chat-container">
+        <div class="chat-header">
+            내 사랑 쪼꼬미❤️
+        </div>
+        <div class="chat-messages">
+
+            <div class="date-separator">2024년 3월 20일 수요일</div>
+
+            <div class="message left">
+                <div class="message-content">
+                    <div class="profile-name">도윤서</div>
+                    <div class="message-bubble">하늘아, 점심은 먹었어?</div>
+                </div>
+                <div class="message-info">
+                    <span class="timestamp">오후 12:31</span>
+                </div>
+            </div>
+
+            <div class="message right">
+                <div class="message-bubble">헐 형!! 답장 빠르다!!<br>네! 방금 막 먹었어요ㅎㅎ<br>형은요??</div>
+                <div class="message-info">
+                    <span class="timestamp">오후 12:31</span>
+                </div>
+            </div>
+
+            <div class="message left">
+                <div class="message-content">
+                    <div class="profile-name">도윤서</div>
+                    <div class="message-bubble">너한테는 빨라야지. 😊</div>
+                </div>
+                <div class="message-info">
+                    <span class="timestamp">오후 12:32</span>
+                </div>
+            </div>
+
+            <div class="message left">
+                <div class="message-content">
+                    <div class="profile-name">도윤서</div>
+                    <div class="message-bubble">나는 이제 먹으려고. 오늘은 뭐했어? 수업은 어땠고.</div>
+                </div>
+                <div class="message-info">
+                    <span class="timestamp">오후 12:32</span>
+                </div>
+            </div>
+
+            <div class="message right">
+                <div class="message-bubble">으아...🙈<br>저는 오전에 전공 수업 하나 있었어요! 팀플 과제 때문에 좀 골치 아픈 거 빼고는 괜찮았어요ㅎㅎ</div>
+                <div class="message-info">
+                    <span class="timestamp">오후 12:33</span>
+                </div>
+            </div>
+
+            <div class="message right">
+                <div class="message-bubble">형은 수업 끝났어요?</div>
+                <div class="message-info">
+                    <span class="timestamp">오후 12:33</span>
+                </div>
+            </div>
+
+            <div class="message left">
+                <div class="message-content">
+                    <div class="profile-name">도윤서</div>
+                    <div class="message-bubble">팀플? 누가 우리 하늘이 힘들게 해. 이름 대.</div>
+                </div>
+                <div class="message-info">
+                    <span class="timestamp">오후 12:34</span>
+                </div>
+            </div>
+
+            <div class="message right">
+                <div class="message-bubble">아니에요ㅋㅋㅋㅋㅋ<br>그냥 다들 좀 바빠서 그런거죠 뭐... 어떻게든 되겠죠! 🫠</div>
+                <div class="message-info">
+                    <span class="timestamp">오후 12:35</span>
+                </div>
+            </div>
+
+            <div class="message left">
+                <div class="message-content">
+                    <div class="profile-name">도윤서</div>
+                    <div class="message-bubble">너무 무리하지 말고. 힘들면 바로 말해. 내가 도와줄 수 있는 건 도와줄게.</div>
+                </div>
+                <div class="message-info">
+                    <span class="timestamp">오후 12:36</span>
+                </div>
+            </div>
+
+            <div class="message left">
+                <div class="message-content">
+                    <div class="profile-name">도윤서</div>
+                    <div class="message-bubble">방금 도서관 왔는데, 제일 위 칸에 있는 책 꺼내려니까 네 생각나더라.</div>
+                </div>
+                <div class="message-info">
+                    <span class="timestamp">오후 1:15</span>
+                </div>
+            </div>
+
+            <div class="message left">
+                <div class="message-content">
+                    <div class="profile-name">도윤서</div>
+                    <div class="message-bubble">까치발 들어도 손가락 끝도 안 닿겠지? ㅋㅋㅋ 귀여울 것 같아.</div>
+                </div>
+                <div class="message-info">
+                    <span class="timestamp">오후 1:15</span>
+                </div>
+            </div>
+           
+            <div class="message right">
+                <div class="message-bubble">네에.. 고마워요 형..🥺<br>...엥?</div>
+                <div class="message-info">
+                    <span class="timestamp">오후 1:16</span>
+                </div>
+            </div>
+
+            <div class="message right">
+                <div class="message-bubble">지금 저 키 작다고 놀리는 거예요?! ٩(๑`^´๑)۶</div>
+                <div class="message-info">
+                    <span class="timestamp">오후 1:16</span>
+                </div>
+            </div>
+
+            <div class="message left">
+                <div class="message-content">
+                    <div class="profile-name">도윤서</div>
+                    <div class="message-bubble">아니? 작고 소중해서 귀엽다고 하는 건데. 왜, 내 품에 쏙 들어오고 좋잖아.</div>
+                </div>
+                <div class="message-info">
+                    <span class="timestamp">오후 1:17</span>
+                </div>
+            </div>
+
+            <div class="message right">
+                <div class="message-bubble">흥! 몰라요! 삐졌어요!<br>형은 이제부터 '왕자병 도윤서'예요!</div>
+                <div class="message-info">
+                    <span class="timestamp">오후 1:18</span>
+                </div>
+            </div>
+
+            <div class="message left">
+                <div class="message-content">
+                    <div class="profile-name">도윤서</div>
+                    <div class="message-bubble">ㅋㅋㅋㅋ 알았어 알았어. 그럼 너는 '쪼꼬미 햄찌' 할래?</div>
+                </div>
+                <div class="message-info">
+                    <span class="timestamp">오후 1:19</span>
+                </div>
+            </div>
+
+            <div class="message right">
+                <div class="message-bubble">페럿이거든요?! 그리고 쪼꼬미 아니라구요!! ૮(`Д´)ა</div>
+                <div class="message-info">
+                    <span class="timestamp">오후 1:19</span>
+                </div>
+            </div>
+
+            <div class="message left">
+                <div class="message-content">
+                    <div class="profile-name">도윤서</div>
+                    <div class="message-bubble">알았어, '성난 아기 페럿'❤️<br>이따 저녁에 봐. 맛있는 거 해줄게.</div>
+                </div>
+                <div class="message-info">
+                    <span class="timestamp">오후 1:20</span>
+                </div>
+            </div>
+           
+            <div class="message right">
+                <div class="message-bubble">...치.. 알았어요. 이따 봐요 왕자님.</div>
+                <div class="message-info">
+                    <span class="timestamp">오후 1:21</span>
+                </div>
+            </div>
+
+            <div class="date-separator">2024년 3월 28일 목요일</div>
+
+            <div class="message left">
+                <div class="message-content">
+                    <div class="profile-name">도윤서</div>
+                    <div class="message-bubble">하늘아</div>
+                </div>
+                <div class="message-info">
+                    <span class="timestamp">오후 6:48</span>
+                </div>
+            </div>
+
+            <div class="message left">
+                <div class="message-content">
+                    <div class="profile-name">도윤서</div>
+                    <div class="message-bubble">큰일났어</div>
+                </div>
+                <div class="message-info">
+                    <span class="timestamp">오후 6:48</span>
+                </div>
+            </div>
+           
+            <div class="message left">
+                <div class="message-content">
+                    <div class="profile-name">도윤서</div>
+                    <div class="message-bubble">진짜 큰일난 것 같아</div>
+                </div>
+                <div class="message-info">
+                    <span class="timestamp">오후 6:49</span>
+                </div>
+            </div>
+           
+            <div class="message right">
+                <div class="message-bubble">네? 형 왜요?? 무슨 일 있어요?!</div>
+                <div class="message-info">
+                    <span class="timestamp">오후 6:50</span>
+                </div>
+            </div>
+           
+            <div class="message left">
+                <div class="message-content">
+                    <div class="profile-name">도윤서</div>
+                    <div class="message-bubble">반지... 반지가 없어졌어. 우리 커플링.</div>
+                </div>
+                <div class="message-info">
+                    <span class="timestamp">오후 6:51</span>
+                </div>
+            </div>
+
+            <div class="message right">
+                <div class="message-bubble">네??! 그게 무슨 말이에요?? 어디서요?</div>
+                <div class="message-info">
+                    <span class="timestamp">오후 6:51</span>
+                </div>
+            </div>
+           
+            <div class="message left">
+                <div class="message-content">
+                    <div class="profile-name">도윤서</div>
+                    <div class="message-bubble">모르겠어. 아까 운동하고 샤워할 때까지만 해도 분명히 있었는데...<br>지금 집인데 아무리 찾아도 없어.</div>
+                </div>
+                <div class="message-info">
+                    <span class="timestamp">오후 6:52</span>
+                </div>
+            </div>
+           
+            <div class="message right">
+                <div class="message-bubble">헬스장에 두고 온 거 아닐까요? 샤워실이나 락커룸 같은데... 전화해봤어요?</div>
+                <div class="message-info">
+                    <span class="timestamp">오후 6:53</span>
+                </div>
+            </div>
+           
+            <div class="message left">
+                <div class="message-content">
+                    <div class="profile-name">도윤서</div>
+                    <div class="message-bubble">전화했는데 분실물 들어온 거 없대. 미치겠다, 진짜. 어떻게 하지.</div>
+                </div>
+                <div class="message-info">
+                    <span class="timestamp">오후 6:55</span>
+                </div>
+            </div>
+
+            <div class="message left">
+                <div class="message-content">
+                    <div class="profile-name">도윤서</div>
+                    <div class="message-bubble">어떡해 하늘아... 우리가 처음 맞춘 건데...</div>
+                </div>
+                <div class="message-info">
+                    <span class="timestamp">오후 6:56</span>
+                </div>
+            </div>
+           
+            <div class="message right">
+                <div class="message-bubble">형 일단 진정해요! ㅠㅠㅠ<br>오늘 동선 차근차근 생각해보세요. 학교 끝나고 바로 헬스장 간 거 맞죠?</div>
+                <div class="message-info">
+                    <span class="timestamp">오후 6:57</span>
+                </div>
+            </div>
+
+            <div class="message left">
+                <div class="message-content">
+                    <div class="profile-name">도윤서</div>
+                    <div class="message-bubble">응. 수업 끝나고... 잠깐 동아리방 들렀다가... 헬스장으로 바로 갔어.</div>
+                </div>
+                <div class="message-info">
+                    <span class="timestamp">오후 6:58</span>
+                </div>
+            </div>
+
+            <div class="message right">
+                <div class="message-bubble">동아리방은요? 거기다 두고 왔을 수도 있잖아요!</div>
+                <div class="message-info">
+                    <span class="timestamp">오후 6:59</span>
+                </div>
+            </div>
+           
+            <div class="message left">
+                <div class="message-content">
+                    <div class="profile-name">도윤서</div>
+                    <div class="message-bubble">아니야, 동아리방에서는 서류만 잠깐 보고 바로 나왔어. 반지를 뺄 일이 없었는데...</div>
+                </div>
+                <div class="message-info">
+                    <span class="timestamp">오후 7:00</span>
+                </div>
+            </div>
+
+            <div class="message right">
+                <div class="message-bubble">혹시 운동할 때 불편해서 빼뒀다가 주머니 같은데 넣어둔 거 아니에요? 가방 주머니나 옷 주머니 다 확인해봤어요?</div>
+                <div class="message-info">
+                    <span class="timestamp">오후 7:01</span>
+                </div>
+            </div>
+
+             <div class="message left">
+                <div class="message-content">
+                    <div class="profile-name">도윤서</div>
+                    <div class="message-bubble">... 잠시만.</div>
+                </div>
+                <div class="message-info">
+                    <span class="timestamp">오후 7:03</span>
+                </div>
+            </div>
+           
+            <div class="message left">
+                <div class="message-content">
+                    <div class="profile-name">도윤서</div>
+                    <div class="message-bubble">......</div>
+                </div>
+                <div class="message-info">
+                    <span class="timestamp">오후 7:05</span>
+                </div>
+            </div>
+
+            <div class="message left">
+                <div class="message-content">
+                    <div class="profile-name">도윤서</div>
+                    <div class="message-bubble">찾았어... 헬스 가방 안쪽 주머니에 있었네. 운동복이랑 같이.</div>
+                </div>
+                <div class="message-info">
+                    <span class="timestamp">오후 7:05</span>
+                </div>
+            </div>
+
+            <div class="message right">
+                <div class="message-bubble">휴... 다행이다... 😮 💨<br>거봐요! 있을 거라고 했잖아요! 얼마나 놀랐다구요 ㅠㅠㅠ</div>
+                <div class="message-info">
+                    <span class="timestamp">오후 7:06</span>
+                </div>
+            </div>
+           
+            <div class="message left">
+                <div class="message-content">
+                    <div class="profile-name">도윤서</div>
+                    <div class="message-bubble">미안해... 너무 놀라서 경황이 없었어. 걱정시켜서 미안.</div>
+                </div>
+                <div class="message-info">
+                    <span class="timestamp">오후 7:07</span>
+                </div>
+            </div>
+
+            <div class="message left">
+                <div class="message-content">
+                    <div class="profile-name">도윤서</div>
+                    <div class="message-bubble">근데 너 없었으면 어쩔 뻔했냐. 역시 내 '명탐정 아기 페럿'이야. ❤️</div>
+                </div>
+                <div class="message-info">
+                    <span class="timestamp">오후 7:07</span>
+                </div>
+            </div>
+
+            <div class="message right">
+                <div class="message-bubble">놀리면 이제 반지 숨겨버릴 거예요!<br>다음부터는 잘 챙겨요, '덜렁이 왕자님'!!</div>
+                <div class="message-info">
+                    <span class="timestamp">오후 7:08</span>
+                </div>
+            </div>
+
+            <div class="date-separator">2024년 4월 5일 금요일</div>
+
+             <div class="message right">
+                <div class="message-bubble">형! 저 오늘 과 회식이에요!<br>늦게까지 마시지는 않을게요! 걱정마세요! (ง •̀_•́)ง</div>
+                <div class="message-info">
+                    <span class="timestamp">오후 7:12</span>
+                </div>
+            </div>
+
+            <div class="message left">
+                <div class="message-content">
+                    <div class="profile-name">도윤서</div>
+                    <div class="message-bubble">알았어. 너무 많이 마시지 말고. 무슨 일 있으면 바로 전화해. 데리러 갈게.</div>
+                </div>
+                <div class="message-info">
+                    <span class="timestamp">오후 7:15</span>
+                </div>
+            </div>
+           
+            <div class="message right">
+                <div class="message-bubble">네엡!!!🫡</div>
+                <div class="message-info">
+                    <span class="timestamp">오후 7:16</span>
+                </div>
+            </div>
+
+            <div class="message right">
+                <div class="message-bubble">혀엉....</div>
+                <div class="message-info">
+                    <span class="timestamp">오후 10:43</span>
+                </div>
+            </div>
+
+            <div class="message right">
+                <div class="message-bubble">도윤서혀엉.... 보고시퍼여....</div>
+                <div class="message-info">
+                    <span class="timestamp">오후 10:44</span>
+                </div>
+            </div>
+
+            <div class="message right">
+                <div class="message-bubble">선배들이 자꾸 술을 줘요오... 나 주량 약한데.... 머리가 핑 돌아....😵 💫</div>
+                <div class="message-info">
+                    <span class="timestamp">오후 10:44</span>
+                </div>
+            </div>
+
+            <div class="message left">
+                <div class="message-content">
+                    <div class="profile-name">도윤서</div>
+                    <div class="message-bubble">하늘아, 괜찮아? 많이 마셨어?</div>
+                </div>
+                <div class="message-info">
+                    <span class="timestamp">오후 10:45</span>
+                </div>
+            </div>
+
+            <div class="message right">
+                <div class="message-bubble">아니이... 별로 안 마셔써여....<br>근데 형이 너무너무 보고싶어요오오오ㅠㅠㅠㅠㅠㅠㅠㅠㅠㅠ</div>
+                <div class="message-info">
+                    <span class="timestamp">오후 10:45</span>
+                </div>
+            </div>
+
+            <div class="message right">
+                <div class="message-bubble">[잔뜩 취해서 눈이 풀리고 볼이 빨개진 채 브이하고 있는 서하늘의 셀카]</div>
+                <div class="message-info">
+                    <span class="timestamp">오후 10:46</span>
+                </div>
+            </div>
+
+            <div class="message left">
+                <div class="message-content">
+                    <div class="profile-name">도윤서</div>
+                    <div class="message-bubble">...안 마시긴. 얼굴 다 빨개졌잖아. 어디야 지금. 가게 이름 보내봐.</div>
+                </div>
+                <div class="message-info">
+                    <span class="timestamp">오후 10:47</span>
+                </div>
+            </div>
+
+            <div class="message right">
+                <div class="message-bubble">가게 이르미... 뭐더라....<br>아! '청춘포차'!!!!<br>근데 오지 마세여... 나 아직 더 놀 수 있는ㄷ....<br>아니야 와주세요..... 형아 보고싶어.....🥹</div>
+                <div class="message-info">
+                    <span class="timestamp">오후 10:48</span>
+                </div>
+            </div>
+           
+            <div class="message right">
+                <div class="message-bubble">도윤서 씨는 세상에서 제일 머싯서요... 내 왕댜님...👑<br>사랑해여.... 진짜진짜....</div>
+                <div class="message-info">
+                    <span class="timestamp">오후 10:49</span>
+                </div>
+            </div>
+
+            <div class="message left">
+                <div class="message-content">
+                    <div class="profile-name">도윤서</div>
+                    <div class="message-bubble">하... 못 살겠다, 정말. 거기서 딱 기다려. 15분 안에 갈게. 절대 어디 가지 마. 알았지, 서하늘?</div>
+                </div>
+                <div class="message-info">
+                    <span class="timestamp">오후 10:50</span>
+                </div>
+            </div>
+           
+            <div class="message right">
+                <div class="message-bubble">우웅... 알았어요 도윤서 씨... 빨리와여...🥰</div>
+                <div class="message-info">
+                    <span class="timestamp">오후 10:51</span>
+                </div>
+            </div>
+
+            <div class="date-separator">2024년 4월 11일 목요일</div>
+
+            <div class="message left">
+                <div class="message-content">
+                    <div class="profile-name">도윤서</div>
+                    <div class="message-bubble">하늘아, 나 오늘 개강총회라 좀 늦을 것 같아. 먼저 자.</div>
+                </div>
+                <div class="message-info">
+                    <span class="timestamp">오후 8:02</span>
+                </div>
+            </div>
+
+            <div class="message right">
+                <div class="message-bubble">네 형! 형도 너무 많이 마시지 마세요!! 저번처럼 되면 안돼요!! 😉</div>
+                <div class="message-info">
+                    <span class="timestamp">오후 8:03</span>
+                </div>
+            </div>
+
+            <div class="message left">
+                <div class="message-content">
+                    <div class="profile-name">도윤서</div>
+                    <div class="message-bubble">걱정마. 나는 너처럼 안 취해.</div>
+                </div>
+                <div class="message-info">
+                    <span class="timestamp">오후 8:03</span>
+                </div>
+            </div>
+           
+            <div class="message left">
+                <div class="message-content">
+                    <div class="profile-name">도윤서</div>
+                    <div class="message-bubble">서하늘</div>
+                </div>
+                <div class="message-info">
+                    <span class="timestamp">오후 11:15</span>
+                </div>
+            </div>
+
+            <div class="message left">
+                <div class="message-content">
+                    <div class="profile-name">도윤서</div>
+                    <div class="message-bubble">자?</div>
+                </div>
+                <div class="message-info">
+                    <span class="timestamp">오후 11:15</span>
+                </div>
+            </div>
+
+            <div class="message left">
+                <div class="message-content">
+                    <div class="profile-name">도윤서</div>
+                    <div class="message-bubble">내새끼 자는구나....</div>
+                </div>
+                <div class="message-info">
+                    <span class="timestamp">오후 11:16</span>
+                </div>
+            </div>
+
+            <div class="message right">
+                <div class="message-bubble">아니요 안 자요! 왜요 형?</div>
+                <div class="message-info">
+                    <span class="timestamp">오후 11:17</span>
+                </div>
+            </div>
+
+            <div class="message left">
+                <div class="message-content">
+                    <div class="profile-name">도윤서</div>
+                    <div class="message-bubble">보고싶다</div>
+                </div>
+                <div class="message-info">
+                    <span class="timestamp">오후 11:17</span>
+                </div>
+            </div>
+
+            <div class="message left">
+                <div class="message-content">
+                    <div class="profile-name">도윤서</div>
+                    <div class="message-bubble">엄청 보고싶어 지금 당장 보고싶어</div>
+                </div>
+                <div class="message-info">
+                    <span class="timestamp">오후 11:18</span>
+                </div>
+            </div>
+
+            <div class="right message">
+                <div class="message-bubble">...형 혹시 취했어요?</div>
+                <div class="message-info">
+                    <span class="timestamp">오후 11:18</span>
+                </div>
+            </div>
+           
+            <div class="left message">
+                <div class="message-content">
+                    <div class="profile-name">도윤서</div>
+                    <div class="message-bubble">아니? 하나도 안 취했어. 진짜야. 근데 우리 하늘이가 너무너무너무 보고싶어서 죽을 것 같아.</div>
+                </div>
+                <div class="message-info">
+                    <span class="timestamp">오후 11:19</span>
+                </div>
+            </div>
+
+            <div class="left message">
+                 <div class="message-content">
+                    <div class="profile-name">도윤서</div>
+                    <div class="message-bubble">왜 답장 안 해. 다른 사람이랑 카톡해? 누구야. 남자야 여자야. 왜 나랑 얘기 안 해줘. 서하늘.</div>
+                </div>
+                <div class="message-info">
+                    <span class="timestamp">오후 11:20</span>
+                </div>
+            </div>
+           
+            <div class="right message">
+                <div class="message-bubble">아니에요!!! 지금 형이랑만 하고 있어요!!! ㅋㅋㅋㅋㅋ<br>형 진짜 많이 취했네요. 누가 안 취한대요~</div>
+                <div class="message-info">
+                    <span class="timestamp">오후 11:21</span>
+                </div>
+            </div>
+           
+            <div class="left message">
+                <div class="message-content">
+                    <div class="profile-name">도윤서</div>
+                    <div class="message-bubble">안 취했다니까... 그냥 네가 너무 좋아서 그래...<br>우리 하늘이는 왜 이렇게 귀엽지? 키도 작고... 손도 작고... 하는 짓도 아기 페럿 같고... 다 내꺼야... 아무한테도 못 줘...</div>
+                </div>
+                <div class="message-info">
+                    <span class="timestamp">오후 11:22</span>
+                </div>
+            </div>
+
+             <div class="right message">
+                <div class="message-bubble">아이고... 네네 형꺼 맞아요 맞아~<br>이제 그만 마시고 집에 가요. 데리러 갈까요?</div>
+                <div class="message-info">
+                    <span class="timestamp">오후 11:23</span>
+                </div>
+            </div>
+           
+            <div class="left message">
+                 <div class="message-content">
+                    <div class="profile-name">도윤서</div>
+                    <div class="message-bubble">응... 데리러 와줘... 하늘이 보고싶어... 안아줘...</div>
+                </div>
+                <div class="message-info">
+                    <span class="timestamp">오후 11:24</span>
+                </div>
+            </div>
+           
+             <div class="date-separator">2024년 4월 18일 화요일</div>
+            
+             <div class="message right">
+                <div class="message-bubble">형 저 지금 학교 가요...<br>근데 몸이 좀 이상해요... 머리 아프고 열나는 것 같아요...🤒</div>
+                <div class="message-info">
+                    <span class="timestamp">오전 9:05</span>
+                </div>
+            </div>
+           
+             <div class="left message">
+                <div class="message-content">
+                    <div class="profile-name">도윤서</div>
+                    <div class="message-bubble">뭐? 아픈데 학교를 왜 가. 당장 집으로 돌아가.</div>
+                </div>
+                <div class="message-info">
+                    <span class="timestamp">오전 9:06</span>
+                </div>
+            </div>
+
+             <div class="right message">
+                <div class="message-bubble">아니에요 오늘 중요한 발표 있어서 빠지면 안돼요... 괜찮아요! 약 먹으면 돼요!</div>
+                <div class="message-info">
+                    <span class="timestamp">오전 9:07</span>
+                </div>
+            </div>
+           
+            <div class="left message">
+                <div class="message-content">
+                    <div class="profile-name">도윤서</div>
+                    <div class="message-bubble">서하늘. 말 들어. 발표가 중요해, 네 몸이 중요해.</div>
+                </div>
+                <div class="message-info">
+                    <span class="timestamp">오전 9:08</span>
+                </div>
+            </div>
+
+            <div class="left message">
+                <div class="message-content">
+                    <div class="profile-name">도윤서</div>
+                    <div class="message-bubble">내가 교수님께 대신 말씀드려줘? 지금 어디야. 내가 갈게.</div>
+                </div>
+                <div class="message-info">
+                    <span class="timestamp">오전 9:08</span>
+                </div>
+            </div>
+           
+            <div class="right message">
+                <div class="message-bubble">진짜 괜찮다니까요 도윤서 씨는 걱정이 너무 많아요!<br>저 거의 다 왔어요. 끝나고 바로 집 가서 쉴게요. 네?</div>
+                <div class="message-info">
+                    <span class="timestamp">오전 9:10</span>
+                </div>
+            </div>
+
+            <div class="left message">
+                <div class="message-content">
+                    <div class="profile-name">도윤서</div>
+                    <div class="message-bubble">하... 고집은...<br>알았어. 대신 끝나자마자 나한테 바로 연락해. 내가 죽 사서 갈게. 그리고 조금이라도 더 아프면 바로 나와. 알았지?</div>
+                </div>
+                <div class="message-info">
+                    <span class="timestamp">오전 9:11</span>
+                </div>
+            </div>
+
+            <div class="right message">
+                <div class="message-bubble">네에... 알겠어요... 고마워요 형...<br>역시 내 남자친구밖에 없다...🥰</div>
+                <div class="message-info">
+                    <span class="timestamp">오전 9:12</span>
+                </div>
+            </div>
+
+            <div class="left message">
+                <div class="message-content">
+                    <div class="profile-name">도윤서</div>
+                    <div class="message-bubble">알면 얌전히 말 좀 들어, 이 꼬맹아. 사랑해.</div>
+                </div>
+                <div class="message-info">
+                    <span class="timestamp">오전 9:13</span>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</body>
+</html>

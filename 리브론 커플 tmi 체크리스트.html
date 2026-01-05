@@ -1,0 +1,501 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>커플 TMI 체크리스트</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Nanum+Myeongjo:wght@400;700&family=Gowun+Dodum&display=swap');
+
+        :root {
+            --accent-color: #89c2d9;
+            --text-color: #333;
+            --primary-color: #5c5c5c;
+            --background-color: #f0f0f0;
+            --frame-background: #faf8f2;
+            --card-background: #ffffff;
+            --border-color: #eee;
+            --comment-bg-color: #eef7fa;
+
+            --char1-color: #4a4e69; /* 리브론 */
+            --char2-color: #99c1b9; /* 로멜 */
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            background-color: var(--background-color);
+            font-family: 'Gowun Dodum', sans-serif;
+            color: var(--text-color);
+            overflow: hidden;
+        }
+
+        .mobile-frame {
+            width: 390px;
+            height: 720px;
+            border: 6px solid black;
+            border-radius: 40px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            background-color: var(--frame-background);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .content-wrapper {
+            flex-grow: 1;
+            padding: 25px;
+            overflow-y: auto;
+            -ms-overflow-style: none; /* IE and Edge */
+            scrollbar-width: none; /* Firefox */
+        }
+        
+        .content-wrapper::-webkit-scrollbar {
+            display: none; /* Chrome, Safari, Opera*/
+        }
+
+        .main-header {
+            font-family: 'Nanum Myeongjo', serif;
+            font-size: 28px;
+            font-weight: 700;
+            color: var(--accent-color);
+            text-align: center;
+            margin-bottom: 25px;
+        }
+        
+        .tmi-checklist {
+            list-style: none;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .checklist-card {
+            background-color: var(--card-background);
+            border-radius: 12px;
+            border: 1px solid var(--border-color);
+            overflow: hidden;
+            transition: box-shadow 0.3s ease;
+        }
+        
+        .checklist-card:hover {
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+        }
+
+        .card-main {
+            padding: 15px;
+            cursor: pointer;
+        }
+        
+        .question-row {
+            display: flex;
+            align-items: center;
+            font-size: 16px;
+            margin-bottom: 15px;
+            color: var(--primary-color);
+        }
+        
+        .question-text {
+            margin-left: 10px;
+        }
+
+        .status-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .char-status {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .char-name {
+            font-size: 14px;
+            font-weight: bold;
+        }
+        
+        .check-btn {
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            border: 2px solid var(--border-color);
+            background-color: transparent;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .char-status[data-char="c1"] .check-btn.active {
+            background-color: var(--char1-color);
+            border-color: var(--char1-color);
+        }
+
+        .char-status[data-char="c2"] .check-btn.active {
+            background-color: var(--char2-color);
+            border-color: var(--char2-color);
+        }
+
+        .card-comments {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.5s cubic-bezier(0.25, 0.8, 0.25, 1);
+            background-color: var(--comment-bg-color);
+            padding: 0 15px;
+        }
+        
+        .checklist-card.expanded .card-comments {
+            max-height: 300px;
+            padding: 15px;
+        }
+        
+        .comment-box {
+            margin-bottom: 10px;
+        }
+        
+        .comment-box:last-child {
+            margin-bottom: 0;
+        }
+
+        .comment-box .name {
+            font-weight: 700;
+            font-size: 13px;
+            margin-bottom: 5px;
+        }
+        
+        .comment-box[data-char="c1"] .name { color: var(--char1-color); }
+        .comment-box[data-char="c2"] .name { color: var(--char2-color); }
+
+
+        .comment-box .content {
+            font-size: 14px;
+            line-height: 1.5;
+            color: var(--primary-color);
+        }
+
+        /* Mobile Responsive */
+        @media (max-width: 420px) {
+            body {
+                align-items: flex-start;
+                background-color: var(--frame-background);
+            }
+            .mobile-frame {
+                width: 100%;
+                height: 100vh;
+                height: -webkit-fill-available;
+                border: none;
+                border-radius: 0;
+                box-shadow: none;
+            }
+            .content-wrapper {
+                padding: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="mobile-frame">
+        <div class="content-wrapper">
+            <h1 class="main-header">Couple TMI Checklist</h1>
+            <ol class="tmi-checklist" id="tmi-checklist"></ol>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const charInfo = {
+                c1: { name: '리브론', color: '#4a4e69' },
+                c2: { name: '로멜', color: '#99c1b9' }
+            };
+
+            const checklistData = [
+                {
+                    emoji: '🐶',
+                    question: '소유욕·집착 강한 사람',
+                    c1_checked: true,
+                    c2_checked: false,
+                    c1_comment: '당연히 체크해야지. 넌 내 건데. 다른 놈들이 쳐다보는 것도 싫어.',
+                    c2_comment: '폐하가 가끔은... 무섭긴 하지만... 그래도 저를 아껴주시는 거니까요...'
+                },
+                {
+                    emoji: '😭',
+                    question: '감수성 풍부한 사람',
+                    c1_checked: false,
+                    c2_checked: true,
+                    c1_comment: '네가 우는 건 싫지만, 감수성이 풍부해서 내 마음을 잘 알아주는 건 좋아.',
+                    c2_comment: '제가... 좀 잘 우는 편이죠...'
+                },
+                {
+                    emoji: '🔙',
+                    question: '과거 후회하는 사람',
+                    c1_checked: true,
+                    c2_checked: false,
+                    c1_comment: '...너한테 상처 줬던 거, 평생 후회할 거다.',
+                    c2_comment: '이제 괜찮아요, 폐하. 지금은 행복하니까요.'
+                },
+                {
+                    emoji: '🤲',
+                    question: '이별할 때 붙잡는 사람',
+                    c1_checked: true,
+                    c2_checked: true,
+                    c1_comment: '붙잡는 수준이 아닐 텐데. 네가 떠나면 온 세상을 뒤져서라도 찾아낼 거야.',
+                    c2_comment: '떠날 생각 없어요. 절대로.'
+                },
+                {
+                    emoji: '🐜',
+                    question: '벌레 무서워하는 사람',
+                    c1_checked: false,
+                    c2_checked: true,
+                    c1_comment: '그래? 그럼 내가 다 잡아줄게. 벌레 따위가 감히 널 놀라게 해?',
+                    c2_comment: '네... 갑자기 튀어나오면 너무 놀라서...'
+                },
+                {
+                    emoji: '🌸',
+                    question: '매너 좋은 사람',
+                    c1_checked: false,
+                    c2_checked: true,
+                    c1_comment: '매너? 누구한테? 너한테만 잘하면 됐지.',
+                    c2_comment: '폐하는 저한테는 항상 다정하세요.'
+                },
+                {
+                    emoji: '🌶',
+                    question: '매운 거 잘 먹는 사람',
+                    c1_checked: true,
+                    c2_checked: false,
+                    c1_comment: '넌 못 먹지? 애기 입맛이라.',
+                    c2_comment: '매운 건 잘 못 먹어요... 속이 아파서.'
+                },
+                {
+                    emoji: '💪',
+                    question: '체력이 강한 사람',
+                    c1_checked: true,
+                    c2_checked: false,
+                    c1_comment: '이 정도는 돼야 널 밤새도록 안아주지.',
+                    c2_comment: '...체력... 길러야 할까요?'
+                },
+                {
+                    emoji: '🏋️',
+                    question: '운동 즐기는 사람',
+                    c1_checked: true,
+                    c2_checked: false,
+                    c1_comment: '당연하지. 너도 이제부터 나랑 같이 해야 해. 호신은 해야지.',
+                    c2_comment: '폐하께서 가르쳐주시니... 즐거운 것 같아요.'
+                },
+                {
+                    emoji: '🍻',
+                    question: '주량 강한 사람',
+                    c1_checked: true,
+                    c2_checked: false,
+                    c1_comment: '넌 술 마시지 마. 내가 다 마실 테니까.',
+                    c2_comment: '술은... 써서 잘 못 마셔요.'
+                },
+                {
+                    emoji: '🔥',
+                    question: '성욕 강한 사람',
+                    c1_checked: true,
+                    c2_checked: false,
+                    c1_comment: '너만 보면 미칠 것 같으니까.',
+                    c2_comment: '...!'
+                },
+                {
+                    emoji: '🏆',
+                    question: '승부욕 강한 사람',
+                    c1_checked: true,
+                    c2_checked: false,
+                    c1_comment: '지는 건 딱 질색이야. 뭐든지.',
+                    c2_comment: '폐하께서는 뭘 해도 이기실 것 같아요.'
+                },
+                {
+                    emoji: '🤬',
+                    question: '욕 잘하는 사람',
+                    c1_checked: true,
+                    c2_checked: false,
+                    c1_comment: '...네 앞에서는 안 하려고 노력 중이다.',
+                    c2_comment: '가끔 하시던데...'
+                },
+                {
+                    emoji: '🗣',
+                    question: '말싸움 잘하는 사람',
+                    c1_checked: true,
+                    c2_checked: false,
+                    c1_comment: '감히 나한테 말로 덤비는 놈이 있나?',
+                    c2_comment: '저는 말싸움 같은 건 잘 못해요...'
+                },
+                {
+                    emoji: '💃',
+                    question: '몸싸움 잘하는 사람',
+                    c1_checked: true,
+                    c2_checked: false,
+                    c1_comment: '널 지키려면 이 정도는 해야지.',
+                    c2_comment: '폐하의 검술은 정말 대단해요.'
+                },
+                {
+                    emoji: '🛡',
+                    question: '철벽 심한 사람',
+                    c1_checked: true,
+                    c2_checked: false,
+                    c1_comment: '너 말고 다른 것들은 내 근처에 오는 것도 싫으니까.',
+                    c2_comment: '저는... 폐하께는 벽 같은 거 없어요.'
+                },
+                {
+                    emoji: '🧠',
+                    question: '머리 좋은 사람',
+                    c1_checked: true,
+                    c2_checked: true,
+                    c1_comment: '내가 멍청했으면 어떻게 황제가 됐겠어. ...너도 꽤 똑똑해. 내 마음을 훔친 거 보면.',
+                    c2_comment: '폐하는 정말 뭐든지 다 잘 아시는 것 같아요... 저는 그 정도는...'
+                },
+                {
+                    emoji: '🎤',
+                    question: '노래 잘하는 사람',
+                    c1_checked: false,
+                    c2_checked: false,
+                    c1_comment: '네 목소리는 듣기 좋은데, 노래도 잘해? 한번 불러줘.',
+                    c2_comment: '잘... 못해요.'
+                },
+                {
+                    emoji: '🕺',
+                    question: '춤 잘 추는 사람',
+                    c1_checked: false,
+                    c2_checked: false,
+                    c1_comment: '춤은 연회에서 추면 되지. 내가 리드할 테니까.',
+                    c2_comment: '저는 몸치라서...'
+                },
+                {
+                    emoji: '🎙',
+                    question: '목소리 낮은 사람',
+                    c1_checked: true,
+                    c2_checked: false,
+                    c1_comment: '내 목소리가 듣기 좋아?',
+                    c2_comment: '네... 폐하 목소리, 좋아요. 안정돼요.'
+                },
+                {
+                    emoji: '🤗',
+                    question: '잔근육 많은 사람',
+                    c1_checked: true,
+                    c2_checked: false,
+                    c1_comment: '널 안으려면 힘이 좋아야지.',
+                    c2_comment: '폐하 품은... 단단해서 좋아요.'
+                },
+                {
+                    emoji: '🍼',
+                    question: '피부가 하얀 사람',
+                    c1_checked: false,
+                    c2_checked: true,
+                    c1_comment: '넌 너무 하얘서, 조금만 힘줘도 자국이 남아. 그래서 더 조심하게 돼.',
+                    c2_comment: '햇빛을 잘 못 봐서 그런가 봐요...'
+                },
+                {
+                    emoji: '💎',
+                    question: '복근 선명한 사람',
+                    c1_checked: true,
+                    c2_checked: false,
+                    c1_comment: '만져볼래?',
+                    c2_comment: '(!)...아, 아니요!'
+                },
+                {
+                    emoji: '🐾',
+                    question: '겁 많은 사람',
+                    c1_checked: false,
+                    c2_checked: true,
+                    c1_comment: '겁먹지 마. 내가 옆에 있잖아.',
+                    c2_comment: '노력하고 있어요... 폐하가 계시니까.'
+                },
+                {
+                    emoji: '🍞',
+                    question: '도발에 약한 사람',
+                    c1_checked: false,
+                    c2_checked: true,
+                    c1_comment: '반응이 너무 귀여워서 자꾸 놀리고 싶잖아.',
+                    c2_comment: '그, 그만 놀리세요...'
+                },
+                {
+                    emoji: '😎',
+                    question: '이성을 대하는 데 능숙한 사람',
+                    c1_checked: true,
+                    c2_checked: false,
+                    c1_comment: '당연하지. 그래서 널 이렇게 녹여버렸잖아.',
+                    c2_comment: '...모르겠어요.'
+                },
+                {
+                    emoji: '🤝',
+                    question: '사교성 좋은 사람',
+                    c1_checked: false,
+                    c2_checked: false,
+                    c1_comment: '너만 있으면 돼. 다른 놈들이랑 어울릴 필요 없어.',
+                    c2_comment: '저도... 폐하랑 있는 게 제일 편해요.'
+                }
+            ];
+
+
+            const checklistContainer = document.getElementById('tmi-checklist');
+
+            function renderChecklist() {
+                const html = checklistData.map((item, index) => `
+                    <li class="checklist-card" data-index="${index}">
+                        <div class="card-main">
+                            <div class="question-row">
+                                <span class="emoji">${item.emoji}</span>
+                                <span class="question-text">${item.question}</span>
+                            </div>
+                            <div class="status-row">
+                                <div class="char-status" data-char="c1">
+                                    <span class="char-name">${charInfo.c1.name}</span>
+                                    <button class="check-btn ${item.c1_checked ? 'active' : ''}" data-char="c1" data-index="${index}"></button>
+                                </div>
+                                <div class="char-status" data-char="c2">
+                                    <button class="check-btn ${item.c2_checked ? 'active' : ''}" data-char="c2" data-index="${index}"></button>
+                                    <span class="char-name">${charInfo.c2.name}</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="card-comments">
+                            <div class="comment-box" data-char="c1">
+                                <div class="name">${charInfo.c1.name}</div>
+                                <div class="content" contenteditable="false">${item.c1_comment}</div>
+                            </div>
+                            <div class="comment-box" data-char="c2">
+                                <div class="name">${charInfo.c2.name}</div>
+                                <div class="content" contenteditable="false">${item.c2_comment}</div>
+                            </div>
+                        </div>
+                    </li>
+                `).join('');
+                checklistContainer.innerHTML = html;
+            }
+
+            checklistContainer.addEventListener('click', (e) => {
+                const checkBtn = e.target.closest('.check-btn');
+                const cardMain = e.target.closest('.card-main');
+
+                if (checkBtn) {
+                    e.stopPropagation();
+                    const index = parseInt(checkBtn.dataset.index);
+                    const charKey = checkBtn.dataset.char;
+                    
+                    const dataKey = `${charKey}_checked`;
+                    checklistData[index][dataKey] = !checklistData[index][dataKey];
+
+                    checkBtn.classList.toggle('active');
+                    
+                } else if (cardMain) {
+                    const card = cardMain.closest('.checklist-card');
+                    card.classList.toggle('expanded');
+                }
+            });
+
+            renderChecklist();
+        });
+    </script>
+</body>
+</html>

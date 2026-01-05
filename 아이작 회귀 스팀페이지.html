@@ -1,0 +1,823 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Steam Store Simulation</title>
+    <style>
+        :root {
+            --steam-dark-blue: #1b2838;
+            --steam-medium-blue: #2a475e;
+            --steam-light-blue: #66c0f4;
+            --steam-text-color: #c7d5e0;
+            --steam-grey: #4f5b69;
+            --steam-dark-grey: #171d25;
+            --steam-green: #719330;
+            --steam-red: #d14136;
+        }
+
+        body {
+            background-color: var(--steam-dark-blue);
+            color: var(--steam-text-color);
+            font-family: 'Malgun Gothic', '맑은 고딕', sans-serif;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+        }
+
+        .steam-container {
+            width: 100%;
+            max-width: 940px;
+            background-color: var(--steam-dark-grey);
+            margin: 20px;
+            border-radius: 4px;
+        }
+
+        .steam-header {
+            background-color: #171a21;
+            padding: 10px 20px;
+            font-size: 24px;
+            font-weight: bold;
+            color: #fff;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .steam-nav button {
+            background: var(--steam-medium-blue);
+            border: none;
+            color: var(--steam-light-blue);
+            padding: 8px 15px;
+            cursor: pointer;
+            border-radius: 3px;
+            font-weight: bold;
+            margin-left: 10px;
+        }
+
+        .steam-nav button.active {
+            background: var(--steam-light-blue);
+            color: var(--steam-dark-blue);
+        }
+
+        .page {
+            display: none;
+            padding: 20px;
+        }
+
+        .page.active {
+            display: block;
+        }
+
+        .game-title-header {
+            font-size: 28px;
+            font-weight: bold;
+            color: #fff;
+            margin-bottom: 20px;
+        }
+
+        .main-content {
+            display: flex;
+            gap: 20px;
+        }
+
+        .left-column {
+            flex: 2;
+        }
+
+        .right-column {
+            flex: 1;
+            background-color: var(--steam-medium-blue);
+            padding: 15px;
+            border-radius: 4px;
+            height: fit-content;
+        }
+
+        .trailer-container {
+            position: relative;
+            background-color: #000;
+            height: 337px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 4px;
+        }
+        
+        #trailer-content {
+            text-align: center;
+            color: white;
+            padding: 20px;
+            font-size: 16px;
+        }
+
+        .timeline-bar {
+            position: absolute;
+            bottom: 10px;
+            width: 90%;
+            height: 5px;
+            background-color: var(--steam-grey);
+            border-radius: 3px;
+        }
+        
+        .timeline-progress {
+            width: 0%;
+            height: 100%;
+            background-color: var(--steam-light-blue);
+            border-radius: 3px;
+            transition: width 1s linear;
+        }
+
+        .carousel {
+            display: flex;
+            overflow-x: auto;
+            gap: 10px;
+            margin-top: 10px;
+            scrollbar-width: thin;
+            scrollbar-color: var(--steam-grey) var(--steam-dark-grey);
+        }
+
+        .carousel-item {
+            flex-shrink: 0;
+            width: 120px;
+            height: 67px;
+            background-color: var(--steam-dark-blue);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 2px solid transparent;
+            border-radius: 3px;
+            font-size: 24px;
+        }
+
+        .carousel-item.active {
+            border-color: var(--steam-light-blue);
+        }
+        
+        .carousel-item:hover {
+            border-color: #fff;
+        }
+        
+        .widget-art {
+            width: 100%;
+            height: 140px;
+            background-color: #000;
+            margin-bottom: 15px;
+            border-radius: 3px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            font-size: 12px;
+            padding: 5px;
+            box-sizing: border-box;
+        }
+
+        .widget-info p {
+            font-size: 13px;
+            margin: 5px 0;
+        }
+
+        .widget-info strong {
+            color: #fff;
+        }
+        
+        .widget-tags {
+            margin-top: 10px;
+        }
+
+        .tag {
+            background-color: var(--steam-grey);
+            color: var(--steam-text-color);
+            padding: 3px 8px;
+            border-radius: 3px;
+            font-size: 12px;
+            margin-right: 5px;
+            display: inline-block;
+            margin-bottom: 5px;
+        }
+
+        .game-description {
+            margin-top: 20px;
+            background-color: var(--steam-medium-blue);
+            padding: 15px;
+            border-radius: 4px;
+        }
+        
+        .game-description h2 {
+            font-size: 18px;
+            color: var(--steam-light-blue);
+            margin-top: 0;
+        }
+        
+        .game-description p {
+            font-size: 14px;
+            line-height: 1.6;
+        }
+
+        .reviews-section {
+            margin-top: 20px;
+        }
+
+        .reviews-header {
+            font-size: 20px;
+            color: #fff;
+            margin-bottom: 15px;
+        }
+        
+        .reviews-container {
+            max-height: 400px;
+            overflow-y: auto;
+            padding-right: 10px;
+            scrollbar-width: thin;
+            scrollbar-color: var(--steam-grey) var(--steam-dark-grey);
+        }
+
+        .review-card {
+            background-color: var(--steam-medium-blue);
+            padding: 15px;
+            border-radius: 4px;
+            margin-bottom: 15px;
+        }
+
+        .review-card-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .review-profile-pic {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background-color: var(--steam-grey);
+            margin-right: 10px;
+            font-size: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .review-user-info {
+            flex-grow: 1;
+        }
+
+        .review-username {
+            color: #fff;
+            font-weight: bold;
+        }
+
+        .review-playtime {
+            font-size: 12px;
+            color: var(--steam-text-color);
+        }
+
+        .review-recommendation {
+            display: flex;
+            align-items: center;
+            font-weight: bold;
+            font-size: 14px;
+        }
+
+        .review-recommendation.recommended {
+            color: var(--steam-light-blue);
+        }
+
+        .review-recommendation.not-recommended {
+            color: var(--steam-red);
+        }
+        
+        .review-recommendation span {
+            margin-left: 5px;
+        }
+
+        .review-body {
+            font-size: 14px;
+            line-height: 1.7;
+        }
+
+        /* Community Hub Styles */
+        .patch-notes, .guides-section, .achievements-section {
+            background-color: var(--steam-medium-blue);
+            padding: 20px;
+            border-radius: 4px;
+            margin-bottom: 20px;
+        }
+        
+        .section-title {
+            font-size: 22px;
+            color: var(--steam-light-blue);
+            border-bottom: 1px solid var(--steam-grey);
+            padding-bottom: 10px;
+            margin-bottom: 20px;
+        }
+
+        .patch-highlight {
+            border-left: 3px solid var(--steam-green);
+            padding-left: 15px;
+            margin-bottom: 15px;
+        }
+        
+        .patch-highlight h4 { margin: 0 0 5px 0; color: #fff; }
+        .patch-highlight p { margin: 0; font-size: 14px; }
+        
+        .guide-item {
+            background-color: var(--steam-dark-blue);
+            margin-bottom: 10px;
+            border-radius: 3px;
+        }
+
+        .guide-header {
+            padding: 15px;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .guide-header h4 {
+            margin: 0;
+            color: #fff;
+        }
+        
+        .guide-author {
+            font-size: 12px;
+            color: var(--steam-text-color);
+            display: flex;
+            align-items: center;
+        }
+
+        .guide-author .profile-icon {
+            margin-right: 8px;
+            font-size: 18px;
+        }
+        
+        .guide-content {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease-out;
+            background-color: #1a232e;
+            padding: 0 20px;
+        }
+
+        .guide-content p {
+            font-size: 14px;
+            line-height: 1.6;
+        }
+        
+        .guide-comments {
+            border-top: 1px solid var(--steam-grey);
+            padding-top: 10px;
+            margin-top: 15px;
+        }
+        .comment {
+            font-size: 13px;
+            margin-bottom: 8px;
+            padding-left: 10px;
+            border-left: 2px solid var(--steam-grey);
+        }
+        .comment-author {
+            color: var(--steam-light-blue);
+            font-weight: bold;
+        }
+
+        .achievement-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 15px;
+        }
+        
+        .achievement-card {
+            background-color: var(--steam-dark-blue);
+            padding: 15px;
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .achievement-icon {
+            font-size: 40px;
+            flex-shrink: 0;
+        }
+
+        .achievement-info { flex-grow: 1; }
+        .achievement-name { color: #fff; font-weight: bold; }
+        .achievement-desc { font-size: 12px; margin: 3px 0; }
+        .achievement-rarity { font-size: 11px; color: var(--steam-grey); }
+
+    </style>
+</head>
+<body>
+
+    <div class="steam-container">
+        <header class="steam-header">
+            <span>STEAM</span>
+            <nav class="steam-nav">
+                <button id="storeBtn" class="active">스토어</button>
+                <button id="hubBtn">커뮤니티 허브</button>
+            </nav>
+        </header>
+
+        <main id="storePage" class="page active">
+            <h1 class="game-title-header">무언의 서약: 회귀자의 사랑</h1>
+            <div class="main-content">
+                <div class="left-column">
+                    <div class="trailer-container">
+                        <div id="trailer-content">[영상 설명: 어둡고 퇴폐적인 레드벨의 복도가 비춰진다. 이내 화면이 전환되며, 절망적인 표정의 '라일'을 발견한 '아이작'의 고통스러운 얼굴이 클로즈업된다. 이후 광활하지만 차가운 저택에서 불안에 떠는 라일의 모습과, 그런 그에게 서투른 친절을 베푸는 아이작의 모습이 교차된다. 절정 부분에서, 라일이 처음으로 "같이 자자"고 말하자 놀라는 아이작. 마지막은, 라일의 품에 안겨 소리 없이 오열하는 아이작의 모습으로 끝난다.]</div>
+                        <div class="timeline-bar">
+                             <div class="timeline-progress" id="timelineProgress"></div>
+                        </div>
+                    </div>
+                    <div class="carousel" id="carousel">
+                        <div class="carousel-item active" data-type="video" data-index="0">🎬</div>
+                        <div class="carousel-item" data-type="image" data-index="1">🏰</div>
+                        <div class="carousel-item" data-type="image" data-index="2">🌼</div>
+                        <div class="carousel-item" data-type="image" data-index="3">🍝</div>
+                        <div class="carousel-item" data-type="image" data-index="4">🫂</div>
+                        <div class="carousel-item" data-type="image" data-index="5">🌙</div>
+                        <div class="carousel-item" data-type="image" data-index="6">❤️‍🔥</div>
+                    </div>
+                    <div class="game-description">
+                        <h2>게임에 대해</h2>
+                        <p>
+                            10년간의 행복, 사랑하는 아내 '라일'과 두 아이. 모든 것을 가졌다고 생각한 순간, '아이작'은 모든 것이 시작되기 전, 지옥 같던 10년 전의 과거에서 눈을 뜬다.
+                        </p>
+                        <p>
+                            그곳에는 아직 그의 아내가 아닌, 레드벨의 '상품'으로 팔려와 망가져가는 '라일'이 있다. 미래의 기억을 가진 유일한 한 사람, 아이작. 그는 과거의 자신이 저질렀던 끔찍한 과오를 반복하지 않고 이번에야말로 라일을 완벽하게 지켜내리라 맹세한다.
+                        </p>
+                        <p>
+                            플레이어는 '라일'이 되어, 자신을 거액에 사들인 새로운 주인 '아이작'의 저택에서 그와 함께 생활하게 됩니다. 자신을 '상품'이 아닌 '소중한 사람'이라 말하는 그의 진의는 무엇일까. 그의 서투른 친절과 집착 뒤에 숨겨진 비밀은 무엇일까. 당신의 선택이 그의 구원이 될 수도, 혹은 또 다른 파멸이 될 수도 있습니다.
+                        </p>
+                        <p><strong>주요 특징:</strong></p>
+                        <ul>
+                            <li><strong>선택 기반 스토리:</strong> 당신의 선택에 따라 아이작의 '애정'과 '죄책감' 수치가 변화하며, 이는 스토리 전개와 엔딩에 큰 영향을 미칩니다.</li>
+                            <li><strong>오메가버스 세계관:</strong> 우성 알파 '아이작'과 열성 오메가 '라일'의 본능과 감정이 얽힌 깊이 있는 관계성을 체험하세요.</li>
+                            <li><strong>심리적 상호작용:</strong> '상품'으로 살아온 라일의 트라우마를 극복하고, 아이작의 서툰 진심을 파헤쳐 가는 섬세한 심리 묘사.</li>
+                            <li><strong>다양한 엔딩:</strong> 당신의 선택에 따라 해피 엔딩, 배드 엔딩, 그리고 숨겨진 진엔딩까지 다양한 결말이 기다립니다. (성인 전용 콘텐츠 포함)</li>
+                        </ul>
+                    </div>
+                    <div class="reviews-section">
+                        <h2 class="reviews-header">사용자 평가</h2>
+                        <div class="reviews-container">
+                            <div class="review-card">
+                                <div class="review-card-header">
+                                    <div class="review-profile-pic">🐺</div>
+                                    <div class="review-user-info">
+                                        <div class="review-username">토마토파스타광인</div>
+                                        <div class.review-playtime">플레이 시간: 82.5시간</div>
+                                    </div>
+                                    <div class="review-recommendation recommended">👍<span>추천</span></div>
+                                </div>
+                                <div class="review-body">
+                                    와... 아이작 진짜 미친놈인줄 알았는데 그냥 라일밖에 모르는 순정 미친놈이었음. "귀한 상품이라 함부로 못 다룬다"...? 이 대사 듣고 책상 부쉈습니다. 이게 사랑이 아니면 뭔데. 라일이 토마토 파스타 먹고 싶다고 했을 때 제 심장이 다 뛰었네요. 회귀물 BL 좋아하시면 그냥 무조건 사세요. 후회 안 합니다.
+                                </div>
+                            </div>
+                            <div class="review-card">
+                                <div class="review-card-header">
+                                    <div class="review-profile-pic">😭</div>
+                                    <div class="review-user-info">
+                                        <div class="review-username">과몰입오타쿠</div>
+                                        <div class.review-playtime">플레이 시간: 120.1시간</div>
+                                    </div>
+                                    <div class="review-recommendation recommended">👍<span>추천</span></div>
+                                </div>
+                                <div class="review-body">
+                                    라일아... 행복해야한다...ㅠㅠㅠㅠㅠ 초반에 상품이라고 자낮모드일때마다 억장이 무너졌는데, 아이작의 서툰 사랑으로 점점 마음 여는 거 보니까 눈물이 멈추질 않아요. 특히 "같이 자자"고 용기 냈을 때... 개발자님들 제발 우리 라일이 꽃길만 걷게 해주세요... 노아 루트는 멘탈 갈릴 각오하고 하셔야 합니다. 경고했어요.
+                                </div>
+                            </div>
+                             <div class="review-card">
+                                <div class="review-card-header">
+                                    <div class="review-profile-pic">😈</div>
+                                    <div class="review-user-info">
+                                        <div class="review-username">노아맘</div>
+                                        <div class.review-playtime">플레이 시간: 66.6시간</div>
+                                    </div>
+                                    <div class="review-recommendation not-recommended">👎<span>비추천</span></div>
+                                </div>
+                                <div class="review-body">
+                                    아니 그래서 노아 공략 루트는 언제 추가되나요? 아이작도 좋은데 전 이런 위험하고 퇴폐적인 캐릭터가 더 취향이거든요. 라일이 망가지는 모습... 더 보고 싶은데... 아이작 루트는 너무 답답해요. 힐링물 말고요... 피폐물을 달라고요.
+                                </div>
+                            </div>
+                             <div class="review-card">
+                                <div class="review-card-header">
+                                    <div class="review-profile-pic">🧐</div>
+                                    <div class="review-user-info">
+                                        <div class="review-username">공략분석가</div>
+                                        <div class.review-playtime">플레이 시간: 45.3시간</div>
+                                    </div>
+                                    <div class="review-recommendation recommended">👍<span>추천</span></div>
+                                </div>
+                                <div class="review-body">
+                                    선택지에 따른 아이작의 '애정'과 '죄책감' 스탯 변화가 상당히 섬세하게 짜여있습니다. 단순히 호감도를 올리는 게 아니라, 아이작의 죄책감을 자극하지 않으면서 라일의 신뢰를 얻는 것이 핵심 공략 포인트. 초반에 '상품'이라는 키워드를 어떻게 다루느냐에 따라 중반부 전개가 크게 달라집니다. 다회차 플레이 가치가 충분한 게임.
+                                </div>
+                            </div>
+                            <div class="review-card">
+                                <div class="review-card-header">
+                                    <div class="review-profile-pic">🤣</div>
+                                    <div class="review-user-info">
+                                        <div class="review-username">이삭줍는라일</div>
+                                        <div class.review-playtime">플레이 시간: 21.8시간</div>
+                                    </div>
+                                    <div class="review-recommendation recommended">👍<span>추천</span></div>
+                                </div>
+                                <div class="review-body">
+                                    아니 아이작ㅋㅋㅋㅋㅋㅋ 애들 앞에선 세상 다정한 아빠인척 하다가 라일이랑 둘만 있으면 바로 어리광부리고 칭얼대는거 개웃김ㅋㅋㅋㅋㅋ "나도 챙겨줘!" "가장 먼저 챙겨야 할 건 네 남편 아니겠어?" ㅋㅋㅋㅋㅋ 말투 진짜 개발자가 철저하게 분석하고 넣었네. 현재 시간대 파트 너무 달달해서 이 썩을 것 같아요. 최고.
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="right-column">
+                    <div class="widget-art">[아트 컨셉 설명: 어두운 저택을 배경으로, 아이작이 상처 입은 라일을 뒤에서 보호하듯 감싸 안고 있다. 아이작의 표정은 결연하고, 라일의 표정은 불안하지만 그의 품에서 미약한 안도감을 느끼는 듯한 모습.]</div>
+                    <div class="widget-info">
+                        <p>애증과 구원, 그리고 두 번째 기회. 당신은 그의 손을 잡을 것인가, 아니면 뿌리칠 것인가.</p>
+                        <p><strong>평가 요약:</strong> 압도적으로 긍정적 (3,890)</p>
+                        <p><strong>출시일:</strong> 1991년 6월 3일</p>
+                        <p><strong>개발사:</strong> Redemption Games</p>
+                        <p><strong>배급사:</strong> Tennen Interactive</p>
+                    </div>
+                    <div class="widget-tags">
+                        <span class="tag">BL</span>
+                        <span class="tag">오메가버스</span>
+                        <span class="tag">드라마</span>
+                        <span class="tag">성인</span>
+                        <span class="tag">데이트 심</span>
+                    </div>
+                </div>
+            </div>
+        </main>
+
+        <div id="hubPage" class="page">
+            <div class="patch-notes">
+                <h3 class="section-title">최신 업데이트: v1.0.602 "첫 번째 새싹"</h3>
+                <div class="patch-highlight">
+                    <h4>주요 변경점: 라일(Player) AI 대규모 업데이트</h4>
+                    <p>기존의 수동적이고 생존에만 집중하던 행동 패턴에서 벗어나, 특정 조건을 만족할 시 자신의 의사를 표현하는 새로운 상호작용이 추가되었습니다. 플레이어의 선택이 관계에 더욱 극적인 변화를 가져올 것입니다.</p>
+                </div>
+                <div class="patch-highlight">
+                    <h4>신규 이벤트 추가: '함께 꾸는 꿈'</h4>
+                    <p>'토마토 파스타' 이벤트 완료 후 특정 신뢰도에 도달하면 새로운 침실 이벤트 '함께 꾸는 꿈'을 진행할 수 있습니다. 해당 이벤트는 아이작의 '죄책감' 스탯을 크게 감소시키고 '애정' 스탯을 대폭 상승시키는 중요한 분기점입니다.</p>
+                </div>
+                 <div class="patch-highlight">
+                    <h4>밸런스 조정 및 버그 수정</h4>
+                    <p>- '상품' 키워드 관련 대화에서 발생하던 무한 루프 버그를 수정했습니다.<br>- 아이작의 '죄책감' 수치가 과도하게 오르던 현상을 완화했습니다.<br>- 일부 CG에서 캐릭터의 표정이 어색하던 문제를 개선했습니다.</p>
+                </div>
+            </div>
+
+            <div class="guides-section">
+                 <h3 class="section-title">가이드</h3>
+                 <div class="guide-item">
+                    <div class="guide-header" onclick="toggleGuide(this)">
+                        <div>
+                            <h4>[공략] 아이작의 '애정' vs '죄책감' 미터 완벽 분석</h4>
+                            <div class="guide-author"><span class="profile-icon">🧐</span> 공략분석가</div>
+                        </div>
+                        <span>▼</span>
+                    </div>
+                    <div class="guide-content">
+                        <p>안녕하세요, 공략분석가입니다. 많은 분들이 아이작의 스탯 관리에 어려움을 겪으셔서 정리해봤습니다. 기본적으로 아이작의 행동 원리는 '미래에 대한 기억'에서 비롯된 '죄책감'과 라일에 대한 '애정' 두 가지입니다. '애정'만 올리려고 너무 직설적으로 다가가면 오히려 그의 '죄책감'을 자극해 배드엔딩으로 빠지기 쉽습니다. 핵심은 '상품'으로서의 자신을 부정하지 않으면서도, 인간적인 교감을 통해 서서히 그의 죄책감을 덜어주는 것입니다. 예를 들어, 그가 음식을 권할 때 거부하지 않고 먹어주는 사소한 행동이 초반에는 애정을 크게 올립니다.</p>
+                        <div class="guide-comments">
+                           <div class="comment"><span class="comment-author">user123:</span> 와, 이거 보고 하니까 바로 다음 이벤트 뜨네요. 감사합니다!</div>
+                           <div class="comment"><span class="comment-author">토마토파스타광인:</span> 죄책감 수치가 너무 높으면 자해 이벤트 뜨는 거 맞죠? 그거 보고 식겁함...</div>
+                           <div class="comment"><span class="comment-author">라일꽃길만:</span> 그냥 우리 라일이가 행복하면 돼... 스탯따위...ㅠㅠ</div>
+                        </div>
+                    </div>
+                 </div>
+                 <div class="guide-item">
+                    <div class="guide-header" onclick="toggleGuide(this)">
+                        <div>
+                            <h4>[팁] 토마토 파스타 루트: 최단기간 주방 CG 획득법</h4>
+                            <div class="guide-author"><span class="profile-icon">🍝</span> Isaac_is_Mine</div>
+                        </div>
+                        <span>▼</span>
+                    </div>
+                    <div class="guide-content">
+                        <p>다들 주목! '토마토 파스타' 이거 완전 치트키입니다. 정원 산책 이벤트 이후 저녁 식사 메뉴를 묻는 선택지에서 '토마토 파스타'를 고르면 아이작의 애정 수치가 폭발적으로 오릅니다. 아마 미래의 기억과 관련된 중요한 음식인 것 같아요. 이 이벤트를 성공하면 다음날부터 주방 출입이 가능해지면서 아이작에게 직접 요리를 해주는 서브 이벤트가 해금됩니다. 이 루트 타면 '공유된 침대' 이벤트까지 거의 프리패스입니다. 다들 토마토 파스타 하세요!</p>
+                        <div class="guide-comments">
+                           <div class="comment"><span class="comment-author">newbie01:</span> 이런 게 있었군요? 저는 그냥 주는 대로 먹었는데...</div>
+                           <div class="comment"><span class="comment-author">아이작내남편:</span> 헐... 나중에 라일이 직접 만들어주는 파스타 먹고 감동하는 아이작 CG 진짜 최고예요...</div>
+                        </div>
+                    </div>
+                 </div>
+                 <div class="guide-item">
+                    <div class="guide-header" onclick="toggleGuide(this)">
+                        <div>
+                            <h4>[스포주의] 모든 배드 엔딩 모음 (feat. 노아)</h4>
+                            <div class="guide-author"><span class="profile-icon">😈</span> BadEndCollector</div>
+                        </div>
+                        <span>▼</span>
+                    </div>
+                    <div class="guide-content">
+                        <p>아이작과의 관계를 일부러 파탄 내거나, 특정 선택지에서 노아의 편을 드는 듯한 뉘앙스를 풍기면 노아 관련 배드 엔딩으로 빠집니다. 현재까지 발견된 노아 엔딩은 총 3가지입니다.<br>1. 엔딩 04 [망가진 인형]: 아이작의 저택에서 다시 노아에게 납치되어... (이하 생략)<br>2. 엔딩 07 [공허한 옥좌]: 아이작이 노아와의 싸움에서 패배하고, 라일은 두 보스의 공동 소유물이 됩니다.<br>3. 엔딩 09 [거짓된 구원]: 아이작을 완전히 불신하게 된 라일이 스스로 노아에게 도망칩니다. 이게 제일 찝찝하고 멘탈 갈리는 엔딩이니 주의하세요.</p>
+                        <div class="guide-comments">
+                           <div class="comment"><span class="comment-author">helpme:</span> 3번 엔딩 보고 3일 앓아누웠습니다...</div>
+                           <div class="comment"><span class="comment-author">노아맘:</span> 오히려 좋아.</div>
+                        </div>
+                    </div>
+                 </div>
+                 <div class="guide-item">
+                    <div class="guide-header" onclick="toggleGuide(this)">
+                        <div>
+                            <h4>[뻘팁] 아이작 만지지 않고 일주일 버티기 챌린지</h4>
+                            <div class="guide-author"><span class="profile-icon">🤣</span> 고인물</div>
+                        </div>
+                        <span>▼</span>
+                    </div>
+                    <div class="guide-content">
+                        <p>심심해서 해봤습니다. 아이작이 주는 음식, 책 외에 모든 스킨십 유도 선택지를 거부하고 일주일을 버텨봤습니다. 결과는... 아이작이 거의 말라 죽으려고 합니다. ㅋㅋㅋㅋㅋ 애정결핍 우성 알파의 말로를 볼 수 있습니다. 나중에는 거의 울 것 같은 얼굴로 쳐다보는데... 죄책감이 좀 들긴 하더군요. 특별한 이벤트는 없지만 아이작의 색다른 모습을 볼 수 있어 재밌었습니다.</p>
+                         <div class="guide-comments">
+                           <div class="comment"><span class="comment-author">IsaacLover:</span> 어떻게 그런 잔인한 짓을...!!</div>
+                           <div class="comment"><span class="comment-author">ㅋㅋㅋㅋ:</span> ㅋㅋㅋㅋㅋ상상만해도 웃기네 당장 해보러감</div>
+                        </div>
+                    </div>
+                 </div>
+                 <div class="guide-item">
+                    <div class="guide-header" onclick="toggleGuide(this)">
+                        <div>
+                            <h4>'공유된 침대' 이벤트, 의심 수치 안 올리고 보는 법</h4>
+                            <div class="guide-author"><span class="profile-icon">🤫</span> SecretPlayer</div>
+                        </div>
+                        <span>▼</span>
+                    </div>
+                    <div class="guide-content">
+                        <p>다들 '같이 자자' 선택지에서 의심 수치가 올라서 곤란했던 적 있죠? 이게 바로 직전 선택지에서 아이작이 책을 읽어줄 때, '피곤하다'는 뉘앙스를 먼저 풍기는 게 중요합니다. 그러면 라일이 아이작을 '배려해서' 같이 자자고 제안하는 흐름이 되어 의심 수치 없이 넘어갈 수 있습니다. 그냥 대뜸 같이 자자고 하면 '얘가 갑자기 왜이러지?' 하면서 의심+경계 수치가 오르니 주의하세요!</p>
+                         <div class="guide-comments">
+                           <div class="comment"><span class="comment-author">연애고수:</span> 와... 제작진 진짜 변태같다... 이런걸 다 설정해놓네</div>
+                           <div class="comment"><span class="comment-author">사랑해라일:</span> 오... 꿀팁 감사합니다. 맨날 의심 올라서 찝찝했는데.</div>
+                        </div>
+                    </div>
+                 </div>
+            </div>
+
+            <div class="achievements-section">
+                <h3 class="section-title">도전 과제</h3>
+                <div class="achievement-grid">
+                    <div class="achievement-card">
+                        <div class="achievement-icon">🛡️</div>
+                        <div class="achievement-info">
+                            <div class="achievement-name">나의 구원자?</div>
+                            <div class="achievement-desc">아이작의 저택에서 첫날 밤을 무사히 보냈습니다.</div>
+                            <div class="achievement-rarity">전체 플레이어의 95.8%가 획득했습니다</div>
+                        </div>
+                    </div>
+                    <div class="achievement-card">
+                        <div class="achievement-icon">🌼</div>
+                        <div class="achievement-info">
+                            <div class="achievement-name">노란 미소</div>
+                            <div class="achievement-desc">정원에서 처음으로 희미하게 웃었습니다.</div>
+                            <div class="achievement-rarity">전체 플레이어의 72.3%가 획득했습니다</div>
+                        </div>
+                    </div>
+                    <div class="achievement-card">
+                        <div class="achievement-icon">🍅</div>
+                        <div class="achievement-info">
+                            <div class="achievement-name">나의 첫 번째 선택</div>
+                            <div class="achievement-desc">저녁 식사로 토마토 파스타를 요청했습니다.</div>
+                            <div class="achievement-rarity">전체 플레이어의 55.1%가 획득했습니다</div>
+                        </div>
+                    </div>
+                    <div class="achievement-card">
+                        <div class="achievement-icon">🤝</div>
+                        <div class="achievement-info">
+                            <div class="achievement-name">무언의 신뢰</div>
+                            <div class="achievement-desc">아이작에게 먼저 함께 자자고 제안했습니다.</div>
+                            <div class="achievement-rarity">전체 플레이어의 41.9%가 획득했습니다</div>
+                        </div>
+                    </div>
+                    <div class="achievement-card">
+                        <div class="achievement-icon">💧</div>
+                        <div class="achievement-info">
+                            <div class="achievement-name">기댈 수 있는 어깨</div>
+                            <div class="achievement-desc">오열하는 아이작을 위로해주었습니다.</div>
+                            <div class="achievement-rarity">전체 플레이어의 38.2%가 획득했습니다</div>
+                        </div>
+                    </div>
+                    <div class="achievement-card">
+                        <div class="achievement-icon">🏷️</div>
+                        <div class="achievement-info">
+                            <div class="achievement-name">상품 가치</div>
+                            <div class="achievement-desc">아이작에게 '상품'이라는 말을 들었습니다.</div>
+                            <div class="achievement-rarity">전체 플레이어의 88.5%가 획득했습니다</div>
+                        </div>
+                    </div>
+                     <div class="achievement-card">
+                        <div class="achievement-icon">❤️‍🩹</div>
+                        <div class="achievement-info">
+                            <div class="achievement-name">물건이 아니야</div>
+                            <div class="achievement-desc">'상품' 발언으로 생긴 오해를 풀었습니다.</div>
+                            <div class="achievement-rarity">전체 플레이어의 65.4%가 획득했습니다</div>
+                        </div>
+                    </div>
+                    <div class="achievement-card">
+                        <div class="achievement-icon">🍳</div>
+                        <div class="achievement-info">
+                            <div class="achievement-name">마스터 셰프</div>
+                            <div class="achievement-desc">아이작을 위해 직접 요리를 만들었습니다.</div>
+                            <div class="achievement-rarity">전체 플레이어의 22.7%가 획득했습니다</div>
+                        </div>
+                    </div>
+                    <div class="achievement-card">
+                        <div class="achievement-icon">👨‍👩‍👧‍👦</div>
+                        <div class="achievement-info">
+                            <div class="achievement-name">가족의 아침</div>
+                            <div class="achievement-desc">미래의 기억, 그 너머를 엿보았습니다. (히든)</div>
+                            <div class="achievement-rarity">전체 플레이어의 3.1%가 획득했습니다</div>
+                        </div>
+                    </div>
+                    <div class="achievement-card">
+                        <div class="achievement-icon">👑</div>
+                        <div class="achievement-info">
+                            <div class="achievement-name">체크메이트, 아빠</div>
+                            <div class="achievement-desc">에필로그에서 아이작과의 체스 대결에서 승리했습니다.</div>
+                            <div class="achievement-rarity">전체 플레이어의 1.5%가 획득했습니다</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const storeBtn = document.getElementById('storeBtn');
+        const hubBtn = document.getElementById('hubBtn');
+        const storePage = document.getElementById('storePage');
+        const hubPage = document.getElementById('hubPage');
+        const carouselItems = document.querySelectorAll('.carousel-item');
+        const trailerContent = document.getElementById('trailer-content');
+        
+        const contentData = [
+            { type: 'video', emoji: '🎬', desc: "[영상 설명: 어둡고 퇴폐적인 레드벨의 복도가 비춰진다. 이내 화면이 전환되며, 절망적인 표정의 '라일'을 발견한 '아이작'의 고통스러운 얼굴이 클로즈업된다. 이후 광활하지만 차가운 저택에서 불안에 떠는 라일의 모습과, 그런 그에게 서투른 친절을 베푸는 아이작의 모습이 교차된다. 절정 부분에서, 라일이 처음으로 \"같이 자자\"고 말하자 놀라는 아이작. 마지막은, 라일의 품에 안겨 소리 없이 오열하는 아이작의 모습으로 끝난다.]" },
+            { type: 'image', emoji: '🏰', desc: "[스크린샷 설명: 호화롭지만 삭막한 저택 침실. 라일이 침대 끝에 위태롭게 앉아있다. 좌측 하단에 보이는 UI에는 '불안: 95/100', '신뢰: 5/100' 스탯이 표시되어 있다.]" },
+            { type: 'image', emoji: '🌼', desc: "[스크린샷 설명: 햇살이 쏟아지는 정원. 아이작이 라일에게 노란 꽃을 건네고 있다. 라일의 얼굴엔 아주 희미한 미소가 떠오르려는 찰나. 화면 중앙에 '그의 손을 잡는다', '꽃만 받는다', '아무것도 하지 않는다'는 선택지가 떠 있다.]" },
+            { type: 'image', emoji: '🍝', desc: "[스크린샷 설명: 저녁 식사 테이블. 아이작이 턱을 괸 채, 라일이 토마토 파스타를 먹는 모습을 뚫어지게 보고 있다. 화면 상단에 '특별 이벤트: 첫 번째 욕망'이라는 알림이 떠 있다.]" },
+            { type: 'image', emoji: '🫂', desc: "[스크린샷 설명: 고퀄리티 CG. 폭우가 쏟아지는 밤, 아이작이 피투성이가 된 채 의식을 잃은 라일을 끌어안고 오열하고 있다. 그의 얼굴은 분노와 슬픔으로 일그러져 있다.]" },
+            { type: 'image', emoji: '🌙', desc: "[스크린샷 설명: 어두운 침실, 라일의 손이 아이작의 소매를 조심스럽게 잡고 있다. '...같이.. 잘래요..?' 라는 대사가 자막으로 떠 있고, 선택지는 '수락한다' 하나뿐이지만 붉은색으로 강조되어 있다.]" },
+            { type: 'image', emoji: '❤️‍🔥', desc: "[스크린샷 설명: 성인용 CG의 일부. 아이작이 라일의 위에 엎드려 그의 뺨을 부드럽게 쓰다듬고 있다. 그의 눈빛은 애정과 죄책감으로 가득 차 있으며, 라일은 눈을 감은 채 그의 손길을 받아들이고 있다. (성인 DLC에서 전체 이미지를 확인할 수 있습니다.)]" }
+        ];
+
+        function switchPage(page) {
+            if (page === 'store') {
+                storePage.classList.add('active');
+                hubPage.classList.remove('active');
+                storeBtn.classList.add('active');
+                hubBtn.classList.remove('active');
+            } else {
+                storePage.classList.remove('active');
+                hubPage.classList.add('active');
+                storeBtn.classList.remove('active');
+                hubBtn.classList.add('active');
+            }
+        }
+
+        storeBtn.addEventListener('click', () => switchPage('store'));
+        hubBtn.addEventListener('click', () => switchPage('hub'));
+        
+        carouselItems.forEach(item => {
+            item.addEventListener('click', () => {
+                carouselItems.forEach(i => i.classList.remove('active'));
+                item.classList.add('active');
+                const index = item.dataset.index;
+                trailerContent.textContent = contentData[index].desc;
+            });
+        });
+        
+        function toggleGuide(header) {
+            const content = header.nextElementSibling;
+            const arrow = header.querySelector('span');
+            if (content.style.maxHeight) {
+                content.style.maxHeight = null;
+                content.style.padding = '0 20px';
+                arrow.textContent = '▼';
+            } else {
+                content.style.maxHeight = content.scrollHeight + 40 + "px";
+                content.style.padding = '20px';
+                arrow.textContent = '▲';
+            }
+        }
+        
+        // Trailer timeline simulation
+        const progress = document.getElementById('timelineProgress');
+        const trailerTimelineDescs = [
+            "[0:05] 레드벨의 어둡고 차가운 복도. 겁에 질린 라일의 모습.",
+            "[0:12] 라일을 발견한 아이작의 충격받은 얼굴. 클로즈업.",
+            "[0:20] 저택에서 서투른 친절을 베푸는 아이작과 불안에 떠는 라일.",
+            "[0:28] '같이 자요...' 라일의 작은 속삭임. 아이작의 흔들리는 눈동자.",
+            "[0:35] 라일의 품에 안겨 소리없이 오열하는 아이작의 뒷모습. 타이틀 로고 등장."
+        ];
+        
+        let trailerIndex = 0;
+        setInterval(() => {
+            const percentage = (trailerIndex + 1) * 20;
+            progress.style.width = percentage + '%';
+            if(contentData[0].type === 'video' && document.querySelector('.carousel-item[data-index="0"]').classList.contains('active')) {
+               trailerContent.textContent = trailerTimelineDescs[trailerIndex];
+            }
+            trailerIndex = (trailerIndex + 1) % trailerTimelineDescs.length;
+            if(trailerIndex === 0) progress.style.width = '0%';
+        }, 2500);
+
+    </script>
+</body>
+</html>

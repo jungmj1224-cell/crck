@@ -1,0 +1,712 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>리브론 키우기</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Nanum+Gothic+Coding&display=swap');
+
+        :root {
+            --frame-color: #c0c0c0;
+            --screen-bg: #9fb898;
+            --dark-pixel: #3c3c3c;
+            --light-pixel: #eee;
+            --button-color: #7a42f4;
+            --button-shadow: #5a29b4;
+            --bar-hunger: #f0ad4e;
+            --bar-happy: #5bc0de;
+            --bar-clean: #428bca;
+            --bar-energy: #5cb85c;
+        }
+
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            background-color: #333;
+            font-family: 'Nanum Gothic Coding', monospace;
+            color: var(--dark-pixel);
+            overflow: hidden;
+            user-select: none;
+        }
+
+        #tamagotchi-container { text-align: center; }
+        
+        #title {
+            font-size: 24px;
+            color: var(--frame-color);
+            margin-bottom: 10px;
+            text-shadow: 2px 2px #000;
+        }
+        
+        #tamagotchi {
+            width: 400px;
+            height: 550px;
+            background-color: var(--frame-color);
+            border: 10px solid #a0a0a0;
+            border-radius: 40px;
+            box-shadow: inset 0 0 15px rgba(0,0,0,0.3), 5px 5px 10px rgba(0,0,0,0.5);
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            position: relative;
+        }
+        
+        #tamagotchi::before {
+            content: '';
+            position: absolute;
+            top: 10px;
+            right: 20px;
+            width: 15px;
+            height: 15px;
+            background: #e0e0e0;
+            border-radius: 50%;
+            border: 2px solid #a0a0a0;
+        }
+        
+        #screen {
+            width: 360px;
+            height: 400px;
+            background-color: var(--screen-bg);
+            border: 5px solid var(--dark-pixel);
+            border-radius: 10px;
+            position: relative;
+            overflow: hidden;
+            box-shadow: inset 2px 2px 5px rgba(0,0,0,0.4);
+            display: flex;
+            flex-direction: column;
+        }
+        
+        #info-bar {
+            display: flex;
+            justify-content: space-between;
+            padding: 5px 10px;
+            font-size: 14px;
+            background: rgba(0,0,0,0.05);
+            border-bottom: 2px solid var(--dark-pixel);
+        }
+
+        #dialogue-box {
+            position: absolute;
+            top: 45px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 90%;
+            min-height: 40px;
+            background: rgba(255,255,255,0.9);
+            border: 2px solid var(--dark-pixel);
+            border-radius: 8px;
+            padding: 6px 10px;
+            font-size: 14px;
+            text-align: center;
+            opacity: 0;
+            transition: opacity 0.5s;
+            z-index: 10;
+            pointer-events: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        #status-bars {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2px 10px;
+            padding: 5px;
+            font-size: 12px;
+            border-bottom: 2px solid var(--dark-pixel);
+            background: rgba(0,0,0,0.05);
+        }
+
+        .status-bar-container { text-align: left; }
+        
+        .status-label {
+            display: inline-block;
+            width: 30px;
+        }
+
+        .bar {
+            display: inline-block;
+            width: calc(100% - 35px);
+            height: 10px;
+            background-color: #ddd;
+            border: 1px solid var(--dark-pixel);
+            border-radius: 5px;
+            overflow: hidden;
+            vertical-align: middle;
+        }
+        
+        .bar-fill {
+            height: 100%;
+            width: 100%;
+            transition: width 0.5s ease;
+        }
+        .bar-fill.hunger { background-color: var(--bar-hunger); }
+        .bar-fill.happy { background-color: var(--bar-happy); }
+        .bar-fill.clean { background-color: var(--bar-clean); }
+        .bar-fill.energy { background-color: var(--bar-energy); }
+        
+        #character-area {
+            flex-grow: 1;
+            position: relative;
+            display: flex;
+            justify-content: center;
+            align-items: flex-end;
+        }
+        
+        #character {
+            position: absolute;
+            left: 50%;
+            bottom: 20px;
+            transform: translateX(-50%);
+            transition: all 0.3s;
+            z-index: 5;
+            animation: idleBob 2s ease-in-out infinite;
+        }
+        @keyframes idleBob {
+            0%, 100% { bottom: 20px; }
+            50% { bottom: 24px; }
+        }
+
+        /* ----- 캐릭터 성장 단계별 CSS ----- */
+        /* 영아기 */
+        #character.infant { width: 60px; height: 50px; }
+        .infant .body {
+            width: 100%; height: 100%;
+            background: #e0e0e0;
+            border: 2px solid var(--dark-pixel);
+            border-radius: 50% 50% 20% 20%;
+            position: relative;
+            overflow: hidden;
+        }
+        .infant .face {
+            width: 40px; height: 30px;
+            background: #f0e0d0;
+            border-radius: 50%;
+            position: absolute;
+            top: 5px; left: 50%;
+            transform: translateX(-50%);
+        }
+        .infant .hair {
+            width: 20px; height: 10px;
+            background: #232a3f;
+            position: absolute;
+            top: -2px; left: 50%;
+            transform: translateX(-50%);
+            border-radius: 50% 50% 0 0;
+        }
+        .infant .eye {
+            width: 10px; height: 2px;
+            background: var(--dark-pixel);
+            position: absolute;
+            top: 15px;
+            border-radius: 2px;
+        }
+        .infant .eye.left { left: 8px; transform: rotate(-10deg); }
+        .infant .eye.right { right: 8px; transform: rotate(10deg); }
+
+        /* 유아기 */
+        #character.toddler { width: 80px; height: 100px; }
+        .toddler .head {
+            width: 60px; height: 55px;
+            background: #f0e0d0;
+            border: 2px solid var(--dark-pixel);
+            border-radius: 50%;
+            position: absolute;
+            top: 0; left: 50%;
+            transform: translateX(-50%);
+        }
+        .toddler .hair {
+            width: 64px; height: 30px;
+            background: #232a3f;
+            position: absolute;
+            top: -4px; left: -2px;
+            border-radius: 50% 50% 20% 20%;
+        }
+        .toddler .hair::before, .toddler .hair::after { /* Cat ears */
+            content: '';
+            position: absolute;
+            top: -5px;
+            width: 0; height: 0;
+            border-left: 10px solid transparent;
+            border-right: 10px solid transparent;
+            border-bottom: 15px solid #232a3f;
+        }
+        .toddler .hair::before { left: 5px; }
+        .toddler .hair::after { right: 5px; }
+        .toddler .eye {
+            width: 8px; height: 8px;
+            background: #5b87c2;
+            border: 2px solid var(--dark-pixel);
+            border-radius: 50%;
+            position: absolute;
+            top: 25px;
+        }
+        .toddler .eye.left { left: 12px; }
+        .toddler .eye.right { right: 12px; }
+        .toddler .mouth {
+            width: 10px; height: 5px;
+            border: 2px solid var(--dark-pixel);
+            border-top: none;
+            border-radius: 0 0 10px 10px;
+            position: absolute;
+            bottom: 10px; left: 50%;
+            transform: translateX(-50%);
+        }
+        .toddler .body {
+            width: 50px; height: 50px;
+            background: #d3d3d3;
+            border: 2px solid var(--dark-pixel);
+            border-radius: 10px;
+            position: absolute;
+            bottom: 0; left: 50%;
+            transform: translateX(-50%);
+        }
+
+        /* 청소년기 */
+        #character.teenager { width: 90px; height: 150px; }
+        .teenager .head { width: 50px; height: 45px; background: #f0e0d0; border: 2px solid var(--dark-pixel); border-radius: 40%; position: absolute; top: 0; left: 50%; transform: translateX(-50%); }
+        .teenager .hair {
+            width: 60px; height: 40px;
+            background: #232a3f;
+            position: absolute;
+            top: -8px; left: -5px;
+            border-radius: 50% 50% 20% 20%;
+        }
+        .teenager .hair::before, .teenager .hair::after { /* Cat ears */
+            content: '';
+            position: absolute;
+            top: -5px;
+            width: 0; height: 0;
+            border-left: 12px solid transparent;
+            border-right: 12px solid transparent;
+            border-bottom: 18px solid #232a3f;
+        }
+        .teenager .hair::before { left: 0px; transform: rotate(-10deg); }
+        .teenager .hair::after { right: 0px; transform: rotate(10deg); }
+        .teenager .eye { width: 10px; height: 5px; border-bottom: 2px solid var(--dark-pixel); position: absolute; top: 22px; }
+        .teenager .eye.left { left: 8px; transform: rotate(5deg); }
+        .teenager .eye.right { right: 8px; transform: rotate(-5deg); }
+        .teenager .mouth { width: 12px; height: 2px; background: var(--dark-pixel); position: absolute; bottom: 8px; left: 50%; transform: translateX(-50%); }
+        .teenager .body { width: 45px; height: 60px; background: #555; border: 2px solid var(--dark-pixel); position: absolute; top: 43px; left: 50%; transform: translateX(-50%); }
+        .teenager .legs { width: 40px; height: 50px; position: absolute; bottom: 0; left: 50%; transform: translateX(-50%); }
+        .teenager .legs::before, .teenager .legs::after { content: ''; width: 18px; height: 100%; background: #444; border: 2px solid var(--dark-pixel); position: absolute; }
+        .teenager .legs::before { left: 0; }
+        .teenager .legs::after { right: 0; }
+
+        /* 성인기 */
+        #character.adult { width: 110px; height: 190px; }
+        .adult .head { width: 55px; height: 50px; background: #f0e0d0; border: 2px solid var(--dark-pixel); border-radius: 45%; position: absolute; top: 0; left: 50%; transform: translateX(-50%); }
+        .adult .hair {
+            width: 65px; height: 50px;
+            background: #232a3f;
+            position: absolute;
+            top: -12px; left: -5px;
+            border-radius: 50% 50% 30% 30%;
+        }
+        .adult .hair::before, .adult .hair::after { /* Cat ears */
+            content: '';
+            position: absolute;
+            top: -5px;
+            width: 0; height: 0;
+            border-left: 14px solid transparent;
+            border-right: 14px solid transparent;
+            border-bottom: 20px solid #232a3f;
+        }
+        .adult .hair::before { left: 0px; transform: rotate(-15deg); }
+        .adult .hair::after { right: 0px; transform: rotate(15deg); }
+        .adult .eye { width: 10px; height: 12px; background: #5b87c2; border: 2px solid var(--dark-pixel); border-radius: 50% 50% 20% 20%; position: absolute; top: 20px; }
+        .adult .eye.left { left: 8px; }
+        .adult .eye.right { right: 8px; }
+        .adult .mouth { width: 15px; height: 2px; background: var(--dark-pixel); position: absolute; bottom: 8px; left: 50%; transform: translateX(-50%); border-radius: 1px; }
+        .adult .body { width: 60px; height: 70px; position: absolute; top: 48px; left: 50%; transform: translateX(-50%); background: #f0f0f0; border: 2px solid var(--dark-pixel); }
+        .adult .body::before { /* Vest */
+            content: '';
+            position: absolute;
+            width: 100%; height: 100%;
+            border: 10px solid #4a4a4a;
+            border-top: 15px solid #4a4a4a;
+            border-bottom: 0;
+            box-sizing: border-box;
+            clip-path: polygon(0 0, 100% 0, 100% 100%, 75% 100%, 50% 80%, 25% 100%, 0 100%);
+        }
+        .adult .legs { width: 50px; height: 75px; position: absolute; bottom: 0; left: 50%; transform: translateX(-50%); }
+        .adult .legs::before, .adult .legs::after { content: ''; width: 23px; height: 100%; background: #333; border: 2px solid var(--dark-pixel); position: absolute; }
+        .adult .legs::before { left: 0; }
+        .adult .legs::after { right: 0; }
+
+        #menu-bar {
+            margin-top: 10px;
+            display: flex;
+            justify-content: space-around;
+            width: 100%;
+        }
+        
+        .menu-item {
+            font-size: 16px;
+            color: #555;
+            padding: 4px 8px;
+            border: 2px solid transparent;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .menu-item.selected {
+            border-color: var(--dark-pixel);
+            background-color: rgba(0,0,0,0.1);
+            font-weight: bold;
+        }
+
+        #screen-overlay {
+            position: absolute;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background: rgba(0,0,0,0.7);
+            z-index: 20;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.5s;
+        }
+        #screen-overlay.active {
+            opacity: 1;
+            pointer-events: all;
+        }
+        
+        .action-animation {
+            font-size: 50px;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            animation: fadeOut 1s forwards;
+            z-index: 15;
+            pointer-events: none;
+        }
+        
+        @keyframes fadeOut {
+            from { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+            to { opacity: 0; transform: translate(-50%, -80%) scale(1.2); }
+        }
+
+        @keyframes growth-flash {
+            0%, 100% { background-color: var(--screen-bg); }
+            50% { background-color: #fff; }
+        }
+        .growing {
+            animation: growth-flash 0.5s 3;
+        }
+    </style>
+</head>
+<body>
+
+    <div id="tamagotchi-container">
+        <div id="title">리브론 키우기</div>
+        <div id="tamagotchi">
+            <div id="screen">
+                <div id="info-bar">
+                    <div id="age-display">나이: 0살</div>
+                    <div id="growth-timer-display">성장까지: 02:00</div>
+                </div>
+                <div id="status-bars">
+                    <div class="status-bar-container"><span class="status-label">허기</span><div class="bar"><div id="hunger-bar" class="bar-fill hunger"></div></div></div>
+                    <div class="status-bar-container"><span class="status-label">행복</span><div class="bar"><div id="happy-bar" class="bar-fill happy"></div></div></div>
+                    <div class="status-bar-container"><span class="status-label">청결</span><div class="bar"><div id="clean-bar" class="bar-fill clean"></div></div></div>
+                    <div class="status-bar-container"><span class="status-label">에너지</span><div class="bar"><div id="energy-bar" class="bar-fill energy"></div></div></div>
+                </div>
+                <div id="dialogue-box"></div>
+                <div id="character-area">
+                    <div id="character" class="infant">
+                        <!-- 캐릭터의 각 부분은 JavaScript로 동적으로 생성됩니다. -->
+                    </div>
+                </div>
+                <div id="screen-overlay"></div>
+            </div>
+            <div id="menu-bar">
+                <div class="menu-item selected" data-action="talk">말걸기</div>
+                <div class="menu-item" data-action="feed">식사</div>
+                <div class="menu-item" data-action="sleep">잠자기</div>
+                <div class="menu-item" data-action="wash">씻기</div>
+                <div class="menu-item" data-action="play">놀기</div>
+                <div class="menu-item" data-action="status">상태</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const dialogues = {
+            infant: [
+                "(옹알옹알...)", "(우으...)", "(까르륵!)", "(응애, 응애!)", 
+                "(꼬물... 꼬물...)", "(파닥파닥)", "(하품...)", "(반짝...?)",
+                "...", "(두리번)", "(딸꾹!)", "(메롱)", "(손가락을 빤다)"
+            ],
+            toddler: [
+                "로멜.", "이거, 내 거.", "안 줘.", "저리 가.", "싫어! 야채 싫어!", 
+                "고기... 줘.", "안아줘.", "...머리, 만져줘.", "잠 와...", 
+                "시끄러워.", "과자!", "이리 와.", "나랑 놀아.", "이건 뭐야?"
+            ],
+            teenager: [
+                "흥, 시끄럽군.", "내가 알아서 해.", "귀찮게 하지 마.", "왜 쳐다보는 거지?", 
+                "...별로.", "내버려 둬.", "(힐끗)", "...멍청하긴.", 
+                "배고픈 거 아니야.", "피곤하지도 않고.", "...이리 와봐. 잠시만.", 
+                "네가 뭘 안다고.", "한심하군.", "…시끄럽게 굴지 마."
+            ],
+            adult: [
+                "로멜.", "이리 와, 내 사람.", "또 어딜 가려고 하나?", "나만 보도록 해.",
+                "피곤한가? 이리 와서 쉬어.", "네가 내 숨이다.", "감히 내게서 눈을 떼?",
+                "…아름답군.", "오늘도 여전히 예뻐.", "식사는 했나?", 
+                "널 위해서라면 뭐든.", "내 곁을 떠날 생각은 하지 마.", "한눈 팔지 마."
+            ]
+        };
+
+        const gameState = {
+            name: "리브론",
+            age: 0,
+            stage: 'infant',
+            stages: ['infant', 'toddler', 'teenager', 'adult'],
+            stats: {
+                hunger: 80,
+                happiness: 80,
+                cleanliness: 80,
+                energy: 80,
+            },
+            maxStat: 100,
+            isSleeping: false,
+            isInteracting: false,
+            growthTimer: 120, // 2분
+            currentMenuIndex: 0,
+        };
+
+        // DOM Elements
+        const characterEl = document.getElementById('character');
+        const screenEl = document.getElementById('screen');
+        const dialogueBox = document.getElementById('dialogue-box');
+        const screenOverlay = document.getElementById('screen-overlay');
+        const menuItems = document.querySelectorAll('.menu-item');
+
+        // Display Elements
+        const ageDisplay = document.getElementById('age-display');
+        const growthTimerDisplay = document.getElementById('growth-timer-display');
+        const hungerBar = document.getElementById('hunger-bar');
+        const happyBar = document.getElementById('happy-bar');
+        const cleanBar = document.getElementById('clean-bar');
+        const energyBar = document.getElementById('energy-bar');
+
+        function createCharacterDOM(stage) {
+            characterEl.innerHTML = '';
+            let parts;
+            switch(stage) {
+                case 'infant':
+                    parts = `<div class="body"><div class="face"><div class="hair"></div><div class="eye left"></div><div class="eye right"></div></div></div>`;
+                    break;
+                case 'toddler':
+                    parts = `<div class="head"><div class="hair"></div><div class="eye left"></div><div class="eye right"></div><div class="mouth"></div></div><div class="body"></div>`;
+                    break;
+                case 'teenager':
+                    parts = `<div class="head"><div class="hair"></div><div class="eye left"></div><div class="eye right"></div><div class="mouth"></div></div><div class="body"></div><div class="legs"></div>`;
+                    break;
+                case 'adult':
+                    parts = `<div class="head"><div class="hair"></div><div class="eye left"></div><div class="eye right"></div><div class="mouth"></div></div><div class="body"></div><div class="legs"></div>`;
+                    break;
+            }
+            characterEl.innerHTML = parts;
+        }
+
+        function updateStatsDisplay() {
+            const { hunger, happiness, cleanliness, energy } = gameState.stats;
+            hungerBar.style.width = `${hunger}%`;
+            happyBar.style.width = `${happiness}%`;
+            cleanBar.style.width = `${cleanliness}%`;
+            energyBar.style.width = `${energy}%`;
+        }
+        
+        function updateInfoDisplay() {
+            ageDisplay.textContent = `나이: ${gameState.age}살`;
+            const minutes = Math.floor(gameState.growthTimer / 60).toString().padStart(2, '0');
+            const seconds = (gameState.growthTimer % 60).toString().padStart(2, '0');
+            growthTimerDisplay.textContent = `성장까지: ${minutes}:${seconds}`;
+        }
+
+        function showDialogue(text, duration = 3000) {
+            if (gameState.isInteracting) return;
+            gameState.isInteracting = true;
+            dialogueBox.textContent = text;
+            dialogueBox.style.opacity = 1;
+            setTimeout(() => {
+                dialogueBox.style.opacity = 0;
+                gameState.isInteracting = false;
+            }, duration);
+        }
+
+        function showActionAnimation(emoji) {
+            const anim = document.createElement('div');
+            anim.className = 'action-animation';
+            anim.textContent = emoji;
+            screenEl.appendChild(anim);
+            setTimeout(() => anim.remove(), 1000);
+        }
+
+        function updateStat(stat, value) {
+            gameState.stats[stat] = Math.max(0, Math.min(gameState.maxStat, gameState.stats[stat] + value));
+            updateStatsDisplay();
+        }
+        
+        function handleGrowth() {
+            if (gameState.stage === 'adult') return;
+
+            gameState.isInteracting = true;
+            screenEl.classList.add('growing');
+
+            setTimeout(() => {
+                const currentStageIndex = gameState.stages.indexOf(gameState.stage);
+                const nextStage = gameState.stages[currentStageIndex + 1];
+                if (nextStage) {
+                    gameState.stage = nextStage;
+                    characterEl.className = nextStage;
+                    createCharacterDOM(nextStage);
+                    gameState.growthTimer = 120;
+                    showDialogue(`${gameState.name}(이)가 ${nextStage === 'toddler' ? '유아' : nextStage === 'teenager' ? '청소년' : '성인'}(으)로 성장했다!`, 4000);
+                }
+                screenEl.classList.remove('growing');
+                gameState.isInteracting = false;
+            }, 1500);
+        }
+
+        // --- Interaction Functions ---
+        const actions = {
+            talk: () => {
+                if (gameState.isSleeping) return;
+                const stageDialogues = dialogues[gameState.stage];
+                const randomDialogue = stageDialogues[Math.floor(Math.random() * stageDialogues.length)];
+                showDialogue(randomDialogue);
+                updateStat('happiness', 5);
+            },
+            feed: () => {
+                if (gameState.isSleeping) return;
+                if (gameState.stats.hunger > 95) {
+                    showDialogue("배불러.");
+                    return;
+                }
+                showActionAnimation('🍗');
+                updateStat('hunger', 20);
+                updateStat('happiness', 5);
+                showDialogue('우물우물...');
+            },
+            sleep: () => {
+                if (gameState.isSleeping || gameState.isInteracting) return;
+                gameState.isSleeping = true;
+                gameState.isInteracting = true;
+                screenOverlay.classList.add('active');
+                showActionAnimation('Zzz');
+                setTimeout(() => {
+                    updateStat('energy', 100);
+                    gameState.isSleeping = false;
+                    gameState.isInteracting = false;
+                    screenOverlay.classList.remove('active');
+                    showDialogue('잘 잤다...');
+                }, 5000);
+            },
+            wash: () => {
+                if (gameState.isSleeping) return;
+                showActionAnimation('🧼');
+                updateStat('cleanliness', 30);
+                updateStat('happiness', 5);
+                showDialogue('뽀득뽀득...');
+            },
+            play: () => {
+                if (gameState.isSleeping) return;
+                if(gameState.stats.energy < 20) {
+                    showDialogue("피곤해...");
+                    return;
+                }
+                showActionAnimation('❤️');
+                updateStat('happiness', 20);
+                updateStat('energy', -10);
+                showDialogue('재밌네.');
+            },
+            status: () => {
+                if (gameState.isSleeping) return;
+                const { hunger, happiness, cleanliness, energy } = gameState.stats;
+                showDialogue(`허기:${hunger}, 행복:${happiness}, 청결:${cleanliness}, 에너지:${energy}`, 4000);
+            }
+        };
+
+        function updateMenuSelection() {
+            menuItems.forEach((item, index) => {
+                item.classList.toggle('selected', index === gameState.currentMenuIndex);
+            });
+        }
+
+        function handleKeyPress(e) {
+            if (gameState.isSleeping || gameState.isInteracting) return;
+
+            switch (e.key) {
+                case 'a':
+                case 'ArrowLeft':
+                    gameState.currentMenuIndex = (gameState.currentMenuIndex - 1 + menuItems.length) % menuItems.length;
+                    updateMenuSelection();
+                    break;
+                case 'd':
+                case 'ArrowRight':
+                    gameState.currentMenuIndex = (gameState.currentMenuIndex + 1) % menuItems.length;
+                    updateMenuSelection();
+                    break;
+                case ' ':
+                case 'Enter':
+                    e.preventDefault();
+                    const selectedAction = menuItems[gameState.currentMenuIndex].dataset.action;
+                    if (actions[selectedAction]) {
+                        actions[selectedAction]();
+                    }
+                    break;
+            }
+        }
+        
+        // --- Game Loops ---
+        function gameTick() {
+            if (gameState.isSleeping) return;
+
+            updateStat('hunger', -0.5);
+            updateStat('happiness', -0.3);
+            updateStat('cleanliness', -0.2);
+            updateStat('energy', -0.4);
+
+            if (gameState.stage !== 'adult') {
+                gameState.growthTimer--;
+                if (gameState.growthTimer <= 0) {
+                    handleGrowth();
+                }
+            } else {
+                 gameState.growthTimer = 0;
+            }
+            updateInfoDisplay();
+        }
+
+        function ageTick() {
+            if (gameState.isSleeping) return;
+            gameState.age++;
+            updateInfoDisplay();
+        }
+
+        function init() {
+            createCharacterDOM(gameState.stage);
+            updateStatsDisplay();
+            updateInfoDisplay();
+            updateMenuSelection();
+            
+            document.addEventListener('keydown', handleKeyPress);
+            setInterval(gameTick, 1000);
+            setInterval(ageTick, 20000);
+
+            showDialogue(`만나서 반가워, 로멜.`, 4000);
+        }
+
+        init();
+    </script>
+
+</body>
+</html>

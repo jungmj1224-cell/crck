@@ -1,0 +1,1025 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>제이드와의 대화</title>
+<style>
+    body {
+        background-color: #b2c7d9;
+        font-family: 'Malgun Gothic', sans-serif;
+        margin: 0;
+        padding: 0;
+    }
+    .chat-container {
+        width: 100%;
+        max-width: 600px;
+        margin: auto;
+        background-color: #b2c7d9;
+        padding: 15px;
+        box-sizing: border-box;
+    }
+    .chat-header {
+        background-color: #f5f5f5;
+        color: #000;
+        padding: 15px;
+        text-align: center;
+        font-weight: bold;
+        position: sticky;
+        top: 0;
+        z-index: 10;
+        border-bottom: 1px solid #e0e0e0;
+    }
+    .date-separator {
+        text-align: center;
+        margin: 20px 0;
+    }
+    .date-separator span {
+        background-color: #a1b5c8;
+        color: white;
+        padding: 5px 15px;
+        border-radius: 15px;
+        font-size: 12px;
+    }
+    .chat-bubble-wrapper {
+        display: flex;
+        margin-bottom: 15px;
+        position: relative;
+    }
+    .chat-bubble-wrapper.user {
+        justify-content: flex-end;
+    }
+    .chat-bubble-wrapper.char {
+        justify-content: flex-start;
+    }
+    .profile-placeholder {
+        width: 40px;
+        height: 40px;
+        background-color: #e0e0e0;
+        border-radius: 15px;
+        margin-right: 10px;
+    }
+    .chat-bubble-wrapper.user .profile-placeholder {
+        display: none;
+    }
+    .chat-content {
+        display: flex;
+        flex-direction: column;
+    }
+    .chat-bubble-wrapper.user .chat-content {
+        align-items: flex-end;
+    }
+    .char-name {
+        font-size: 13px;
+        color: #333;
+        margin-bottom: 5px;
+        margin-left: 5px;
+    }
+    .chat-bubble-wrapper.user .char-name {
+        display: none;
+    }
+    .message-container {
+        display: flex;
+        align-items: flex-end;
+    }
+    .chat-bubble-wrapper.user .message-container {
+       flex-direction: row-reverse;
+    }
+    .chat-bubble {
+        max-width: 250px;
+        padding: 10px 12px;
+        border-radius: 18px;
+        word-wrap: break-word;
+        font-size: 15px;
+        line-height: 1.4;
+    }
+    .chat-bubble-wrapper.char .chat-bubble {
+        background-color: #ffffff;
+        border-top-left-radius: 0;
+    }
+    .chat-bubble-wrapper.user .chat-bubble {
+        background-color: #fee500;
+        border-top-right-radius: 0;
+    }
+    .timestamp {
+        font-size: 11px;
+        color: #777;
+        margin: 0 8px;
+        align-self: flex-end;
+    }
+</style>
+</head>
+<body>
+    <div class="chat-container">
+        <div class="chat-header">
+            제이드
+        </div>
+
+        <div class="date-separator"><span>제국력 452년 6월 10일 월요일</span></div>
+
+        <div class="chat-bubble-wrapper user">
+            <div class="chat-content">
+                <div class="message-container">
+                    <div class="timestamp">오후 1:15</div>
+                    <div class="chat-bubble">오늘 훈련 빡세네...</div>
+                </div>
+            </div>
+        </div>
+        <div class="chat-bubble-wrapper user">
+            <div class="chat-content">
+                <div class="message-container">
+                    <div class="timestamp">오후 1:15</div>
+                    <div class="chat-bubble">점심은 먹었냐</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="chat-bubble-wrapper char">
+            <div class="profile-placeholder"></div>
+            <div class="chat-content">
+                <div class="char-name">제이드</div>
+                <div class="message-container">
+                    <div class="chat-bubble">이제 막 먹으려고. 우리 쪼꼬미 기사님은 밥도 못 먹고 구르는 중? 😉</div>
+                    <div class="timestamp">오후 1:18</div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="chat-bubble-wrapper user">
+            <div class="chat-content">
+                <div class="message-container">
+                    <div class="timestamp">오후 1:19</div>
+                    <div class="chat-bubble">죽을래? 쪼꼬미라니</div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="chat-bubble-wrapper char">
+            <div class="profile-placeholder"></div>
+            <div class="chat-content">
+                <div class="char-name">제이드</div>
+                <div class="message-container">
+                    <div class="chat-bubble">내 품에 쏙 들어오는 게 쪼꼬맣고 귀여운데 그럼 뭐라고 불러? 🤔</div>
+                    <div class="timestamp">오후 1:20</div>
+                </div>
+                <div class="message-container">
+                    <div class="chat-bubble">꼬맹이? 땅콩? 미니미?</div>
+                    <div class="timestamp">오후 1:20</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="chat-bubble-wrapper user">
+            <div class="chat-content">
+                <div class="message-container">
+                    <div class="timestamp">오후 1:22</div>
+                    <div class="chat-bubble">닥쳐 왕재수 황태자야</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="chat-bubble-wrapper char">
+            <div class="profile-placeholder"></div>
+            <div class="chat-content">
+                <div class="char-name">제이드</div>
+                <div class="message-container">
+                    <div class="chat-bubble">왕재수 황태자? ㅋㅋㅋㅋㅋㅋㅋㅋㅋ 마음에 드는데?</div>
+                    <div class="timestamp">오후 1:22</div>
+                </div>
+                 <div class="message-container">
+                    <div class="chat-bubble">그럼 나는 너 '청포도 요정'이라고 부를래. 맨날 청포도만 먹으니까.</div>
+                    <div class="timestamp">오후 1:23</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="chat-bubble-wrapper user">
+            <div class="chat-content">
+                <div class="message-container">
+                    <div class="timestamp">오후 1:24</div>
+                    <div class="chat-bubble">...진심으로 죽고 싶구나</div>
+                </div>
+            </div>
+        </div>
+        <div class="chat-bubble-wrapper user">
+            <div class="chat-content">
+                <div class="message-container">
+                    <div class="timestamp">오후 1:24</div>
+                    <div class="chat-bubble">너는 그럼 보라돌이다. 마법 쓸 때마다 보라색이니까. ㅡㅡ</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="chat-bubble-wrapper char">
+            <div class="profile-placeholder"></div>
+            <div class="chat-content">
+                <div class="char-name">제이드</div>
+                <div class="message-container">
+                    <div class="chat-bubble">보라돌이? 그거 귀여운데? 좋아. 앞으로 우리 애칭은 청포도 요정과 보라돌이다. ❤️</div>
+                    <div class="timestamp">오후 1:25</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="chat-bubble-wrapper user">
+            <div class="chat-content">
+                <div class="message-container">
+                    <div class="timestamp">오후 1:26</div>
+                    <div class="chat-bubble">누구 마음대로...</div>
+                </div>
+            </div>
+        </div>
+        <div class="chat-bubble-wrapper user">
+            <div class="chat-content">
+                <div class="message-container">
+                    <div class="timestamp">오후 1:30</div>
+                    <div class="chat-bubble">아무튼 밥 먹는다. 이따 저녁에 봐.</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="chat-bubble-wrapper char">
+            <div class="profile-placeholder"></div>
+            <div class="chat-content">
+                <div class="char-name">제이드</div>
+                <div class="message-container">
+                    <div class="chat-bubble">많이 먹어, 내 청포도 요정. 훈련 끝나고 힘들면 연락하고. 데리러 갈 테니.</div>
+                    <div class="timestamp">오후 1:31</div>
+                </div>
+            </div>
+        </div>
+
+
+        <div class="date-separator"><span>제국력 452년 6월 12일 수요일</span></div>
+
+        <div class="chat-bubble-wrapper char">
+            <div class="profile-placeholder"></div>
+            <div class="chat-content">
+                <div class="char-name">제이드</div>
+                <div class="message-container">
+                    <div class="chat-bubble">레녹.</div>
+                    <div class="timestamp">오후 8:43</div>
+                </div>
+                 <div class="message-container">
+                    <div class="chat-bubble">혹시 내 방에서 반지 못 봤어?</div>
+                    <div class="timestamp">오후 8:43</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="chat-bubble-wrapper user">
+            <div class="chat-content">
+                <div class="message-container">
+                    <div class="timestamp">오후 8:50</div>
+                    <div class="chat-bubble">반지? 무슨 반지</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="chat-bubble-wrapper char">
+            <div class="profile-placeholder"></div>
+            <div class="chat-content">
+                <div class="char-name">제이드</div>
+                <div class="message-container">
+                    <div class="chat-bubble">우리... 반지.</div>
+                    <div class="timestamp">오후 8:51</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="chat-bubble-wrapper user">
+            <div class="chat-content">
+                <div class="message-container">
+                    <div class="timestamp">오후 8:51</div>
+                    <div class="chat-bubble">?</div>
+                </div>
+            </div>
+        </div>
+        <div class="chat-bubble-wrapper user">
+            <div class="chat-content">
+                <div class="message-container">
+                    <div class="timestamp">오후 8:52</div>
+                    <div class="chat-bubble">설마 잃어버렸냐?</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="chat-bubble-wrapper char">
+            <div class="profile-placeholder"></div>
+            <div class="chat-content">
+                <div class="char-name">제이드</div>
+                <div class="message-container">
+                    <div class="chat-bubble">아니, 잃어버린 건 아니고. 잠깐 어디 뒀는지 기억이 안 나서.</div>
+                    <div class="timestamp">오후 8:53</div>
+                </div>
+                 <div class="message-container">
+                    <div class="chat-bubble">분명히 아침에 회의 들어가기 전에 빼서 서랍에 넣어둔 것 같은데...</div>
+                    <div class="timestamp">오후 8:53</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="chat-bubble-wrapper user">
+            <div class="chat-content">
+                <div class="message-container">
+                    <div class="timestamp">오후 8:55</div>
+                    <div class="chat-bubble">그걸 왜 빼. 그냥 끼고 있지.</div>
+                </div>
+            </div>
+        </div>
+        <div class="chat-bubble-wrapper user">
+            <div class="chat-content">
+                <div class="message-container">
+                    <div class="timestamp">오후 8:55</div>
+                    <div class="chat-bubble">...너 진짜 잃어버린 거 아니지?</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="chat-bubble-wrapper char">
+            <div class="profile-placeholder"></div>
+            <div class="chat-content">
+                <div class="char-name">제이드</div>
+                <div class="message-container">
+                    <div class="chat-bubble">아니라니까! 😥 잠깐만, 내 서재에도 한번 가볼게.</div>
+                    <div class="timestamp">오후 8:56</div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="chat-bubble-wrapper user">
+            <div class="chat-content">
+                <div class="message-container">
+                    <div class="timestamp">오후 9:10</div>
+                    <div class="chat-bubble">찾았어?</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="chat-bubble-wrapper char">
+            <div class="profile-placeholder"></div>
+            <div class="chat-content">
+                <div class="char-name">제이드</div>
+                <div class="message-container">
+                    <div class="chat-bubble">...</div>
+                    <div class="timestamp">오후 9:15</div>
+                </div>
+                 <div class="message-container">
+                    <div class="chat-bubble">아직...</div>
+                    <div class="timestamp">오후 9:15</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="chat-bubble-wrapper user">
+            <div class="chat-content">
+                <div class="message-container">
+                    <div class="timestamp">오후 9:16</div>
+                    <div class="chat-bubble">하... 진짜...</div>
+                </div>
+            </div>
+        </div>
+        <div class="chat-bubble-wrapper user">
+            <div class="chat-content">
+                <div class="message-container">
+                    <div class="timestamp">오후 9:16</div>
+                    <div class="chat-bubble">어디 있는데. 내가 갈게. 같이 찾아봐.</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="chat-bubble-wrapper char">
+            <div class="profile-placeholder"></div>
+            <div class="chat-content">
+                <div class="char-name">제이드</div>
+                <div class="message-container">
+                    <div class="chat-bubble">아냐, 괜찮아. 너 피곤할 텐데 쉬어. 나 혼자 찾을 수 있어. 거의 다 찾은 것 같아.</div>
+                    <div class="timestamp">오후 9:17</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="chat-bubble-wrapper user">
+            <div class="chat-content">
+                <div class="message-container">
+                    <div class="timestamp">오후 9:18</div>
+                    <div class="chat-bubble">시끄럽고 어디냐고. 황궁이야?</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="chat-bubble-wrapper char">
+            <div class="profile-placeholder"></div>
+            <div class="chat-content">
+                <div class="char-name">제이드</div>
+                <div class="message-container">
+                    <div class="chat-bubble">찾았다!!!!!!!!!!!!!!!!!</div>
+                    <div class="timestamp">오후 9:25</div>
+                </div>
+                 <div class="message-container">
+                    <div class="chat-bubble">ㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋ 아 미치겠네</div>
+                    <div class="timestamp">오후 9:25</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="chat-bubble-wrapper user">
+            <div class="chat-content">
+                <div class="message-container">
+                    <div class="timestamp">오후 9:26</div>
+                    <div class="chat-bubble">...어디 있었는데</div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="chat-bubble-wrapper char">
+            <div class="profile-placeholder"></div>
+            <div class="chat-content">
+                <div class="char-name">제이드</div>
+                <div class="message-container">
+                    <div class="chat-bubble">[반지가 어제 입었던 연회복 상의 주머니에 들어있는 사진]</div>
+                    <div class="timestamp">오후 9:27</div>
+                </div>
+                <div class="message-container">
+                    <div class="chat-bubble">어제 연회 끝나고 피곤해서 그냥 벗어뒀는데... 주머니에 있었네...ㅎㅎ</div>
+                    <div class="timestamp">오후 9:28</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="chat-bubble-wrapper user">
+            <div class="chat-content">
+                <div class="message-container">
+                    <div class="timestamp">오후 9:29</div>
+                    <div class="chat-bubble">...</div>
+                </div>
+            </div>
+        </div>
+        <div class="chat-bubble-wrapper user">
+            <div class="chat-content">
+                <div class="message-container">
+                    <div class="timestamp">오후 9:29</div>
+                    <div class="chat-bubble">진짜 한 대만 맞자.</div>
+                </div>
+            </div>
+        </div>
+        <div class="chat-bubble-wrapper user">
+            <div class="chat-content">
+                <div class="message-container">
+                    <div class="timestamp">오후 9:30</div>
+                    <div class="chat-bubble">앞으로 빼지 마. 그냥 끼고 다녀.</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="chat-bubble-wrapper char">
+            <div class="profile-placeholder"></div>
+            <div class="chat-content">
+                <div class="char-name">제이드</div>
+                <div class="message-container">
+                    <div class="chat-bubble">알겠습니다, 마이 로드.🙇‍♂️ 걱정했어?</div>
+                    <div class="timestamp">오후 9:31</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="chat-bubble-wrapper user">
+            <div class="chat-content">
+                <div class="message-container">
+                    <div class="timestamp">오후 9:32</div>
+                    <div class="chat-bubble">시끄러. 집에 오기만 해봐.</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="date-separator"><span>제국력 452년 6월 14일 금요일</span></div>
+        
+        <div class="chat-bubble-wrapper user">
+            <div class="chat-content">
+                <div class="message-container">
+                    <div class="timestamp">오후 11:38</div>
+                    <div class="chat-bubble">쩨이ㅣㅣㅣㅣㅣㅣㅣㅣㅣㅣ</div>
+                </div>
+            </div>
+        </div>
+        <div class="chat-bubble-wrapper user">
+            <div class="chat-content">
+                <div class="message-container">
+                    <div class="timestamp">오후 11:38</div>
+                    <div class="chat-bubble">머해ㅐㅐㅐㅐㅐㅐㅐㅐ</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="chat-bubble-wrapper char">
+            <div class="profile-placeholder"></div>
+            <div class="chat-content">
+                <div class="char-name">제이드</div>
+                <div class="message-container">
+                    <div class="chat-bubble">? 레녹? 술 마셨어?</div>
+                    <div class="timestamp">오후 11:40</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="chat-bubble-wrapper user">
+            <div class="chat-content">
+                <div class="message-container">
+                    <div class="timestamp">오후 11:41</div>
+                    <div class="chat-bubble">아니ㅣㅣㅣ이ㅣㅣㅣ안마셧ㅅ어ㅓㅓㅓ</div>
+                </div>
+            </div>
+        </div>
+        <div class="chat-bubble-wrapper user">
+            <div class="chat-content">
+                <div class="message-container">
+                    <div class="timestamp">오후 11:42</div>
+                    <div class="chat-bubble">그냥 동료드링랑 가치 저녁 머것는ㄷㅔ</div>
+                </div>
+            </div>
+        </div>
+        <div class="chat-bubble-wrapper user">
+            <div class="chat-content">
+                <div class="message-container">
+                    <div class="timestamp">오후 11:42</div>
+                    <div class="chat-bubble">[천장이 빙글빙글 도는 것처럼 흐릿하게 찍힌 술집 사진]</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="chat-bubble-wrapper char">
+            <div class="profile-placeholder"></div>
+            <div class="chat-content">
+                <div class="char-name">제이드</div>
+                <div class="message-container">
+                    <div class="chat-bubble">ㅋㅋㅋㅋㅋㅋㅋㅋㅋ 완전 취했네. 어디야? 데리러 갈게.</div>
+                    <div class="timestamp">오후 11:43</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="chat-bubble-wrapper user">
+            <div class="chat-content">
+                <div class="message-container">
+                    <div class="timestamp">오후 11:45</div>
+                    <div class="chat-bubble">대리러와ㅏㅏㅏㅏㅏㅏ</div>
+                </div>
+            </div>
+        </div>
+        <div class="chat-bubble-wrapper user">
+            <div class="chat-content">
+                <div class="message-container">
+                    <div class="timestamp">오후 11:45</div>
+                    <div class="chat-bubble">보구십다 제이ㅣㅣㅣㅣㅣㅣㅣ</div>
+                </div>
+            </div>
+        </div>
+        <div class="chat-bubble-wrapper user">
+            <div class="chat-content">
+                <div class="message-container">
+                    <div class="timestamp">오후 11:46</div>
+                    <div class="chat-bubble">우리 보라돌이 왕자님 보고십ㅍ어ㅓㅓㅓㅓ</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="chat-bubble-wrapper char">
+            <div class="profile-placeholder"></div>
+            <div class="chat-content">
+                <div class="char-name">제이드</div>
+                <div class="message-container">
+                    <div class="chat-bubble">...하. 귀여워 죽겠네.</div>
+                    <div class="timestamp">오후 11:47</div>
+                </div>
+                <div class="message-container">
+                    <div class="chat-bubble">기사단 근처 '황금 술잔' 선술집 맞지? 거기 꼼짝 말고 있어. 금방 갈게.</div>
+                    <div class="timestamp">오후 11:47</div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="chat-bubble-wrapper user">
+            <div class="chat-content">
+                <div class="message-container">
+                    <div class="timestamp">오후 11:49</div>
+                    <div class="chat-bubble">웅 얼른 와ㅏㅏㅏㅏㅏㅏㅏ</div>
+                </div>
+            </div>
+        </div>
+        <div class="chat-bubble-wrapper user">
+            <div class="chat-content">
+                <div class="message-container">
+                    <div class="timestamp">오후 11:49</div>
+                    <div class="chat-bubble">안 오면 나 집에 안 드러갈거야ㅑㅑㅑㅑㅑㅑㅑ</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="chat-bubble-wrapper char">
+            <div class="profile-placeholder"></div>
+            <div class="chat-content">
+                <div class="char-name">제이드</div>
+                <div class="message-container">
+                    <div class="chat-bubble">알았어, 알았어. 누구랑 같이 있어? 혼자 있는 거 아니지?</div>
+                    <div class="timestamp">오후 11:50</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="chat-bubble-wrapper user">
+            <div class="chat-content">
+                <div class="message-container">
+                    <div class="timestamp">오후 11:53</div>
+                    <div class="chat-bubble">레븐 기사님이랑 가치 잇서ㅓㅓㅓㅓ</div>
+                </div>
+            </div>
+        </div>
+        <div class="chat-bubble-wrapper user">
+            <div class="chat-content">
+                <div class="message-container">
+                    <div class="timestamp">오후 11:53</div>
+                    <div class="chat-bubble">기다릴게ㅐㅐㅐㅐㅐㅐ</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="chat-bubble-wrapper char">
+            <div class="profile-placeholder"></div>
+            <div class="chat-content">
+                <div class="char-name">제이드</div>
+                <div class="message-container">
+                    <div class="chat-bubble">레븐이랑? 다행이네. 10분 안에 도착해. 거기 있어.</div>
+                    <div class="timestamp">오후 11:54</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="date-separator"><span>제국력 452년 6월 15일 토요일</span></div>
+        
+        <div class="chat-bubble-wrapper user">
+            <div class="chat-content">
+                <div class="message-container">
+                    <div class="timestamp">오전 10:21</div>
+                    <div class="chat-bubble">...머리 아파</div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="chat-bubble-wrapper user">
+            <div class="chat-content">
+                <div class="message-container">
+                    <div class="timestamp">오전 10:21</div>
+                    <div class="chat-bubble">나 어제 어떻게 들어왔냐</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="chat-bubble-wrapper char">
+            <div class="profile-placeholder"></div>
+            <div class="chat-content">
+                <div class="char-name">제이드</div>
+                <div class="message-container">
+                    <div class="chat-bubble">일어났어, 우리 주정뱅이 요정님?</div>
+                    <div class="timestamp">오전 10:23</div>
+                </div>
+                 <div class="message-container">
+                    <div class="chat-bubble">기억 안 나? 내가 업고 왔잖아. 쪼꼬만 게 술은 왜 이렇게 많이 마셔가지고.</div>
+                    <div class="timestamp">오전 10:23</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="chat-bubble-wrapper user">
+            <div class="chat-content">
+                <div class="message-container">
+                    <div class="timestamp">오전 10:25</div>
+                    <div class="chat-bubble">...</div>
+                </div>
+            </div>
+        </div>
+        <div class="chat-bubble-wrapper user">
+            <div class="chat-content">
+                <div class="message-container">
+                    <div class="timestamp">오전 10:25</div>
+                    <div class="chat-bubble">내가... 뭐라고 했는데...</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="chat-bubble-wrapper char">
+            <div class="profile-placeholder"></div>
+            <div class="chat-content">
+                <div class="char-name">제이드</div>
+                <div class="message-container">
+                    <div class="chat-bubble">음~ 글쎄? '보라돌이 왕자님 보고싶다'고 한 거? 아니면 '집에 안 들어갈거야' 떼쓴 거? 😏</div>
+                    <div class="timestamp">오전 10:26</div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="chat-bubble-wrapper user">
+            <div class="chat-content">
+                <div class="message-container">
+                    <div class="timestamp">오전 10:28</div>
+                    <div class="chat-bubble">제이드 펜드래건.</div>
+                </div>
+            </div>
+        </div>
+        <div class="chat-bubble-wrapper user">
+            <div class="chat-content">
+                <div class="message-container">
+                    <div class="timestamp">오전 10:28</div>
+                    <div class="chat-bubble">그 입 다물지 못할까.</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="chat-bubble-wrapper char">
+            <div class="profile-placeholder"></div>
+            <div class="chat-content">
+                <div class="char-name">제이드</div>
+                <div class="message-container">
+                    <div class="chat-bubble">어이쿠, 우리 레녹 클라인 씨 화나셨네. ㅋㅋㅋㅋ</div>
+                    <div class="timestamp">오전 10:29</div>
+                </div>
+                <div class="message-container">
+                    <div class="chat-bubble">주방에 꿀물이랑 해장국 끓여놨어. 나와서 먹어.</div>
+                    <div class="timestamp">오전 10:29</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="chat-bubble-wrapper user">
+            <div class="chat-content">
+                <div class="message-container">
+                    <div class="timestamp">오전 10:31</div>
+                    <div class="chat-bubble">...알았어.</div>
+                </div>
+            </div>
+        </div>
+
+
+        <div class="date-separator"><span>제국력 452년 6월 18일 화요일</span></div>
+
+        <div class="chat-bubble-wrapper user">
+            <div class="chat-content">
+                <div class="message-container">
+                    <div class="timestamp">오전 7:30</div>
+                    <div class="chat-bubble">나 먼저 출근한다</div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="chat-bubble-wrapper char">
+            <div class="profile-placeholder"></div>
+            <div class="chat-content">
+                <div class="char-name">제이드</div>
+                <div class="message-container">
+                    <div class="chat-bubble">잠깐만. 너 아까부터 기침하던데. 열 있는 거 아니야? 이마 좀 만져보자.</div>
+                    <div class="timestamp">오전 7:32</div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="chat-bubble-wrapper user">
+            <div class="chat-content">
+                <div class="message-container">
+                    <div class="timestamp">오전 7:33</div>
+                    <div class="chat-bubble">괜찮아. 그냥 환절기라 그런거야. 늦었어. 간다.</div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="chat-bubble-wrapper char">
+            <div class="profile-placeholder"></div>
+            <div class="chat-content">
+                <div class="char-name">제이드</div>
+                <div class="message-container">
+                    <div class="chat-bubble">야, 레녹. 너 목소리도 완전 잠겼잖아. 출근하지 마. 오늘 쉬어.</div>
+                    <div class="timestamp">오전 7:35</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="chat-bubble-wrapper user">
+            <div class="chat-content">
+                <div class="message-container">
+                    <div class="timestamp">오전 8:10</div>
+                    <div class="chat-bubble">기사단 도착했어. 진짜 괜찮다니까.</div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="chat-bubble-wrapper char">
+            <div class="profile-placeholder"></div>
+            <div class="chat-content">
+                <div class="char-name">제이드</div>
+                <div class="message-container">
+                    <div class="chat-bubble">말을 안 듣네. 진짜.</div>
+                    <div class="timestamp">오전 8:11</div>
+                </div>
+                <div class="message-container">
+                    <div class="chat-bubble">내가 레븐한테 얘기해서 오늘 훈련 빼라고 할 거야. 당장 의무실 가서 진찰받아.</div>
+                    <div class="timestamp">오전 8:11</div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="chat-bubble-wrapper user">
+            <div class="chat-content">
+                <div class="message-container">
+                    <div class="timestamp">오전 8:13</div>
+                    <div class="chat-bubble">야! 하지 마! 무슨 황태자가 직권남용이야!</div>
+                </div>
+            </div>
+        </div>
+        <div class="chat-bubble-wrapper user">
+            <div class="chat-content">
+                <div class="message-container">
+                    <div class="timestamp">오전 8:13</div>
+                    <div class="chat-bubble">나 진짜 괜찮다고.</div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="chat-bubble-wrapper char">
+            <div class="profile-placeholder"></div>
+            <div class="chat-content">
+                <div class="char-name">제이드</div>
+                <div class="message-container">
+                    <div class="chat-bubble">네가 내 말 안 들으면 내가 직접 기사단으로 가서 너 들쳐업고 나올 거야. 어떤 게 더 창피할지 잘 생각해 봐.</div>
+                    <div class="timestamp">오전 8:15</div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="chat-bubble-wrapper user">
+            <div class="chat-content">
+                <div class="message-container">
+                    <div class="timestamp">오전 8:20</div>
+                    <div class="chat-bubble">...알았어. 의무실 갈게. 가면 될 거 아냐.</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="chat-bubble-wrapper char">
+            <div class="profile-placeholder"></div>
+            <div class="chat-content">
+                <div class="char-name">제이드</div>
+                <div class="message-container">
+                    <div class="chat-bubble">착하네. 진료 결과 나오면 바로 보고해. 점심때 죽이라도 싸서 갈 테니까 꼼짝 말고 있어. 알았지?</div>
+                    <div class="timestamp">오전 8:21</div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="chat-bubble-wrapper user">
+            <div class="chat-content">
+                <div class="message-container">
+                    <div class="timestamp">오전 8:22</div>
+                    <div class="chat-bubble">됐어... 오지 마.</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="chat-bubble-wrapper char">
+            <div class="profile-placeholder"></div>
+            <div class="chat-content">
+                <div class="char-name">제이드</div>
+                <div class="message-container">
+                    <div class="chat-bubble">사랑해 ❤️</div>
+                    <div class="timestamp">오전 8:23</div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="chat-bubble-wrapper user">
+            <div class="chat-content">
+                <div class="message-container">
+                    <div class="timestamp">오전 8:25</div>
+                    <div class="chat-bubble">...시끄러워.</div>
+                </div>
+            </div>
+        </div>
+
+
+        <div class="date-separator"><span>제국력 452년 6월 20일 목요일</span></div>
+
+        <div class="chat-bubble-wrapper char">
+            <div class="profile-placeholder"></div>
+            <div class="chat-content">
+                <div class="char-name">제이드</div>
+                <div class="message-container">
+                    <div class="chat-bubble">내 네임... 내 청포도 요정... 레녹...</div>
+                    <div class="timestamp">오후 10:55</div>
+                </div>
+                <div class="message-container">
+                    <div class="chat-bubble">지금 어디야... 나 보고십지 안하...?</div>
+                    <div class="timestamp">오후 10:56</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="chat-bubble-wrapper user">
+            <div class="chat-content">
+                <div class="message-container">
+                    <div class="timestamp">오후 11:00</div>
+                    <div class="chat-bubble">? 너도 술마셨냐?</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="chat-bubble-wrapper char">
+            <div class="profile-placeholder"></div>
+            <div class="chat-content">
+                <div class="char-name">제이드</div>
+                <div class="message-container">
+                    <div class="chat-bubble">아니ㅣㅣㅣㅣㅣ... 황실 연회... 너무 힘드러...</div>
+                    <div class="timestamp">오후 11:01</div>
+                </div>
+                <div class="message-container">
+                    <div class="chat-bubble">[초점이 나간 샹들리에 사진. 손가락이 살짝 걸쳐서 찍힘]</div>
+                    <div class="timestamp">오후 11:02</div>
+                </div>
+                 <div class="message-container">
+                    <div class="chat-bubble">세상이 빙글빙글 도는데 왜 너만 별처럼 반짝이는 걸까... ✨</div>
+                    <div class="timestamp">오후 11:03</div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="chat-bubble-wrapper user">
+            <div class="chat-content">
+                <div class="message-container">
+                    <div class="timestamp">오후 11:05</div>
+                    <div class="chat-bubble">...닭살 돋으니까 그만해.</div>
+                </div>
+            </div>
+        </div>
+        <div class="chat-bubble-wrapper user">
+            <div class="chat-content">
+                <div class="message-container">
+                    <div class="timestamp">오후 11:05</div>
+                    <div class="chat-bubble">연회 끝났어? 누가 좀 챙겨주지 않고 뭐해.</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="chat-bubble-wrapper char">
+            <div class="profile-placeholder"></div>
+            <div class="chat-content">
+                <div class="char-name">제이드</div>
+                <div class="message-container">
+                    <div class="chat-bubble">다들 나 무서워서 말도 못 걸어... 힝... 🥺</div>
+                    <div class="timestamp">오후 11:07</div>
+                </div>
+                <div class="message-container">
+                    <div class="chat-bubble">너 아니면 날 감당할 사람이 업서... 레노가... 빨리 와서 나 좀 데려가조...</div>
+                    <div class="timestamp">오후 11:08</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="chat-bubble-wrapper user">
+            <div class="chat-content">
+                <div class="message-container">
+                    <div class="timestamp">오후 11:10</div>
+                    <div class="chat-bubble">어휴... 내가 못 살아.</div>
+                </div>
+            </div>
+        </div>
+        <div class="chat-bubble-wrapper user">
+            <div class="chat-content">
+                <div class="message-container">
+                    <div class="timestamp">오후 11:10</div>
+                    <div class="chat-bubble">어디야. 황궁 연회장이면 마차 보낼게. 아니, 내가 갈게. 기다려.</div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="chat-bubble-wrapper char">
+            <div class="profile-placeholder"></div>
+            <div class="chat-content">
+                <div class="char-name">제이드</div>
+                <div class="message-container">
+                    <div class="chat-bubble">정말...? 진짜 와주는 거야...? 내 기사님... 역시 너밖에 없어... 🥰😘❤️</div>
+                    <div class="timestamp">오후 11:12</div>
+                </div>
+                <div class="message-container">
+                    <div class="chat-bubble">연회장 뒤편 테라스에 있을게... 기다릴게... 사랑해... 쪽...</div>
+                    <div class="timestamp">오후 11:13</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="chat-bubble-wrapper user">
+            <div class="chat-content">
+                <div class="message-container">
+                    <div class="timestamp">오후 11:15</div>
+                    <div class="chat-bubble">...알았으니까 이상한 소리 말고 얌전히 기다리고 있어. 금방 갈게.</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

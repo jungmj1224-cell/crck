@@ -1,0 +1,540 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>썸원 - 레녹 & 제이드</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Nanum+Myeongjo:wght@400;700&family=Gowun+Dodum&display=swap');
+
+        :root {
+            --accent-color: #e96d71;
+            --text-color: #333;
+            --primary-color: #5c5c5c;
+            --background-color: #f0f0f0;
+            --secondary-color: #f5f5f5;
+            --frame-background: #faf8f2;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            background-color: var(--background-color);
+            font-family: 'Gowun Dodum', sans-serif;
+            color: var(--text-color);
+        }
+
+        .mobile-frame {
+            width: 390px;
+            height: 720px;
+            border: 6px solid black;
+            border-radius: 30px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+            background-color: var(--frame-background);
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .page {
+            display: none;
+            flex-direction: column;
+            height: calc(100% - 65px); /* nav-bar height */
+            width: 100%;
+            overflow: hidden;
+        }
+        .page.active {
+            display: flex;
+        }
+        
+        .content-area {
+            flex-grow: 1;
+            padding: 0 25px;
+            overflow-y: auto;
+            scrollbar-width: none; /* Firefox */
+        }
+        .content-area::-webkit-scrollbar {
+            display: none; /* Safari and Chrome */
+        }
+
+        /* Navigation Bar */
+        .nav-bar {
+            width: 100%;
+            height: 65px;
+            background-color: var(--secondary-color);
+            border-top: 1px solid #e0e0e0;
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            flex-shrink: 0;
+        }
+
+        .nav-button {
+            background: none;
+            border: none;
+            cursor: pointer;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            font-family: 'Gowun Dodum', sans-serif;
+            color: var(--primary-color);
+            font-size: 0.7rem;
+            transition: color 0.2s;
+        }
+
+        .nav-button .icon {
+            font-size: 1.5rem;
+            margin-bottom: 2px;
+        }
+
+        .nav-button.active .icon,
+        .nav-button.active .label {
+            color: var(--accent-color);
+        }
+
+        /* Home Page */
+        #home-page .content-area {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            padding-top: 40px;
+            padding-bottom: 40px;
+        }
+        
+        .heart-icon {
+            font-size: 3rem;
+            color: var(--accent-color);
+            animation: heartbeat 1.5s infinite ease-in-out;
+        }
+
+        @keyframes heartbeat {
+            0%, 100% { transform: scale(1); }
+            10% { transform: scale(0.9); }
+            30% { transform: scale(1.1); }
+            50% { transform: scale(1); }
+            70% { transform: scale(1.05); }
+        }
+
+        .d-day-text {
+            font-size: 1.1rem;
+            color: var(--primary-color);
+            margin-top: 20px;
+        }
+
+        .d-day-count {
+            font-family: 'Nanum Myeongjo', serif;
+            font-size: 4rem;
+            font-weight: 700;
+            color: var(--accent-color);
+            margin: 5px 0 30px;
+        }
+
+        .question-card {
+            background-color: rgba(255, 255, 255, 0.8);
+            border-radius: 12px;
+            padding: 25px;
+            width: 100%;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+        }
+
+        .card-title {
+            font-family: 'Nanum Myeongjo', serif;
+            font-size: 1.2rem;
+            font-weight: 700;
+            margin-bottom: 15px;
+        }
+
+        .card-question {
+            font-size: 1rem;
+            line-height: 1.6;
+            margin-bottom: 25px;
+            min-height: 50px;
+        }
+
+        .answer-button {
+            background-color: var(--accent-color);
+            color: white;
+            border: none;
+            border-radius: 20px;
+            padding: 12px 25px;
+            font-size: 1rem;
+            font-family: 'Gowun Dodum', sans-serif;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+        .answer-button:hover {
+            background-color: #d65a5e;
+        }
+
+        /* History Page */
+        #history-page .content-area {
+            padding-top: 40px;
+        }
+        .history-title {
+            font-family: 'Nanum Myeongjo', serif;
+            font-size: 1.8rem;
+            font-weight: 700;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .question-list {
+            list-style: none;
+            counter-reset: item;
+            padding: 0;
+            margin: 0;
+        }
+
+        .question-list li {
+            background-color: rgba(255, 255, 255, 0.7);
+            padding: 15px 20px;
+            margin-bottom: 10px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background-color 0.2s;
+            display: flex;
+            align-items: center;
+            font-size: 0.95rem;
+            line-height: 1.5;
+        }
+
+        .question-list li:hover {
+            background-color: rgba(255, 255, 255, 1);
+        }
+
+        .question-list li::before {
+            content: counter(item, decimal-leading-zero);
+            counter-increment: item;
+            font-family: 'Nanum Myeongjo', serif;
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: var(--accent-color);
+            margin-right: 15px;
+        }
+
+        /* Answer Page */
+        #answer-page {
+            position: relative;
+        }
+
+        .back-button {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: var(--primary-color);
+            z-index: 10;
+        }
+
+        #answer-page .content-area {
+            padding-top: 70px; /* Make space for back button */
+        }
+        
+        .answer-page-question {
+            font-size: 1.4rem;
+            font-weight: bold;
+            line-height: 1.6;
+            margin-bottom: 8px;
+        }
+
+        .question-meta {
+            font-size: 0.85rem;
+            color: var(--primary-color);
+            margin-bottom: 30px;
+        }
+
+        .answer {
+            margin-bottom: 25px;
+        }
+
+        .answer .name {
+            font-size: 1.05rem;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+
+        .answer .content {
+            font-size: 0.95rem;
+            line-height: 1.7;
+            white-space: pre-wrap;
+        }
+
+        .blurred {
+            filter: blur(5px);
+            transition: filter 0.3s;
+        }
+
+        .user-input .input-area {
+            width: 100%;
+            min-height: 100px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 12px;
+            font-size: 0.95rem;
+            line-height: 1.7;
+            font-family: 'Gowun Dodum', sans-serif;
+            background-color: rgba(255, 255, 255, 0.8);
+            margin-bottom: 15px;
+        }
+        .user-input .input-area:focus {
+            outline: 1px solid var(--accent-color);
+        }
+        
+        .complete-button {
+            display: block;
+            width: 100%;
+            background-color: var(--accent-color);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            padding: 12px;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+        .complete-button:hover {
+            background-color: #d65a5e;
+        }
+
+
+        @media (max-width: 420px) {
+            .mobile-frame {
+                width: 100%;
+                height: 100vh;
+                border: none;
+                border-radius: 0;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="mobile-frame">
+        <!-- Home Page -->
+        <div id="home-page" class="page active">
+            <div class="content-area">
+                <div class="heart-icon">❤️</div>
+                <p class="d-day-text">레녹과 제이드가 연애한지</p>
+                <h1 class="d-day-count">12일째</h1>
+                <div class="question-card">
+                    <h2 class="card-title">오늘의 질문</h2>
+                    <p class="card-question" id="home-question-text"></p>
+                    <button class="answer-button" id="go-to-answer-button">답변하러 가기</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- History Page -->
+        <div id="history-page" class="page">
+            <div class="content-area">
+                <h1 class="history-title">OUR STORY</h1>
+                <ol class="question-list" id="question-list-container">
+                    <!-- Questions will be populated by JavaScript -->
+                </ol>
+            </div>
+        </div>
+
+        <!-- Answer Page -->
+        <div id="answer-page" class="page">
+            <button class="back-button">←</button>
+            <div class="content-area">
+                <p class="answer-page-question" id="answer-question"></p>
+                <p class="question-meta" id="answer-meta"></p>
+
+                <div class="answer" id="user-answer-display" style="display: none;">
+                    <p class="name">레녹</p>
+                    <p class="content" id="user-saved-answer"></p>
+                </div>
+
+                <div class="user-input" id="user-input-area">
+                    <div class="answer">
+                        <p class="name">레녹</p>
+                        <div id="user-answer-input" class="input-area" contenteditable="true"></div>
+                    </div>
+                    <button class="complete-button" id="complete-answer-button">답변 완료</button>
+                </div>
+
+                <div class="answer">
+                    <p class="name">제이드</p>
+                    <p class="content blurred" id="char-answer-content"></p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Navigation Bar -->
+        <div class="nav-bar">
+            <button class="nav-button active" data-page="home-page">
+                <span class="icon">🏠</span>
+                <span class="label">HOME</span>
+            </button>
+            <button class="nav-button" data-page="history-page">
+                <span class="icon">📖</span>
+                <span class="label">OUR STORY</span>
+            </button>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const relationshipStartDate = new Date('0452-05-08T00:00:00');
+            const currentDate = new Date('0452-05-19T08:00:00');
+            
+            const timeDiff = currentDate.getTime() - relationshipStartDate.getTime();
+            const dayCount = Math.floor(timeDiff / (1000 * 3600 * 24)) + 1;
+
+            const questionsAndAnswers = [
+                { id: 1, question: "우리 관계를 한 단어로 정의한다면?", charAnswer: "운명. 의심의 여지가 없지." },
+                { id: 2, question: "서로의 첫인상은 어땠나요? 지금은 어떻게 달라졌나요?", charAnswer: "까칠하고 경계심 많은 성기사. 하지만 그 안에 숨겨진 강인함과 곧은 신념이 흥미로웠어. 지금은? 내 세상의 전부. 지켜야 할 단 한 사람." },
+                { id: 3, question: "함께 도망치는 지금, 가장 두려운 것은 무엇인가요?", charAnswer: "내 손이 닿지 않는 곳에서 네가 다시 상처받는 것. 그 생각만으로도 모든 것을 파괴해 버리고 싶을 정도야." },
+                { id: 4, question: "모든 것이 끝나고 평범한 하루를 보낼 수 있다면, 가장 먼저 하고 싶은 것은?", charAnswer: "아무 걱정 없이 네 손을 잡고 제국의 수도를 거닐고 싶어. 네가 좋아하는 청포도를 잔뜩 사서, 가장 햇살이 좋은 곳에서 함께 나눠 먹는 거지." },
+                { id: 5, question: "서로의 몸에 새겨진 '네임'을 처음 발견했을 때의 심정은?", charAnswer: "놀라움보다는 확신. 흩어져 있던 모든 조각들이 제자리를 찾는 기분이었어. 네가 내 사람이라는 명백한 증거를 찾은 거지." },
+                { id: 6, question: "상대방이 가장 사랑스러워 보일 때는 언제인가요?", charAnswer: "멋쩍을 때 뒷목을 만지는 모습. 그리고 내 앞에서 무방비하게 잠든 얼굴을 볼 때. 그 평온한 얼굴을 보면 모든 걸 다해주고 싶어져." },
+                { id: 7, question: "만약 우리가 다른 상황에서, 다른 신분으로 만났다면 어땠을까요?", charAnswer: "어떤 모습이었든, 우리는 결국 서로를 알아보고 이끌렸을 거야. 운명은 모습을 바꿀 뿐, 본질은 변하지 않으니까." },
+                { id: 8, question: "서로에게 가장 고마웠던 순간은 언제인가요?", charAnswer: "그 지옥 같은 곳에서, 내 정체를 알았음에도 불구하고 나를 따라나서기로 결심해 주었을 때. 너의 그 선택이 내게는 세상 전부를 얻은 것과 같았어." },
+                { id: 9, question: "상대방이 좋아하는 것 세 가지를 말해보세요.", charAnswer: "청포도, 검술 훈련, 그리고... 지금은 나라고 해줬으면 좋겠군." },
+                { id: 10, question: "함께 여행하고 싶은 장소가 있다면 어디인가요?", charAnswer: "레제온 제국 북부의 용의 산맥. 그곳에서 진짜 하늘을 보여주고 싶어. 누구의 눈치도 보지 않고 자유롭게." },
+                { id: 11, question: "밸런스 게임: 평생 추격자들에게 쫓기며 함께 살기 vs. 기억을 잃고 안전하게 헤어져 살기", charAnswer: "망설일 필요도 없이 전자. 너 없는 안전은 의미 없어. 세상 끝까지 쫓아온다 해도, 내가 널 지키면 그만이야." },
+                { id: 12, question: "상대방에게서 나는 향기를 표현해본다면?", charAnswer: "새벽의 숲처럼 맑고 청량한 향. 가끔은 달콤한 청포도 향기가 나는 것 같기도 하고. 마음이 편안해지는 향이야." },
+                { id: 13, question: "서로의 가장 큰 강점은 무엇이라고 생각하나요?", charAnswer: "너의 강인함. 꺾일지언정 휘어지지 않는 그 곧은 신념이 너를 가장 빛나게 만들어." },
+                { id: 14, question: "다툼이 생긴다면 어떻게 화해하고 싶나요?", charAnswer: "다툼이라... 상상이 잘 안 가는군. 하지만 만약 그런 일이 생긴다면, 네가 좋아하는 것들을 잔뜩 안겨주고 솔직하게 내 마음을 전할 거야. 네가 풀릴 때까지." },
+                { id: 15, question: "10년 후, 우리는 어떤 모습으로 함께하고 있을까요?", charAnswer: "제국의 황궁, 가장 햇살이 잘 드는 발코니에서 함께 차를 마시고 있겠지. 너는 여전히 내 곁에서 가장 빛나고 있을 거고." },
+                { id: 16, question: "상대방을 생각하면 떠오르는 색깔은 무엇인가요?", charAnswer: "달빛을 머금은 은색. 너의 머리칼 색이기도 하고, 어둠 속에서 유일하게 빛나는 희망 같아서." },
+                { id: 17, question: "서로에게 힘이 되어주는 말 한마디를 해준다면?", charAnswer: "내가 여기 있어. 그러니 아무것도 걱정하지 마." },
+                { id: 18, question: "우리의 운명에 대해 어떻게 생각하나요?", charAnswer: "신이 있다면, 꽤 짓궂은 장난을 친 거겠지. 하지만 그 끝에 너를 준비해뒀다면, 기꺼이 모든 시련을 감수할 수 있어." },
+                { id: 19, question: "상대방이 가장 보고 싶었던 순간은 언제였나요?", charAnswer: "너와 연락이 끊겼던 그 3일. 매 순간이 지옥 같았어. 세상이 무너지는 기분이었지." },
+                { id: 20, question: "서로의 잠자는 모습을 보면 어떤 생각이 드나요?", charAnswer: "이 평화를 깨는 것은 무엇이든 용서하지 않겠다고. 네가 꾸는 모든 꿈이 행복하기를 바라게 돼." },
+                { id: 21, question: "밸런스 게임: 상대방의 모든 고통을 내가 대신 느끼기 vs. 상대방의 모든 기쁨을 내가 대신 느끼기", charAnswer: "모든 고통을 내가. 네가 아파하는 건 단 1초도 견딜 수 없어. 기쁨은 너 혼자 온전히 누려야 해." },
+                { id: 22, question: "함께 있을 때 가장 마음이 편안해지는 순간은?", charAnswer: "내 어깨에 기대어 네가 잠들었을 때. 너의 숨소리를 들으며, 온전히 나를 믿고 있다는 게 느껴지는 그 순간." },
+                { id: 23, question: "상대방에게 나는 어떤 존재이고 싶나요?", charAnswer: "유일한 안식처. 세상 모든 위험으로부터 너를 지켜주는 견고한 성벽." },
+                { id: 24, question: "우리의 이야기가 한 편의 소설이라면, 장르는 무엇일까요?", charAnswer: "위기에서 시작된 운명적인 로맨스 판타지. 물론 해피엔딩이어야만 해." },
+                { id: 25, question: "서로에게 절대 하지 않을 약속 한 가지는?", charAnswer: "너를 혼자 두겠다는 약속. 그건 절대 할 수도, 해서도 안 되는 말이야." },
+                { id: 26, question: "상대방의 어떤 점을 가장 존경하나요?", charAnswer: "자신이 믿는 정의를 위해 모든 것을 내던질 수 있는 용기. 비록 그게 가끔은 나를 불안하게 만들지만, 그게 바로 너다운 거니까." },
+                { id: 27, question: "세상 끝에 단둘이 남겨진다면 어떨 것 같나요?", charAnswer: "오히려 좋을지도. 방해하는 것 없이 온전히 너에게만 집중할 수 있을 테니." },
+                { id: 28, question: "서로에게 불러주고 싶은 노래가 있다면? (가사나 제목)", charAnswer: "제국에 전해지는 오래된 자장가. '어둠이 내려도 별은 너를 비추니, 나의 품에서 평온히 잠들어라.' 뭐, 이런 가사였던가." },
+                { id: 29, question: "상대방의 눈을 보고 있으면 어떤 감정이 드나요?", charAnswer: "내가 가야 할 길이 그 안에 있다는 걸 깨닫게 돼. 빠져나올 수 없는 깊은 호수 같아." },
+                { id: 30, question: "이 모든 역경을 함께 이겨낸 우리에게 해주고 싶은 말은?", charAnswer: "고생했어, 레녹. 이제부터는 행복할 일만 남았어. 내가 그렇게 만들 테니." }
+            ];
+
+            const pages = document.querySelectorAll('.page');
+            const navButtons = document.querySelectorAll('.nav-button');
+            const questionListContainer = document.getElementById('question-list-container');
+            let userAnswers = JSON.parse(localStorage.getItem('userAnswers')) || {};
+            let currentQuestionId = null;
+            
+            // D-day and Home Question setup
+            document.querySelector('.d-day-count').textContent = `${dayCount}일째`;
+            const todaysQuestionIndex = Math.min(dayCount - 1, questionsAndAnswers.length - 1);
+            const todaysQuestion = questionsAndAnswers[todaysQuestionIndex];
+            document.getElementById('home-question-text').textContent = todaysQuestion.question;
+            document.getElementById('go-to-answer-button').addEventListener('click', () => {
+                showAnswerPage(todaysQuestion.id);
+            });
+
+            // Navigation Logic
+            function navigateTo(pageId) {
+                pages.forEach(page => page.classList.remove('active'));
+                document.getElementById(pageId).classList.add('active');
+                navButtons.forEach(button => {
+                    button.classList.toggle('active', button.dataset.page === pageId);
+                });
+            }
+
+            navButtons.forEach(button => {
+                button.addEventListener('click', () => navigateTo(button.dataset.page));
+            });
+
+            // History Page Setup
+            function populateHistory() {
+                questionListContainer.innerHTML = '';
+                questionsAndAnswers.forEach(q => {
+                    const li = document.createElement('li');
+                    li.textContent = q.question;
+                    li.dataset.questionId = q.id;
+                    questionListContainer.appendChild(li);
+                });
+            }
+            
+            questionListContainer.addEventListener('click', (e) => {
+                if(e.target.tagName === 'LI') {
+                    const qId = parseInt(e.target.dataset.questionId, 10);
+                    showAnswerPage(qId);
+                }
+            });
+
+
+            // Answer Page Logic
+            const answerPage = document.getElementById('answer-page');
+            const backButton = answerPage.querySelector('.back-button');
+            const answerQuestion = document.getElementById('answer-question');
+            const answerMeta = document.getElementById('answer-meta');
+            const userAnswerDisplay = document.getElementById('user-answer-display');
+            const userSavedAnswer = document.getElementById('user-saved-answer');
+            const userInputArea = document.getElementById('user-input-area');
+            const userAnswerInput = document.getElementById('user-answer-input');
+            const charAnswerContent = document.getElementById('char-answer-content');
+            const completeButton = document.getElementById('complete-answer-button');
+
+            function showAnswerPage(questionId) {
+                currentQuestionId = questionId;
+                const questionData = questionsAndAnswers.find(q => q.id === questionId);
+                
+                answerQuestion.textContent = questionData.question;
+                answerMeta.textContent = `#${questionData.id}번째 질문`;
+                charAnswerContent.textContent = questionData.charAnswer;
+                userAnswerInput.textContent = '';
+                
+                const savedAnswer = userAnswers[questionId];
+
+                if (savedAnswer) {
+                    userAnswerDisplay.style.display = 'block';
+                    userSavedAnswer.textContent = savedAnswer;
+                    userInputArea.style.display = 'none';
+                    charAnswerContent.classList.remove('blurred');
+                } else {
+                    userAnswerDisplay.style.display = 'none';
+                    userInputArea.style.display = 'block';
+                    charAnswerContent.classList.add('blurred');
+                }
+                
+                navigateTo('answer-page');
+                answerPage.querySelector('.content-area').scrollTop = 0;
+            }
+
+            backButton.addEventListener('click', () => navigateTo('history-page'));
+            
+            completeButton.addEventListener('click', () => {
+                const answerText = userAnswerInput.textContent.trim();
+                if (answerText === '') {
+                    alert('답변을 입력해주세요.');
+                    return;
+                }
+                
+                userAnswers[currentQuestionId] = answerText;
+                localStorage.setItem('userAnswers', JSON.stringify(userAnswers));
+                
+                userSavedAnswer.textContent = answerText;
+                userAnswerDisplay.style.display = 'block';
+                userInputArea.style.display = 'none';
+                charAnswerContent.classList.remove('blurred');
+            });
+            
+            // Initial setup
+            populateHistory();
+        });
+    </script>
+</body>
+</html>

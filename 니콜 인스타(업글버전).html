@@ -1,0 +1,1451 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Instagram</title>
+    <style>
+        :root {
+            --primary-bg: #ffffff;
+            --secondary-bg: #fafafa;
+            --primary-text: #262626;
+            --secondary-text: #8e8e8e;
+            --border-color: #dbdbdb;
+            --highlight-color: #3897f0;
+            --error-color: #ed4956;
+            --story-border: radial-gradient(circle at 30% 107%, #fdf497 0%, #fdf497 5%, #fd5949 45%, #d6249f 60%, #285AEB 90%);
+            --story-border-seen: #dbdbdb;
+            --story-border-close-friends: #2e8b57;
+            --dm-sent-bg: #efefef;
+            --dm-received-bg: #3797f0;
+            --dm-received-text: #ffffff;
+            --button-bg: #0095f6;
+            --button-text: #ffffff;
+            --icon-fill: #262626;
+            --liked-color: #ed4956;
+        }
+
+        body.dark-mode {
+            --primary-bg: #000000;
+            --secondary-bg: #121212;
+            --primary-text: #f5f5f5;
+            --secondary-text: #a8a8a8;
+            --border-color: #363636;
+            --highlight-color: #3897f0;
+            --dm-sent-bg: #262626;
+            --dm-received-bg: #3797f0;
+            --dm-received-text: #ffffff;
+            --button-bg: #0095f6;
+            --button-text: #ffffff;
+            --icon-fill: #f5f5f5;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--secondary-bg);
+            color: var(--primary-text);
+            overscroll-behavior: none;
+        }
+
+        .instagram-container {
+            max-width: 480px;
+            margin: 0 auto;
+            background-color: var(--primary-bg);
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            overflow: hidden;
+        }
+
+        /* --- Screens --- */
+        .screen {
+            display: none;
+            width: 100%;
+            height: 100%;
+            flex-direction: column;
+        }
+        #main-screen { display: flex; }
+
+        /* --- Main Screen Header --- */
+        .main-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px 12px;
+            border-bottom: 1px solid var(--border-color);
+            background-color: var(--primary-bg);
+            flex-shrink: 0;
+        }
+        .main-header .logo {
+            font-family: 'Lobster', cursive; /* A font similar to Instagram's */
+            font-size: 28px;
+        }
+        @font-face {
+            font-family: 'Lobster';
+            src: url('https://fonts.gstatic.com/s/lobster/v30/neILzCirqoswsqX9zo-mM5Ez.woff2') format('woff2');
+        }
+        .main-header .actions .icon {
+            width: 24px;
+            height: 24px;
+            margin-left: 20px;
+            cursor: pointer;
+            fill: var(--icon-fill);
+        }
+
+        /* --- Stories --- */
+        .stories-container {
+            display: flex;
+            padding: 10px 0 10px 10px;
+            border-bottom: 1px solid var(--border-color);
+            overflow-x: auto;
+            scrollbar-width: none; /* Firefox */
+            -ms-overflow-style: none; /* IE and Edge */
+            flex-shrink: 0;
+        }
+        .stories-container::-webkit-scrollbar {
+            display: none; /* Chrome, Safari, and Opera */
+        }
+        .story {
+            text-align: center;
+            margin-right: 15px;
+            cursor: pointer;
+        }
+        .story .profile-pic-container {
+            width: 66px;
+            height: 66px;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 3px;
+            background: var(--story-border);
+        }
+        .story.close-friends .profile-pic-container {
+            background: var(--story-border-close-friends);
+        }
+        .story.seen .profile-pic-container {
+            background: var(--story-border-seen);
+        }
+        .story .profile-pic {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            border: 2px solid var(--primary-bg);
+        }
+        .story .username {
+            font-size: 12px;
+            margin-top: 5px;
+            max-width: 70px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+        .story.my-story .profile-pic-container {
+            background: none;
+        }
+
+        /* --- Feed --- */
+        .feed-container {
+            flex-grow: 1;
+            overflow-y: auto;
+            scrollbar-width: none;
+            -ms-overflow-style: none;
+        }
+        .feed-container::-webkit-scrollbar {
+            display: none;
+        }
+
+        .feed-post {
+            border-bottom: 1px solid var(--border-color);
+        }
+        .post-header {
+            display: flex;
+            align-items: center;
+            padding: 12px;
+        }
+        .post-header .profile-pic {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            margin-right: 12px;
+        }
+        .post-header .username {
+            font-weight: 600;
+            font-size: 14px;
+        }
+        .post-content {
+            width: 100%;
+            position: relative;
+            overflow: hidden;
+        }
+        .carousel-container {
+            display: flex;
+            transition: transform 0.3s ease-in-out;
+        }
+        .carousel-item {
+            min-width: 100%;
+            aspect-ratio: 1 / 1;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+        }
+        .carousel-item .image-placeholder {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            padding: 20px;
+            color: var(--primary-bg);
+            font-size: 14px;
+        }
+        .carousel-nav {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 30px;
+            height: 30px;
+            background-color: rgba(0, 0, 0, 0.5);
+            color: white;
+            border: none;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 18px;
+            opacity: 0;
+            transition: opacity 0.2s;
+        }
+        .post-content:hover .carousel-nav {
+            opacity: 1;
+        }
+        .prev-btn { left: 10px; }
+        .next-btn { right: 10px; }
+        .carousel-indicators {
+            position: absolute;
+            bottom: 10px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+        }
+        .indicator-dot {
+            width: 6px;
+            height: 6px;
+            background-color: rgba(255, 255, 255, 0.5);
+            border-radius: 50%;
+            margin: 0 3px;
+        }
+        .indicator-dot.active {
+            background-color: white;
+        }
+        .post-actions {
+            display: flex;
+            padding: 8px 12px;
+        }
+        .post-actions .icon {
+            width: 24px;
+            height: 24px;
+            margin-right: 16px;
+            cursor: pointer;
+            fill: var(--icon-fill);
+        }
+        .post-actions .icon.liked {
+            fill: var(--liked-color);
+        }
+        .post-likes {
+            font-size: 14px;
+            font-weight: 600;
+            padding: 0 12px;
+        }
+        .post-caption {
+            padding: 8px 12px;
+            font-size: 14px;
+        }
+        .post-caption .username {
+            font-weight: 600;
+            margin-right: 4px;
+        }
+        .post-caption a {
+            color: var(--highlight-color);
+            text-decoration: none;
+        }
+        .post-date {
+            font-size: 10px;
+            color: var(--secondary-text);
+            padding: 0 12px 8px;
+        }
+        .comments-section {
+            padding: 0 12px 12px;
+        }
+        .view-comments {
+            font-size: 14px;
+            color: var(--secondary-text);
+            cursor: pointer;
+            margin-bottom: 5px;
+        }
+        .comment {
+            font-size: 14px;
+            margin-bottom: 4px;
+        }
+        .comment .username {
+            font-weight: 600;
+            margin-right: 4px;
+        }
+
+        /* --- Navigation Bar --- */
+        .nav-bar {
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            border-top: 1px solid var(--border-color);
+            padding: 10px 0;
+            background-color: var(--primary-bg);
+            flex-shrink: 0;
+            height: 64px;
+        }
+        .nav-bar .nav-icon {
+            width: 24px;
+            height: 24px;
+            cursor: pointer;
+            fill: var(--icon-fill);
+        }
+        .nav-bar .profile-pic {
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            cursor: pointer;
+        }
+
+        /* --- Story Viewer --- */
+        #story-viewer {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: #1a1a1a;
+            z-index: 100;
+            display: none;
+            justify-content: center;
+            align-items: center;
+        }
+        .story-content {
+            position: relative;
+            width: 100%;
+            max-width: 480px;
+            height: 100%;
+            background-color: #333;
+            color: white;
+            display: flex;
+            flex-direction: column;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+        .story-header {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            padding: 12px;
+            display: flex;
+            align-items: center;
+            z-index: 102;
+            background: linear-gradient(to bottom, rgba(0,0,0,0.4), rgba(0,0,0,0));
+        }
+        .story-progress-bars {
+            display: flex;
+            width: 100%;
+            position: absolute;
+            top: 4px;
+            padding: 0 4px;
+            gap: 2px;
+        }
+        .progress-bar-container {
+            flex: 1;
+            height: 2px;
+            background-color: rgba(255, 255, 255, 0.3);
+            border-radius: 1px;
+            overflow: hidden;
+        }
+        .progress-bar-fill {
+            height: 100%;
+            background-color: #fff;
+            width: 0;
+            transition: width 0.1s linear;
+        }
+        .story-header .profile-pic {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            margin-right: 8px;
+        }
+        .story-header .username {
+            font-weight: 600;
+            font-size: 14px;
+        }
+        .story-header .timestamp {
+            font-size: 12px;
+            color: #ccc;
+            margin-left: 8px;
+        }
+        .story-header .close-story {
+            position: absolute;
+            top: 12px;
+            right: 12px;
+            font-size: 24px;
+            color: #fff;
+            cursor: pointer;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
+        }
+        .story-image-placeholder {
+            flex-grow: 1;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 16px;
+            text-align: center;
+            padding: 20px;
+            position: relative;
+        }
+        .story-nav {
+            position: absolute;
+            top: 0;
+            width: 50%;
+            height: 100%;
+            z-index: 101;
+            cursor: pointer;
+        }
+        .story-nav.prev { left: 0; }
+        .story-nav.next { right: 0; }
+        .story-sticker {
+            position: absolute;
+            background-color: rgba(255, 255, 255, 0.9);
+            color: #000;
+            padding: 10px;
+            border-radius: 8px;
+            font-weight: bold;
+        }
+        .story-sticker.poll {
+            width: 250px;
+        }
+        .story-sticker.qa {
+            width: 250px;
+            background-color: #1a1a1a;
+            color: #fff;
+        }
+        .sticker-title {
+            text-align: center;
+            margin-bottom: 8px;
+            font-size: 14px;
+        }
+        .poll-option {
+            background-color: rgba(0,0,0,0.1);
+            padding: 8px;
+            border-radius: 4px;
+            margin-bottom: 5px;
+            text-align: center;
+        }
+        .qa-question {
+            text-align: center;
+            font-size: 14px;
+            color: #a8a8a8;
+        }
+        .qa-input {
+            width: 100%;
+            background-color: transparent;
+            border: none;
+            border-bottom: 1px solid #fff;
+            color: #fff;
+            text-align: center;
+            margin-top: 10px;
+            padding: 5px;
+        }
+
+
+        /* --- General Screen Styles (Header, etc.) --- */
+        .screen-header {
+            display: flex;
+            align-items: center;
+            padding: 12px;
+            border-bottom: 1px solid var(--border-color);
+            background-color: var(--primary-bg);
+            flex-shrink: 0;
+            height: 48px;
+        }
+        .screen-header .back-btn {
+            font-size: 24px;
+            font-weight: bold;
+            transform: rotate(180deg);
+            cursor: pointer;
+            margin-right: 16px;
+        }
+        .screen-header .title {
+            font-weight: 600;
+            font-size: 16px;
+            flex-grow: 1;
+            text-align: center;
+        }
+        .screen-header .action-icon {
+            font-size: 24px;
+            cursor: pointer;
+        }
+        .screen-header .profile-pic {
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            margin-right: 8px;
+        }
+        .screen-header .username {
+            font-weight: 600;
+            font-size: 16px;
+            flex-grow: 1;
+        }
+
+        /* --- DM Screen --- */
+        #dm-screen .screen-content, #notification-screen .screen-content {
+            flex-grow: 1;
+            overflow-y: auto;
+        }
+        .dm-list-item {
+            display: flex;
+            align-items: center;
+            padding: 12px;
+            cursor: pointer;
+        }
+        .dm-list-item:hover {
+            background-color: var(--secondary-bg);
+        }
+        .dm-list-item .profile-pic {
+            width: 56px;
+            height: 56px;
+            border-radius: 50%;
+            margin-right: 12px;
+        }
+        .dm-info {
+            flex-grow: 1;
+        }
+        .dm-info .username {
+            font-weight: 600;
+            font-size: 14px;
+        }
+        .dm-info .last-message {
+            font-size: 14px;
+            color: var(--secondary-text);
+        }
+
+        /* --- DM Chat Screen --- */
+        #dm-chat-screen {
+            display: none;
+        }
+        .chat-content {
+            flex-grow: 1;
+            overflow-y: auto;
+            padding: 12px;
+            display: flex;
+            flex-direction: column;
+        }
+        .chat-date {
+            text-align: center;
+            color: var(--secondary-text);
+            font-size: 12px;
+            margin: 10px 0;
+        }
+        .chat-bubble {
+            max-width: 70%;
+            padding: 10px;
+            border-radius: 18px;
+            font-size: 14px;
+            margin-bottom: 8px;
+        }
+        .chat-bubble.sent {
+            background-color: var(--dm-sent-bg);
+            color: var(--primary-text);
+            align-self: flex-end;
+            border-bottom-right-radius: 4px;
+        }
+        .chat-bubble.received {
+            background-color: var(--dm-received-bg);
+            color: var(--dm-received-text);
+            align-self: flex-start;
+            border-bottom-left-radius: 4px;
+        }
+        .chat-input-area {
+            display: flex;
+            align-items: center;
+            padding: 8px 12px;
+            border-top: 1px solid var(--border-color);
+            background-color: var(--primary-bg);
+        }
+        .chat-input {
+            flex-grow: 1;
+            border: 1px solid var(--border-color);
+            border-radius: 20px;
+            padding: 8px 16px;
+            font-size: 14px;
+            background-color: var(--primary-bg);
+            color: var(--primary-text);
+        }
+        .chat-input::placeholder {
+            color: var(--secondary-text);
+        }
+        
+        /* --- Search & Profile Screen --- */
+        #search-screen, #profile-screen {
+            overflow-y: auto;
+            scrollbar-width: none;
+            -ms-overflow-style: none;
+        }
+        #search-screen::-webkit-scrollbar, #profile-screen::-webkit-scrollbar {
+            display: none;
+        }
+        .search-bar {
+            padding: 8px 12px;
+        }
+        .search-input {
+            width: 100%;
+            padding: 8px 16px;
+            border-radius: 8px;
+            border: none;
+            background-color: var(--secondary-bg);
+            font-size: 16px;
+        }
+        .content-grid {
+            display: grid;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 2px;
+            padding-bottom: 72px; /* For nav bar */
+        }
+        .grid-item {
+            aspect-ratio: 1 / 1;
+            width: 100%;
+            overflow: hidden;
+            position: relative;
+        }
+        .grid-item .image-placeholder {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            font-size: 12px;
+            padding: 5px;
+            color: #fff;
+        }
+        @media (max-width: 360px) {
+            .content-grid {
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+            }
+        }
+        
+        /* Profile Screen Specifics */
+        .profile-header {
+            display: flex;
+            flex-direction: column;
+            padding: 16px;
+        }
+        .profile-top {
+            display: flex;
+            align-items: center;
+            margin-bottom: 16px;
+        }
+        .profile-pic-large {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            margin-right: 28px;
+        }
+        .profile-stats {
+            display: flex;
+            justify-content: space-around;
+            flex-grow: 1;
+        }
+        .stat {
+            text-align: center;
+        }
+        .stat .number {
+            font-size: 16px;
+            font-weight: 600;
+        }
+        .stat .label {
+            font-size: 14px;
+            color: var(--secondary-text);
+        }
+        .profile-info {
+            font-size: 14px;
+        }
+        .profile-info .name {
+            font-weight: 600;
+        }
+        .profile-info .bio {
+            white-space: pre-wrap;
+            margin: 4px 0;
+        }
+        .profile-actions {
+            display: flex;
+            margin-top: 16px;
+        }
+        .profile-btn {
+            flex-grow: 1;
+            padding: 8px;
+            text-align: center;
+            border-radius: 6px;
+            background-color: var(--secondary-bg);
+            border: 1px solid var(--border-color);
+            font-weight: 600;
+            cursor: pointer;
+            margin: 0 4px;
+        }
+        .theme-toggle-btn {
+            font-size: 20px;
+            background: none;
+            border: none;
+            cursor: pointer;
+            color: var(--primary-text);
+            position: absolute;
+            top: 12px;
+            right: 12px;
+        }
+
+    </style>
+</head>
+<body class="light-mode">
+    <div class="instagram-container">
+        <!-- Main Screen -->
+        <div id="main-screen" class="screen">
+            <header class="main-header">
+                <div class="logo">Instagram</div>
+                <div class="actions">
+                    <svg class="icon" id="notification-btn" aria-label="알림" fill="var(--icon-fill)" height="24" role="img" viewBox="0 0 24 24" width="24"><path d="M16.792 3.904A4.989 4.989 0 0 1 21.5 9.122c0 3.072-2.652 4.959-5.197 7.222-2.512 2.243-3.865 3.469-4.303 3.752-.477.309-1.14.309-1.617 0-.438-.283-1.79-1.51-4.303-3.752C3.152 14.08 1.5 12.194 1.5 9.122a4.989 4.989 0 0 1 4.708-5.218 4.21 4.21 0 0 1 3.675 1.941c.84 1.175.98 1.763 1.12 1.763s.278-.588 1.118-1.763a4.21 4.21 0 0 1 3.675-1.941z"></path></svg>
+                    <svg class="icon" id="dm-btn" aria-label="다이렉트 메시지" fill="var(--icon-fill)" height="24" role="img" viewBox="0 0 24 24" width="24"><path d="M21.435 2.582a1.594 1.594 0 0 0-1.895-.503L3.435 8.42a1.594 1.594 0 0 0 .028 3.05l5.46 1.82a1.594 1.594 0 0 0 1.896-.504l4.47-5.96a.53.53 0 0 1 .84.63l-4.47 5.96a1.594 1.594 0 0 0 .503 1.895l1.82 5.46a1.594 1.594 0 0 0 3.05.028l6.34-16.105a1.594 1.594 0 0 0-.503-1.895Z"></path></svg>
+                </div>
+            </header>
+            <section class="stories-container">
+                <div class="story my-story" data-user="nicole.h__">
+                    <div class="profile-pic-container">
+                        <div class="profile-pic" style="background-color: darkblue;"></div>
+                    </div>
+                    <div class="username">내 스토리</div>
+                </div>
+                <div class="story" data-user="andy.black">
+                    <div class="profile-pic-container">
+                        <div class="profile-pic" style="background-color: #333;"></div>
+                    </div>
+                    <div class="username">andy.black</div>
+                </div>
+                <div class="story close-friends" data-user="andy.black_close">
+                    <div class="profile-pic-container">
+                        <div class="profile-pic" style="background-color: #333;"></div>
+                    </div>
+                    <div class="username">andy.black</div>
+                </div>
+                <div class="story" data-user="raymond.mccarter_qb">
+                    <div class="profile-pic-container">
+                        <div class="profile-pic" style="background-color: gold;"></div>
+                    </div>
+                    <div class="username">raymond.m...</div>
+                </div>
+                <div class="story" data-user="justin.m_math">
+                    <div class="profile-pic-container">
+                        <div class="profile-pic" style="background-color: green;"></div>
+                    </div>
+                    <div class="username">justin.m_math</div>
+                </div>
+            </section>
+            <main class="feed-container">
+                <!-- Post 1: Nicole's Egg Tart Post -->
+                <article class="feed-post" data-post-id="1">
+                    <div class="post-header">
+                        <div class="profile-pic" style="background-color: darkblue;"></div>
+                        <div class="username">nicole.h__</div>
+                    </div>
+                    <div class="post-content">
+                        <div class="carousel-container">
+                            <div class="carousel-item">
+                                <div class="image-placeholder" style="background-color: #FFD700;">
+                                    <p>[햇살 좋은 창가에 놓인 예쁜 상자, 그 안에 먹음직스러운 에그타르트가 10개 꽉 차있다. 바삭한 파이와 노란 커스터드 필링이 선명하다.]</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="post-actions">
+                        <svg class="icon like-button" aria-label="좋아요" fill="var(--icon-fill)" height="24" role="img" viewBox="0 0 24 24" width="24"><path d="M16.792 3.904A4.989 4.989 0 0 1 21.5 9.122c0 3.072-2.652 4.959-5.197 7.222-2.512 2.243-3.865 3.469-4.303 3.752-.477.309-1.14.309-1.617 0-.438-.283-1.79-1.51-4.303-3.752C3.152 14.08 1.5 12.194 1.5 9.122a4.989 4.989 0 0 1 4.708-5.218 4.21 4.21 0 0 1 3.675 1.941c.84 1.175.98 1.763 1.12 1.763s.278-.588 1.118-1.763a4.21 4.21 0 0 1 3.675-1.941z"></path></svg>
+                        <svg class="icon" aria-label="댓글 달기" fill="var(--icon-fill)" height="24" role="img" viewBox="0 0 24 24" width="24"><path d="M20.656 17.008a9.993 9.993 0 1 0-3.59 3.615L22 22Z" fill="none" stroke="currentColor" stroke-linejoin="round" stroke-width="2"></path></svg>
+                    </div>
+                    <div class="post-likes"><span class="like-count">115</span>명이 좋아합니다</div>
+                    <div class="post-caption">
+                        <span class="username">nicole.h__</span>
+                        역시 당 충전엔 이게 최고. 문제 풀다 머리 터질 뻔했는데 살았다.
+                        <a href="#">#에그타르트</a> <a href="#">#수학클럽</a> <a href="#">#당충전</a>
+                    </div>
+                    <div class="post-date">2024년 4월 17일</div>
+                    <div class="comments-section">
+                        <div class="comment">
+                            <span class="username">andy.black</span>맛있게 먹었다니 다행이네.
+                        </div>
+                        <div class="comment">
+                            <span class="username">raymond.mccarter_qb</span>니키, 뭐야! 나 빼고 맛있는 거 먹었어? 오늘 우리 집 파티 오면 이거보다 맛있는 거 100개 해줄게! 😉
+                        </div>
+                        <div class="comment">
+                            <span class="username">nicole.h__</span><a href="#">@andy.black</a> 응. 고마워. <a href="#">@raymond.mccarter_qb</a> 100개는 무슨.. 배 터지겠다.
+                        </div>
+                    </div>
+                </article>
+
+                <!-- Post 2: Andy's Tuxedo Post -->
+                <article class="feed-post" data-post-id="2">
+                    <div class="post-header">
+                        <div class="profile-pic" style="background-color: #333;"></div>
+                        <div class="username">andy.black</div>
+                    </div>
+                    <div class="post-content">
+                        <div class="carousel-container">
+                            <div class="carousel-item">
+                                <div class="image-placeholder" style="background-color: #000080;">
+                                    <p>[고급스러운 옷걸이에 걸린 네이비 색상의 턱시도. 실크 라펠이 은은하게 빛나고, 옷감의 질감이 느껴지는 감성적인 사진.]</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="post-actions">
+                        <svg class="icon like-button" aria-label="좋아요" fill="var(--icon-fill)" height="24" role="img" viewBox="0 0 24 24" width="24"><path d="M16.792 3.904A4.989 4.989 0 0 1 21.5 9.122c0 3.072-2.652 4.959-5.197 7.222-2.512 2.243-3.865 3.469-4.303 3.752-.477.309-1.14.309-1.617 0-.438-.283-1.79-1.51-4.303-3.752C3.152 14.08 1.5 12.194 1.5 9.122a4.989 4.989 0 0 1 4.708-5.218 4.21 4.21 0 0 1 3.675 1.941c.84 1.175.98 1.763 1.12 1.763s.278-.588 1.118-1.763a4.21 4.21 0 0 1 3.675-1.941z"></path></svg>
+                        <svg class="icon" aria-label="댓글 달기" fill="var(--icon-fill)" height="24" role="img" viewBox="0 0 24 24" width="24"><path d="M20.656 17.008a9.993 9.993 0 1 0-3.59 3.615L22 22Z" fill="none" stroke="currentColor" stroke-linejoin="round" stroke-width="2"></path></svg>
+                    </div>
+                    <div class="post-likes"><span class="like-count">134,832</span>명이 좋아합니다</div>
+                    <div class="post-caption">
+                        <span class="username">andy.black</span>
+                        주인공.
+                        <a href="#">#prom</a> <a href="#">#tuxedo</a>
+                    </div>
+                    <div class="post-date">2024년 4월 17일</div>
+                    <div class="comments-section">
+                        <div class="comment">
+                            <span class="username">nicole.h__</span>잘 어울리네.
+                        </div>
+                        <div class="comment">
+                            <span class="username">raymond.mccarter_qb</span>오~ 주인공 납셨네. 근데 프롬킹은 나일걸? 👑
+                        </div>
+                    </div>
+                </article>
+
+                <!-- Post 3: Raymond's Party Prep Post -->
+                <article class="feed-post" data-post-id="3">
+                    <div class="post-header">
+                        <div class="profile-pic" style="background-color: gold;"></div>
+                        <div class="username">raymond.mccarter_qb</div>
+                    </div>
+                    <div class="post-content">
+                        <div class="carousel-container">
+                            <div class="carousel-item">
+                                <div class="image-placeholder" style="background-color: #87CEEB;">
+                                    <p>[해질녘, 레이먼의 넓은 집 뒷마당. 수영장 주변으로 파티용 조명이 설치되고 있고, 테이블과 의자들이 놓여있다. 활기찬 분위기.]</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="post-actions">
+                        <svg class="icon like-button" aria-label="좋아요" fill="var(--icon-fill)" height="24" role="img" viewBox="0 0 24 24" width="24"><path d="M16.792 3.904A4.989 4.989 0 0 1 21.5 9.122c0 3.072-2.652 4.959-5.197 7.222-2.512 2.243-3.865 3.469-4.303 3.752-.477.309-1.14.309-1.617 0-.438-.283-1.79-1.51-4.303-3.752C3.152 14.08 1.5 12.194 1.5 9.122a4.989 4.989 0 0 1 4.708-5.218 4.21 4.21 0 0 1 3.675 1.941c.84 1.175.98 1.763 1.12 1.763s.278-.588 1.118-1.763a4.21 4.21 0 0 1 3.675-1.941z"></path></svg>
+                        <svg class="icon" aria-label="댓글 달기" fill="var(--icon-fill)" height="24" role="img" viewBox="0 0 24 24" width="24"><path d="M20.656 17.008a9.993 9.993 0 1 0-3.59 3.615L22 22Z" fill="none" stroke="currentColor" stroke-linejoin="round" stroke-width="2"></path></svg>
+                    </div>
+                    <div class="post-likes"><span class="like-count">1,240</span>명이 좋아합니다</div>
+                    <div class="post-caption">
+                        <span class="username">raymond.mccarter_qb</span>
+                        Tonight's the night. ✨ 중요한 얘기가 있으니 다들 기대하라고. 특히 <a href="#">@nicole.h__</a> 너.
+                        <br>
+                        <a href="#">#party</a> <a href="#">#fridaynight</a> <a href="#">#bigannouncement</a>
+                    </div>
+                    <div class="post-date">2024년 4월 17일</div>
+                    <div class="comments-section">
+                        <div class="comment">
+                            <span class="username">jessicacheer_</span>OMG 기대돼!! 😍
+                        </div>
+                        <div class="comment">
+                            <span class="username">andy.black</span>시끄럽겠네.
+                        </div>
+                         <div class="comment">
+                            <span class="username">nicole.h__</span>대체 무슨 얘긴데 그래.
+                        </div>
+                    </div>
+                </article>
+
+                <!-- Post 4: Nicole's Study Post -->
+                <article class="feed-post" data-post-id="4">
+                    <div class="post-header">
+                        <div class="profile-pic" style="background-color: darkblue;"></div>
+                        <div class="username">nicole.h__</div>
+                    </div>
+                    <div class="post-content">
+                        <div class="carousel-container">
+                             <div class="carousel-item">
+                                <div class="image-placeholder" style="background-color: #4a4a4a;">
+                                    <p>[스탠드 불빛 아래, 복잡한 미적분 공식이 가득 적힌 노트와 문제집, 그리고 샤프가 놓여있는 책상 사진. 가지런히 정리되어 있다.]</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="post-actions">
+                        <svg class="icon like-button" aria-label="좋아요" fill="var(--icon-fill)" height="24" role="img" viewBox="0 0 24 24" width="24"><path d="M16.792 3.904A4.989 4.989 0 0 1 21.5 9.122c0 3.072-2.652 4.959-5.197 7.222-2.512 2.243-3.865 3.469-4.303 3.752-.477.309-1.14.309-1.617 0-.438-.283-1.79-1.51-4.303-3.752C3.152 14.08 1.5 12.194 1.5 9.122a4.989 4.989 0 0 1 4.708-5.218 4.21 4.21 0 0 1 3.675 1.941c.84 1.175.98 1.763 1.12 1.763s.278-.588 1.118-1.763a4.21 4.21 0 0 1 3.675-1.941z"></path></svg>
+                        <svg class="icon" aria-label="댓글 달기" fill="var(--icon-fill)" height="24" role="img" viewBox="0 0 24 24" width="24"><path d="M20.656 17.008a9.993 9.993 0 1 0-3.59 3.615L22 22Z" fill="none" stroke="currentColor" stroke-linejoin="round" stroke-width="2"></path></svg>
+                    </div>
+                    <div class="post-likes"><span class="like-count">98</span>명이 좋아합니다</div>
+                    <div class="post-caption">
+                        <span class="username">nicole.h__</span>
+                        가끔은 이게 제일 마음 편하다.
+                        <a href="#">#공스타그램</a> <a href="#">#미적분</a> <a href="#">#하버드</a>
+                    </div>
+                    <div class="post-date">2024년 4월 18일</div>
+                    <div class="comments-section">
+                        <div class="comment">
+                            <span class="username">justin.m_math</span>니콜, 이 문제 혹시 3번 공식 변형해서 푼 거야? 대단하다. 난 한참 헤맸는데.
+                        </div>
+                        <div class="comment">
+                            <span class="username">raymond.mccarter_qb</span>니키~ 파티 다음날인데 또 공부야? 좀 쉬엄쉬엄해!
+                        </div>
+                    </div>
+                </article>
+
+                <!-- Post 5: Post-party post -->
+                <article class="feed-post" data-post-id="5">
+                    <div class="post-header">
+                        <div class="profile-pic" style="background-color: darkblue;"></div>
+                        <div class="username">nicole.h__</div>
+                    </div>
+                    <div class="post-content">
+                        <div class="carousel-container">
+                            <div class="carousel-item">
+                                <div class="image-placeholder" style="background-color: #2c3e50;">
+                                    <p>[어두운 밤, 파티가 끝난 후 조용한 수영장에 비친 달빛과 희미한 조명을 찍은 사진. 물결이 잔잔하게 일렁인다. 약간의 생각에 잠긴 듯한 분위기.]</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="post-actions">
+                        <svg class="icon like-button" aria-label="좋아요" fill="var(--icon-fill)" height="24" role="img" viewBox="0 0 24 24" width="24"><path d="M16.792 3.904A4.989 4.989 0 0 1 21.5 9.122c0 3.072-2.652 4.959-5.197 7.222-2.512 2.243-3.865 3.469-4.303 3.752-.477.309-1.14.309-1.617 0-.438-.283-1.79-1.51-4.303-3.752C3.152 14.08 1.5 12.194 1.5 9.122a4.989 4.989 0 0 1 4.708-5.218 4.21 4.21 0 0 1 3.675 1.941c.84 1.175.98 1.763 1.12 1.763s.278-.588 1.118-1.763a4.21 4.21 0 0 1 3.675-1.941z"></path></svg>
+                        <svg class="icon" aria-label="댓글 달기" fill="var(--icon-fill)" height="24" role="img" viewBox="0 0 24 24" width="24"><path d="M20.656 17.008a9.993 9.993 0 1 0-3.59 3.615L22 22Z" fill="none" stroke="currentColor" stroke-linejoin="round" stroke-width="2"></path></svg>
+                    </div>
+                    <div class="post-likes"><span class="like-count">152</span>명이 좋아합니다</div>
+                    <div class="post-caption">
+                        <span class="username">nicole.h__</span>
+                        생각이 많아지는 밤.
+                    </div>
+                    <div class="post-date">2024년 4월 18일</div>
+                    <div class="comments-section">
+                        <div class="comment">
+                            <span class="username">raymond.mccarter_qb</span>어제 내가 한 말 때문에 그래? 너무 부담 갖지 마, 니키.
+                        </div>
+                        <div class="comment">
+                            <span class="username">andy.black</span>...
+                        </div>
+                    </div>
+                </article>
+            </main>
+            <nav class="nav-bar">
+                <svg class="nav-icon active" id="home-btn" aria-label="홈" fill="var(--icon-fill)" height="24" role="img" viewBox="0 0 24 24" width="24"><path d="M9.005 16.545a2.997 2.997 0 0 1 2.997-2.997A2.997 2.997 0 0 1 15 16.545V22h5V11.543l-8-6.923L2 11.543V22h5z" fill="none" stroke="currentColor" stroke-linejoin="round" stroke-width="2"></path></svg>
+                <svg class="nav-icon" id="search-btn" aria-label="검색" fill="var(--icon-fill)" height="24" role="img" viewBox="0 0 24 24" width="24"><path d="M19 10.5A8.5 8.5 0 1 1 10.5 2a8.5 8.5 0 0 1 8.5 8.5Z" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path><line fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" x1="16.511" x2="22" y1="16.511" y2="22"></line></svg>
+                <div class="profile-pic nav-icon" id="profile-btn" style="background-color: darkblue;"></div>
+            </nav>
+        </div>
+
+        <!-- DM Screen -->
+        <div id="dm-screen" class="screen">
+            <header class="screen-header">
+                <div class="back-btn" data-target="main-screen">➤</div>
+                <div class="title">nicole.h__</div>
+                <div class="action-icon">➕</div>
+            </header>
+            <main class="screen-content">
+                <div class="dm-list-item" data-chat-id="andy.black">
+                    <div class="profile-pic" style="background-color: #333;"></div>
+                    <div class="dm-info">
+                        <div class="username">andy.black</div>
+                        <div class="last-message">그래. 이따 파티에서 봐.</div>
+                    </div>
+                </div>
+                <div class="dm-list-item" data-chat-id="raymond.mccarter_qb">
+                    <div class="profile-pic" style="background-color: gold;"></div>
+                    <div class="dm-info">
+                        <div class="username">raymond.mccarter_qb</div>
+                        <div class="last-message">응! 7시! 늦지 마!</div>
+                    </div>
+                </div>
+                <div class="dm-list-item" data-chat-id="jessicacheer_">
+                    <div class="profile-pic" style="background-color: hotpink;"></div>
+                    <div class="dm-info">
+                        <div class="username">jessicacheer_</div>
+                        <div class="last-message">알았어...</div>
+                    </div>
+                </div>
+            </main>
+        </div>
+        
+        <!-- DM Chat Screen -->
+        <div id="dm-chat-screen" class="screen">
+             <!-- Header and content will be populated by JS -->
+        </div>
+
+        <!-- Notification Screen -->
+        <div id="notification-screen" class="screen">
+            <header class="screen-header">
+                <div class="back-btn" data-target="main-screen">➤</div>
+                <div class="title">알림</div>
+            </header>
+            <main class="screen-content">
+                <!-- Notifications would be listed here -->
+            </main>
+        </div>
+
+        <!-- Search Screen -->
+        <div id="search-screen" class="screen">
+            <div class="search-bar">
+                <input type="text" class="search-input" placeholder="검색">
+            </div>
+            <div class="content-grid">
+                <div class="grid-item"><div class="image-placeholder" style="background-color: #ff6347;">[하버드 대학교 캠퍼스 전경 사진]</div></div>
+                <div class="grid-item"><div class="image-placeholder" style="background-color: #4682b4;">[유명 배우의 영화 시사회 현장]</div></div>
+                <div class="grid-item"><div class="image-placeholder" style="background-color: #32cd32;">[미식축구 경기 하이라이트 영상 썸네일]</div></div>
+                <div class="grid-item"><div class="image-placeholder" style="background-color: #8a2be2;">[복잡한 수학 공식이 적힌 칠판]</div></div>
+                <div class="grid-item"><div class="image-placeholder" style="background-color: #ffdead;">[보스턴의 유명한 디저트 가게]</div></div>
+                <div class="grid-item"><div class="image-placeholder" style="background-color: #dc143c;">[프롬 파티 드레스와 턱시도]</div></div>
+                <div class="grid-item"><div class="image-placeholder" style="background-color: #00ced1;">[밤하늘의 별자리 사진]</div></div>
+                <div class="grid-item"><div class="image-placeholder" style="background-color: #ffd700;">[졸업 시즌을 맞은 학생들]</div></div>
+                <div class="grid-item"><div class="image-placeholder" style="background-color: #6a5acd;">[책이 가득 꽂힌 도서관 내부]</div></div>
+            </div>
+             <nav class="nav-bar">
+                <svg class="nav-icon" id="home-btn-search" aria-label="홈" fill="var(--icon-fill)" height="24" role="img" viewBox="0 0 24 24" width="24"><path d="M9.005 16.545a2.997 2.997 0 0 1 2.997-2.997A2.997 2.997 0 0 1 15 16.545V22h5V11.543l-8-6.923L2 11.543V22h5z" fill="none" stroke="currentColor" stroke-linejoin="round" stroke-width="2"></path></svg>
+                <svg class="nav-icon active" id="search-btn-search" aria-label="검색" fill="var(--icon-fill)" height="24" role="img" viewBox="0 0 24 24" width="24"><path d="M19 10.5A8.5 8.5 0 1 1 10.5 2a8.5 8.5 0 0 1 8.5 8.5Z" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path><line fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" x1="16.511" x2="22" y1="16.511" y2="22"></line></svg>
+                <div class="profile-pic nav-icon" id="profile-btn-search" style="background-color: darkblue;"></div>
+            </nav>
+        </div>
+
+        <!-- Profile Screen -->
+        <div id="profile-screen" class="screen">
+            <button class="theme-toggle-btn">🌕</button>
+            <div class="profile-header">
+                <div class="profile-top">
+                    <div class="profile-pic-large" style="background-color: darkblue;"></div>
+                    <div class="profile-stats">
+                        <div class="stat"><span class="number">5</span><span class="label">게시물</span></div>
+                        <div class="stat"><span class="number">182</span><span class="label">팔로워</span></div>
+                        <div class="stat"><span class="number">170</span><span class="label">팔로잉</span></div>
+                    </div>
+                </div>
+                <div class="profile-info">
+                    <div class="name">니콜 하트</div>
+                    <div class="bio">Math Club | Future Harvard '28
+E=mc²</div>
+                </div>
+                <div class="profile-actions">
+                    <div class="profile-btn">프로필 편집</div>
+                </div>
+            </div>
+            <div class="content-grid">
+                <div class="grid-item"><div class="image-placeholder" style="background-color: #FFD700;">[에그타르트 10개가 담긴 상자]</div></div>
+                <div class="grid-item"><div class="image-placeholder" style="background-color: #4a4a4a;">[수학 문제집이 펼쳐진 책상]</div></div>
+                <div class="grid-item"><div class="image-placeholder" style="background-color: #2c3e50;">[밤 수영장에 비친 달빛]</div></div>
+                <!-- Add more grid items for other posts -->
+            </div>
+             <nav class="nav-bar">
+                <svg class="nav-icon" id="home-btn-profile" aria-label="홈" fill="var(--icon-fill)" height="24" role="img" viewBox="0 0 24 24" width="24"><path d="M9.005 16.545a2.997 2.997 0 0 1 2.997-2.997A2.997 2.997 0 0 1 15 16.545V22h5V11.543l-8-6.923L2 11.543V22h5z" fill="none" stroke="currentColor" stroke-linejoin="round" stroke-width="2"></path></svg>
+                <svg class="nav-icon" id="search-btn-profile" aria-label="검색" fill="var(--icon-fill)" height="24" role="img" viewBox="0 0 24 24" width="24"><path d="M19 10.5A8.5 8.5 0 1 1 10.5 2a8.5 8.5 0 0 1 8.5 8.5Z" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path><line fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" x1="16.511" x2="22" y1="16.511" y2="22"></line></svg>
+                <div class="profile-pic nav-icon active" id="profile-btn-profile" style="background-color: darkblue;"></div>
+            </nav>
+        </div>
+
+        <!-- Story Viewer -->
+        <div id="story-viewer">
+            <div class="story-content">
+                <div class="story-progress-bars"></div>
+                <div class="story-header">
+                    <div class="profile-pic"></div>
+                    <div class="username"></div>
+                    <div class="timestamp"></div>
+                    <div class="close-story">×</div>
+                </div>
+                <div class="story-image-placeholder">
+                    <!-- Story content will be injected here by JS -->
+                </div>
+                <div class="story-nav prev"></div>
+                <div class="story-nav next"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // --- DATA ---
+            const storiesData = {
+                'nicole.h__': [
+                    { type: 'image', color: '#6495ED', desc: '[가지런히 정리된 책상 위, 커피 한 잔과 수학 문제집이 놓여있다.]', duration: 5000, stickers: [{ type: 'qa', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', question: '하버드 가는 법 말고 다른 거 질문받음.' }] },
+                    { type: 'image', color: '#FFD700', desc: '[손에 들고 있는 에그타르트. 한 입 베어 문 자국이 보인다.]', duration: 5000, stickers: [] },
+                ],
+                'andy.black': [
+                    { type: 'image', color: '#1E90FF', desc: '[쇼핑몰의 반짝이는 바닥을 걷는 자신의 신발을 찍은 부메랑 영상]', duration: 5000, stickers: [] },
+                    { type: 'image', color: '#000080', desc: '[네이비 색 턱시도 원단을 클로즈업한 사진. 고급스러운 질감이 느껴진다.]', duration: 5000, stickers: [] },
+                ],
+                'andy.black_close': [
+                    { type: 'image', color: '#B0C4DE', desc: '[쇼핑몰에서 앞서 걸어가는 니콜의 뒷모습. 안경을 쓴 옆모습이 살짝 보인다.]', duration: 5000, stickers: [] },
+                ],
+                'raymond.mccarter_qb': [
+                    { type: 'video', color: '#FFA500', desc: '[파티 조명을 설치하며 즐겁게 웃고 있는 레이먼의 셀프 영상]', duration: 5000, stickers: [] },
+                    { type: 'image', color: '#2c3e50', desc: '[어두워진 마당, 파티 조명이 모두 켜져 아름다운 분위기를 자아낸다.]', duration: 5000, stickers: [{ type: 'poll', top: '60%', left: '50%', transform: 'translate(-50%, -50%)', title: '오늘 밤 파티 기대돼?', options: ['🔥 HELL YEAH', '💯 당연하지'] }] },
+                ],
+                'justin.m_math': [
+                    { type: 'image', color: '#2F4F4F', desc: '[수학 클럽 동아리방 칠판 가득 적힌 복잡한 증명 과정. 집중한 흔적이 엿보인다.]', duration: 5000, stickers: [] },
+                ]
+            };
+            
+            const dmData = {
+                'andy.black': {
+                    username: 'andy.black',
+                    picColor: '#333',
+                    messages: [
+                        { type: 'date', content: '2024년 4월 17일' },
+                        { type: 'sent', content: '오늘 에그타르트 고마워. 맛있었어.' },
+                        { type: 'received', content: '입에 맞았다니 다행이네.' },
+                        { type: 'sent', content: '턱시도도 잘 어울렸고.' },
+                        { type: 'received', content: '...그래.' },
+                        { type: 'received', content: '집엔 잘 들어갔어?' },
+                        { type: 'sent', content: '응. 방금 도착했어.' },
+                        { type: 'received', content: '그래. 이따 파티에서 봐.' }
+                    ]
+                },
+                'raymond.mccarter_qb': {
+                    username: 'raymond.mccarter_qb',
+                    picColor: 'gold',
+                    messages: [
+                        { type: 'date', content: '2024년 4월 17일' },
+                        { type: 'received', content: '니키! 오늘 파티 꼭 와야 해! 알지?' },
+                        { type: 'sent', content: '알았어. 간다니까 몇 번을 말해.' },
+                        { type: 'received', content: 'ㅋㅋㅋㅋㅋ혹시나 해서! 너한테 할 얘기 있으니까 꼭 일찍 와!' },
+                        { type: 'sent', content: '대체 무슨 얘긴데 그래.' },
+                        { type: 'received', content: '비밀이야. 오면 알아. 😉' },
+                        { type: 'received', content: '응! 7시! 늦지 마!' }
+                    ]
+                },
+                'jessicacheer_': {
+                    username: 'jessicacheer_',
+                    picColor: 'hotpink',
+                    messages: [
+                        { type: 'date', content: '2024년 4월 16일' },
+                        { type: 'received', content: '니콜! 혹시 프롬 파트너 정했어? >_<' },
+                        { type: 'sent', content: '미안, 난 프롬에 아마 안 갈 것 같아.' },
+                        { type: 'received', content: '에이 왜~ 같이 가자! 내가 에스코트 해줄게!' },
+                        { type: 'sent', content: '마음은 고맙지만 정말 괜찮아. 신청해줘서 고마워.' },
+                        { type: 'received', content: '알았어...' }
+                    ]
+                }
+            };
+
+
+            // --- DOM Elements ---
+            const screens = document.querySelectorAll('.screen');
+            const mainScreen = document.getElementById('main-screen');
+            const dmScreen = document.getElementById('dm-screen');
+            const dmChatScreen = document.getElementById('dm-chat-screen');
+            const notificationScreen = document.getElementById('notification-screen');
+            const searchScreen = document.getElementById('search-screen');
+            const profileScreen = document.getElementById('profile-screen');
+            const storyViewer = document.getElementById('story-viewer');
+
+            // --- Screen Navigation ---
+            function showScreen(screenId) {
+                screens.forEach(screen => screen.style.display = 'none');
+                const targetScreen = document.getElementById(screenId);
+                if (targetScreen) {
+                    targetScreen.style.display = 'flex';
+                }
+            }
+            
+            document.getElementById('notification-btn').addEventListener('click', () => showScreen('notification-screen'));
+            document.getElementById('dm-btn').addEventListener('click', () => showScreen('dm-screen'));
+            document.getElementById('home-btn').addEventListener('click', () => showScreen('main-screen'));
+            document.getElementById('search-btn').addEventListener('click', () => showScreen('search-screen'));
+            document.getElementById('profile-btn').addEventListener('click', () => showScreen('profile-screen'));
+            
+            document.getElementById('home-btn-search').addEventListener('click', () => showScreen('main-screen'));
+            document.getElementById('profile-btn-search').addEventListener('click', () => showScreen('profile-screen'));
+
+            document.getElementById('home-btn-profile').addEventListener('click', () => showScreen('main-screen'));
+            document.getElementById('search-btn-profile').addEventListener('click', () => showScreen('search-screen'));
+
+            document.querySelectorAll('.back-btn').forEach(btn => {
+                btn.addEventListener('click', () => showScreen(btn.dataset.target));
+            });
+
+            // --- Like Button ---
+            document.querySelectorAll('.like-button').forEach(button => {
+                button.addEventListener('click', () => {
+                    const post = button.closest('.feed-post');
+                    const likesCountEl = post.querySelector('.like-count');
+                    let likes = parseInt(likesCountEl.textContent);
+                    if (button.classList.contains('liked')) {
+                        button.classList.remove('liked');
+                        likes--;
+                    } else {
+                        button.classList.add('liked');
+                        likes++;
+                    }
+                    likesCountEl.textContent = likes;
+                });
+            });
+
+            // --- DM Chat Logic ---
+            document.querySelectorAll('.dm-list-item').forEach(item => {
+                item.addEventListener('click', () => {
+                    const chatId = item.dataset.chatId;
+                    const chatInfo = dmData[chatId];
+                    if (!chatInfo) return;
+
+                    dmChatScreen.innerHTML = `
+                        <header class="screen-header">
+                            <div class="back-btn" data-target="dm-screen">➤</div>
+                            <div class="profile-pic" style="background-color: ${chatInfo.picColor};"></div>
+                            <div class="username">${chatInfo.username}</div>
+                        </header>
+                        <main class="chat-content">
+                            ${chatInfo.messages.map(msg => {
+                                if (msg.type === 'date') {
+                                    return `<div class="chat-date">${msg.content}</div>`;
+                                }
+                                return `<div class="chat-bubble ${msg.type}">${msg.content}</div>`;
+                            }).join('')}
+                        </main>
+                        <footer class="chat-input-area">
+                            <input type="text" class="chat-input" placeholder="메시지 입력...">
+                        </footer>
+                    `;
+                    
+                    // Add back button functionality for the newly created button
+                    dmChatScreen.querySelector('.back-btn').addEventListener('click', (e) => {
+                        showScreen(e.target.dataset.target);
+                    });
+
+                    showScreen('dm-chat-screen');
+                    const chatContent = dmChatScreen.querySelector('.chat-content');
+                    chatContent.scrollTop = chatContent.scrollHeight;
+                });
+            });
+            
+            // --- Theme Toggle ---
+            const themeToggleBtn = document.querySelector('.theme-toggle-btn');
+            themeToggleBtn.addEventListener('click', () => {
+                document.body.classList.toggle('dark-mode');
+                if(document.body.classList.contains('dark-mode')) {
+                    themeToggleBtn.textContent = '☀️';
+                } else {
+                    themeToggleBtn.textContent = '🌕';
+                }
+            });
+
+            // --- Story Viewer Logic ---
+            let currentStoryUser, currentUserStoryIndex, storyTimeout;
+            const storyUsersQueue = [];
+            
+            const storyProgressBarContainer = storyViewer.querySelector('.story-progress-bars');
+            const storyHeaderPic = storyViewer.querySelector('.story-header .profile-pic');
+            const storyHeaderUsername = storyViewer.querySelector('.story-header .username');
+            const storyHeaderTimestamp = storyViewer.querySelector('.story-header .timestamp');
+            const storyImagePlaceholder = storyViewer.querySelector('.story-image-placeholder');
+            
+            function playStory() {
+                clearTimeout(storyTimeout);
+                
+                const userStories = storiesData[currentStoryUser];
+                if (!userStories || currentUserStoryIndex >= userStories.length) {
+                    playNextUserStory();
+                    return;
+                }
+                
+                const story = userStories[currentUserStoryIndex];
+
+                // Update progress bars
+                const progressBars = storyProgressBarContainer.querySelectorAll('.progress-bar-fill');
+                progressBars.forEach((bar, index) => {
+                    bar.style.transition = 'none';
+                    bar.style.width = (index < currentUserStoryIndex) ? '100%' : '0%';
+                });
+
+                setTimeout(() => {
+                    progressBars[currentUserStoryIndex].style.transition = `width ${story.duration / 1000}s linear`;
+                    progressBars[currentUserStoryIndex].style.width = '100%';
+                }, 10);
+
+                // Update content
+                storyImagePlaceholder.style.backgroundColor = story.color;
+                storyImagePlaceholder.innerHTML = `<p>${story.desc}</p>`;
+                
+                // Add stickers
+                story.stickers.forEach(s => {
+                    const stickerEl = document.createElement('div');
+                    stickerEl.className = `story-sticker ${s.type}`;
+                    stickerEl.style.top = s.top;
+                    stickerEl.style.left = s.left;
+                    stickerEl.style.transform = s.transform;
+
+                    if (s.type === 'poll') {
+                        stickerEl.innerHTML = `
+                            <div class="sticker-title">${s.title}</div>
+                            ${s.options.map(opt => `<div class="poll-option">${opt}</div>`).join('')}
+                        `;
+                    } else if (s.type === 'qa') {
+                        stickerEl.innerHTML = `
+                            <div class="qa-question">${s.question}</div>
+                            <input type="text" class="qa-input" placeholder="무엇이든 물어보세요...">
+                        `;
+                    }
+                    storyImagePlaceholder.appendChild(stickerEl);
+                });
+
+
+                storyHeaderTimestamp.textContent = `${Math.floor(Math.random() * 59 + 1)}m ago`;
+
+                storyTimeout = setTimeout(() => {
+                    currentUserStoryIndex++;
+                    playStory();
+                }, story.duration);
+            }
+
+            function playNextUserStory() {
+                const currentUserNode = document.querySelector(`.story[data-user="${storyUsersQueue[0]}"], .story[data-user="${storyUsersQueue[0]}_close"]`);
+                 if(currentUserNode) {
+                    currentUserNode.classList.add('seen');
+                 }
+
+                storyUsersQueue.shift();
+                if (storyUsersQueue.length === 0) {
+                    closeStoryViewer();
+                    return;
+                }
+                startUserStories(storyUsersQueue[0]);
+            }
+
+            function playPrevStory() {
+                if (currentUserStoryIndex > 0) {
+                    currentUserStoryIndex--;
+                    playStory();
+                }
+                // Could add logic to go to previous user
+            }
+
+            function startUserStories(user) {
+                const userStories = storiesData[user] || storiesData[user.replace('_close', '')];
+                currentStoryUser = user.replace('_close', '');
+                currentUserStoryIndex = 0;
+                
+                storyHeaderUsername.textContent = currentStoryUser;
+                const picColor = document.querySelector(`.story[data-user="${user}"] .profile-pic`).style.backgroundColor;
+                storyHeaderPic.style.backgroundColor = picColor;
+
+                storyProgressBarContainer.innerHTML = userStories.map(() => `
+                    <div class="progress-bar-container"><div class="progress-bar-fill"></div></div>
+                `).join('');
+
+                playStory();
+            }
+
+            document.querySelectorAll('.story').forEach(storyEl => {
+                storyEl.addEventListener('click', () => {
+                    const user = storyEl.dataset.user;
+                    storyUsersQueue.length = 0; // Clear queue
+                    const allStories = Array.from(document.querySelectorAll('.story:not(.my-story)'));
+                    let startIndex = allStories.findIndex(s => s.dataset.user === user);
+                    
+                    for(let i = startIndex; i < allStories.length; i++) {
+                        if(!allStories[i].classList.contains('seen')) {
+                           storyUsersQueue.push(allStories[i].dataset.user);
+                        }
+                    }
+
+                    if (storyUsersQueue.length > 0) {
+                        storyViewer.style.display = 'flex';
+                        startUserStories(storyUsersQueue[0]);
+                    }
+                });
+            });
+
+            function closeStoryViewer() {
+                clearTimeout(storyTimeout);
+                storyViewer.style.display = 'none';
+            }
+
+            storyViewer.querySelector('.close-story').addEventListener('click', closeStoryViewer);
+            storyViewer.querySelector('.story-nav.next').addEventListener('click', () => {
+                const userStories = storiesData[currentStoryUser];
+                if (currentUserStoryIndex < userStories.length - 1) {
+                    currentUserStoryIndex++;
+                    playStory();
+                } else {
+                    playNextUserStory();
+                }
+            });
+            storyViewer.querySelector('.story-nav.prev').addEventListener('click', playPrevStory);
+
+            // --- Carousel Logic ---
+            function initializeCarousel(postElement) {
+                const container = postElement.querySelector('.carousel-container');
+                const items = postElement.querySelectorAll('.carousel-item');
+                const indicatorsContainer = postElement.querySelector('.carousel-indicators');
+                const nextBtn = postElement.querySelector('.next-btn');
+                const prevBtn = postElement.querySelector('.prev-btn');
+                
+                if (items.length <= 1) {
+                    if (indicatorsContainer) indicatorsContainer.style.display = 'none';
+                    if (nextBtn) nextBtn.style.display = 'none';
+                    if (prevBtn) prevBtn.style.display = 'none';
+                    return;
+                }
+
+                let currentIndex = 0;
+
+                function updateCarousel() {
+                    container.style.transform = `translateX(-${currentIndex * 100}%)`;
+                    const dots = indicatorsContainer.querySelectorAll('.indicator-dot');
+                    dots.forEach((dot, index) => {
+                        dot.classList.toggle('active', index === currentIndex);
+                    });
+                }
+                
+                if (indicatorsContainer) {
+                    indicatorsContainer.innerHTML = Array.from(items).map(() => `<div class="indicator-dot"></div>`).join('');
+                }
+
+
+                if (nextBtn) {
+                    nextBtn.addEventListener('click', () => {
+                        currentIndex = (currentIndex + 1) % items.length;
+                        updateCarousel();
+                    });
+                }
+
+                if (prevBtn) {
+                    prevBtn.addEventListener('click', () => {
+                        currentIndex = (currentIndex - 1 + items.length) % items.length;
+                        updateCarousel();
+                    });
+                }
+
+                updateCarousel();
+            }
+
+            document.querySelectorAll('.feed-post').forEach(post => {
+                // This is a simplified version; a full implementation would add the nav/indicator elements dynamically.
+                // For this project, we assume they are in the HTML if needed.
+                initializeCarousel(post);
+            });
+
+            // Initial call to set up the app state
+            showScreen('main-screen');
+        });
+    </script>
+</body>
+</html>

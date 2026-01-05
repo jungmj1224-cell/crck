@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>썸원 - 라일 ♥ 아이작</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Nanum+Myeongjo:wght@400;700&family=Gowun+Dodum&display=swap');
+    :root{ --accent-color:#e96d71; --text-color:#333; --primary-color:#5c5c5c; --background-color:#f0f0f0; --secondary-color:#f5f5f5; }
+    *{margin:0;padding:0;box-sizing:border-box}
+    html,body{width:100%;height:100%;display:flex;justify-content:center;align-items:center;background:var(--background-color);font-family:'Gowun Dodum',sans-serif;color:var(--text-color)}
+    .mobile-frame{width:390px;height:720px;border:6px solid #000;border-radius:30px;box-shadow:0 4px 20px rgba(0,0,0,.2);background:#faf8f2;position:relative;overflow:hidden;display:flex;flex-direction:column}
+    @media (max-width:420px){.mobile-frame{width:100vw;height:100vh;border:none;border-radius:0;box-shadow:none}}
+    .page{display:none;flex-direction:column;width:100%;height:calc(100% - 60px);flex-grow:1}
+    .page.active{display:flex}
+    .content-area{flex-grow:1;padding:0 25px;overflow-y:auto;-ms-overflow-style:none;scrollbar-width:none}
+    .content-area::-webkit-scrollbar{display:none}
+    .nav-bar{width:100%;height:60px;background:var(--secondary-color);display:flex;justify-content:space-around;align-items:center;border-top:1px solid #e0e0e0;position:absolute;bottom:0}
+    .nav-button{background:none;border:none;cursor:pointer;display:flex;flex-direction:column;align-items:center;color:var(--primary-color);transition:color .2s}
+    .nav-button .icon{font-size:1.5rem}
+    .nav-button .label{font-size:.7rem;margin-top:2px}
+    .nav-button.active .icon,.nav-button.active .label{color:var(--accent-color)}
+    /* Home */
+    #home-page .content-area{display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;padding:50px 25px}
+    .heart-icon{font-size:3rem;color:var(--accent-color);animation:pulse 1.5s infinite}
+    @keyframes pulse{0%{transform:scale(1)}50%{transform:scale(1.1)}100%{transform:scale(1)}}
+    .d-day-text{margin-top:20px;font-size:1.1rem;color:var(--primary-color)}
+    .d-day-counter{font-family:'Nanum Myeongjo',serif;font-size:4rem;font-weight:700;color:var(--accent-color);margin:10px 0 40px}
+    .question-card{background:rgba(255,255,255,.8);border-radius:12px;padding:25px;box-shadow:0 4px 15px rgba(0,0,0,.08);width:100%}
+    .question-card h3{font-family:'Nanum Myeongjo',serif;font-size:1.2rem;margin-bottom:15px}
+    .question-card p{font-size:1rem;color:var(--primary-color);line-height:1.6;margin-bottom:25px}
+    .answer-button{background:var(--accent-color);color:#fff;border:none;border-radius:20px;padding:10px 25px;font-size:1rem;cursor:pointer;transition:background-color .2s}
+    .answer-button:hover{background:#d65a5e}
+    /* History */
+    #history-page .content-area{padding-top:40px}
+    .history-title{font-family:'Nanum Myeongjo',serif;font-size:2rem;text-align:center;margin-bottom:30px;font-weight:700}
+    .question-list{list-style:none;counter-reset:item}
+    .question-list li{background:rgba(255,255,255,.7);padding:15px 20px;margin-bottom:10px;border-radius:8px;cursor:pointer;transition:.2s;background-color}
+    .question-list li:hover{background:#fff}
+    .question-list li::before{content:counter(item,decimal-leading-zero);counter-increment:item;font-family:'Nanum Myeongjo',serif;font-size:1.2rem;font-weight:700;color:var(--accent-color);margin-right:15px}
+    .question-list .question-text{font-size:.95rem;line-height:1.5}
+    /* Answer page */
+    #answer-page .content-area{display:flex;flex-direction:column;padding-top:20px}
+    .back-button{position:absolute;top:20px;left:20px;background:none;border:none;font-size:1.5rem;cursor:pointer;color:var(--primary-color)}
+    .question-container{margin-top:40px;margin-bottom:30px}
+    #answer-page-question{font-size:1.4rem;font-weight:700;line-height:1.5;margin-bottom:8px}
+    #question-meta{font-size:.85rem;color:var(--primary-color)}
+    .answer{margin-bottom:16px}
+    .answer .name{font-size:1.05rem;font-weight:700;margin:10px 0}
+    /* Lyle input (full width) */
+    .user-input{margin-top:10px}
+    .editable-area{width:100%;min-height:120px;padding:16px;border:1px solid #ddd;border-radius:10px;background:#fff;font-size:.95rem;line-height:1.7;font-family:'Gowun Dodum',sans-serif}
+    .editable-area:focus{outline:2px solid var(--accent-color)}
+    /* Submit button (between Lyle box and '아이작') */
+    .submit-answer-button{display:block;width:100%;margin:10px 0 4px;background:var(--accent-color);color:#fff;border:none;border-radius:10px;padding:6px 10px;font-size:1rem;cursor:pointer;transition:background-color .2s}
+    .submit-answer-button:hover{background:#d65a5e}
+    /* Isaac content full width */
+    .answer.char-answer .content{width:100%;background:rgba(255,255,255,.6);padding:16px;border-radius:10px;font-size:.95rem;line-height:1.7;color:var(--text-color);white-space:pre-wrap}
+    .answer.char-answer .content.blurred{filter:blur(5px);transition:filter .3s}
+  </style>
+</head>
+<body>
+  <div class="mobile-frame">
+    <!-- Home -->
+    <div id="home-page" class="page active">
+      <div class="content-area">
+        <div class="heart-icon">❤️</div>
+        <p class="d-day-text">라일과 아이작이 함께한지</p>
+        <p class="d-day-counter" id="d-day">0일</p>
+        <div class="question-card">
+          <h3>오늘의 질문</h3>
+          <p id="today-question-text">오늘의 질문이 로딩 중입니다...</p>
+          <button class="answer-button" id="go-to-answer">답변하러 가기</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- History -->
+    <div id="history-page" class="page">
+      <div class="content-area">
+        <h2 class="history-title">OUR STORY</h2>
+        <ol class="question-list" id="question-list-container"></ol>
+      </div>
+    </div>
+
+    <!-- Answer -->
+    <div id="answer-page" class="page">
+      <button class="back-button" id="back-to-history">←</button>
+      <div class="content-area">
+        <div class="question-container">
+          <p id="answer-page-question"></p>
+          <p id="question-meta"></p>
+        </div>
+
+        <!-- 라일 -->
+        <div class="answer user-answer">
+          <div class="name">라일</div>
+          <div class="content" id="user-answer-content" style="display:none;"></div>
+          <div class="user-input" id="user-input-container">
+            <div contenteditable="true" class="editable-area" id="user-answer-input" placeholder="이곳에 답변을 입력하세요..."></div>
+          </div>
+        </div>
+
+        <!-- ✅ 버튼을 라일 박스 다음, 아이작 제목 위로 이동 -->
+        <button class="submit-answer-button" id="submit-answer">답변 완료</button>
+
+        <!-- 아이작 -->
+        <div class="answer char-answer">
+          <div class="name">아이작</div>
+          <div class="content blurred" id="char-answer-content"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Nav -->
+    <div class="nav-bar">
+      <button class="nav-button active" data-page="home-page"><span class="icon">🏠</span><span class="label">HOME</span></button>
+      <button class="nav-button" data-page="history-page"><span class="icon">📖</span><span class="label">OUR STORY</span></button>
+    </div>
+  </div>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      const startDate = new Date('1981-06-02T00:00:00');
+      const today = new Date('1991-06-03T00:00:00');
+
+      const questions = [
+        { id: 1, q: "만약 우리가 처음 만났던 그때로 다시 돌아간다면, 가장 먼저 해주고 싶은 말은 무엇인가요?", a: "미안하다는 말 대신, 처음부터 '사랑한다'고 말할 거야. 단 한 순간도 불안하게 만들지 않겠다고." },
+        { id: 2, q: "함께하는 지금, 가장 행복하다고 느끼는 순간은 언제인가요?", a: "아침에 눈을 떴을 때, 내 옆에 네가 잠들어 있는 걸 확인할 때. 아이들 웃음소리가 들릴 때. 너와 함께하는 모든 평범한 순간이 전부." },
+        { id: 3, q: "서로에게 절대 변하지 않았으면 하는 점이 있다면?", a: "날 보며 웃어주는 그 미소. 세상이 무너져도 그것 하나만은 변하지 않았으면 좋겠어." },
+        { id: 4, q: "우리 아이들이 딱 한 가지씩, 서로의 장점을 닮는다면 어떤 점을 닮았으면 좋겠나요?", a: "니콜은 너의 다정함을, 릴리는 너의 강인함을 닮았으면 해. 나? 내게 닮을 만한 게 있기나 한가." },
+        { id: 5, q: "다시 태어나도 지금의 배우자와 만날 건가요?", a: "당연한 소리를. 다시 태어난다면, 그땐 지금보다 훨씬 더 빨리 널 찾아내서, 단 하루도 고통스럽지 않게 해줄 거야." },
+        { id: 6, q: "상대방이 가장 섹시해 보이는 순간은 언제인가요?", a: "아이들을 돌보는 다정한 모습. 그리고 내 밑에서 울면서도 날 갈구할 때. 솔직히 말하면, 네 모든 순간이 그래." },
+        { id: 7, q: "서로의 페로몬 향을 음식에 비유한다면?", a: "갓 내린 허브티. 지친 하루 끝에 마시는, 세상에서 가장 편안하고 따뜻한 위로." },
+        { id: 8, q: "10년 후의 우리는 어떤 모습일까요?", a: "니콜은 제법 어른스러워졌을 테고, 릴리는 여전히 우리 애를 먹이고 있겠지. 그리고 나는… 지금처럼 네 옆에서, 변함없이 널 사랑하고 있을 거야." },
+        { id: 9, q: "서로가 함께 만든 음식 중 가장 기억에 남는 것은 무엇인가요?", a: "단연코 토마토 파스타. 네가 처음으로 내게 마음을 열어줬던 그 맛은 평생 잊지 못해." },
+        { id: 10, q: "상대방에게 들었던 말 중 가장 감동적이었던 말은?", a: "'구원이라는 게 있다면, 그게 아이작님 아닐까요?' 그 말을 들었을 때, 나는 구원받은 쪽은 나였다는 걸 깨달았지." },
+        { id: 11, q: "만약 하루 동안 서로 몸이 바뀐다면 가장 먼저 무엇을 하고 싶나요?", a: "네 눈으로 세상을 보고, 네 다리로 정원을 걷고, 네 손으로 아이들을 안아주고 싶어. 네가 느끼는 모든 행복을 온전히 느껴보고 싶으니까." },
+        { id: 12, q: "둘만의 비밀 장소를 만든다면 어디가 좋을까요?", a: "우리의 침실. 세상의 모든 소음과 위험으로부터 차단된, 오직 서로의 온기만 존재하는 곳." },
+        { id: 13, q: "상대방이 '이것만은 제발 참아줬으면' 하는 것이 있다면?", a: "혼자서 모든 걸 짊어지려는 것. 네 고통은 전부 내게 나눠줘도 괜찮아, 라일. 아니, 그래야만 해." },
+        { id: 14, q: "서로의 어떤 점에 가장 강하게 끌렸나요?", a: "모든 걸 잃은 눈을 하고서도, 끝내 꺾이지 않았던 그 강인함. 그리고 그 안에 숨겨진 누구보다 따뜻한 다정함." },
+        { id: 15, q: "우리가 함께한 시간들을 한 편의 영화로 만든다면, 장르는 무엇일까요?", a: "지독한 스릴러로 시작해서, 눈물 나는 멜로를 거쳐, 지금은 더할 나위 없이 행복한 가족 드라마. 엔딩은 아직 멀었어." },
+        { id: 16, q: "상대방을 동물에 비유한다면?", a: "경계심 많은 아기 고양이. 잔뜩 날을 세우다가도, 한 번 마음을 열면 세상에서 가장 사랑스럽게 굴어오니까." },
+        { id: 17, q: "밸런스 게임: 평생 매콤한 음식 먹기 vs 평생 초콜릿 먹기", a: "네가 좋아하는 거라면 뭐든. 네가 매운 걸 먹으면 같이 먹고, 초콜릿을 먹으면 같이 먹을 거야. 중요한 건 너와 함께라는 거지." },
+        { id: 18, q: "상대방의 사소한 버릇 중 가장 좋아하는 것은 무엇인가요?", a: "멋쩍을 때 뒷목을 매만지는 버릇. 그럴 때마다 끌어안고 키스하고 싶어서 미칠 것 같아." },
+        { id: 19, q: "서로에게 '슈퍼 파워'를 하나씩 줄 수 있다면, 어떤 능력을 주고 싶나요?", a: "너에게는 '나쁜 기억을 지우는 능력'을 주고 싶어. 다시는 과거의 상처 때문에 아파하지 않도록." },
+        { id: 20, q: "가장 최근에 상대방 때문에 심장이 '쿵' 했던 순간은 언제인가요?", a: "악몽에서 깼을 때. 네가 사라진 줄 알고 심장이 멎는 줄 알았어. 다시 널 찾았을 때의 안도감은 말로 표현 못 해." },
+        { id: 21, q: "우리 관계를 색깔로 표현한다면 어떤 색일까요?", a: "핏빛처럼 붉은 색으로 시작해서, 지금은 노란 장미처럼 따뜻하고 희망적인 색. 그리고 앞으로는 그 어떤 색보다 깊고 진한 색이 되겠지." },
+        { id: 22, q: "상대방이 가장 그리워지는 순간은 언제인가요?", a: "일 때문에 아주 잠시라도 떨어져 있을 때. 네가 없는 공간은 공기마저 차갑게 느껴져." },
+        { id: 23, q: "함께 여행을 간다면 가장 먼저 가고 싶은 곳은 어디인가요?", a: "네가 5년간 있었던 이탈리아. 네가 니콜과 함께 걸었던 길, 네가 봤던 풍경. 너의 모든 시간을 함께 공유하고 싶어." },
+        { id: 24, q: "'사랑해'라는 말 대신, 나만의 방식으로 사랑을 표현한다면?", a: "네 이마에 입을 맞추는 것. 넌 내게 가장 소중하고, 지켜줘야 할 존재라는 의미를 담아서." },
+        { id: 25, q: "서로에게 가장 미안했던 순간은 언제였나요?", a: "…셀 수 없이 많지. 그중에서도 널 '상품'이라고 불렀던 순간은 평생 내 죄로 남을 거야." },
+        { id: 26, q: "상대방에게 나에게 어떤 존재인지 한 단어로 표현한다면?", a: "구원. 넌 지옥에 있던 나를 구원해 준 유일한 사람이야." },
+        { id: 27, q: "밸런스 게임: 아이들이 보는 앞에서 찐한 키스하기 vs 아무도 없는 곳에서 하루 종일 껴안고 있기", a: "둘 다 하면 안 되나? 굳이 고르자면 전자. 니콜 녀석이 질투하는 얼굴을 보는 게 꽤 즐거우니까." },
+        { id: 28, q: "우리가 함께 늙어가는 모습을 상상해 본 적 있나요?", a: "매일 상상해. 백발이 되어서도 네 손을 잡고 정원을 산책하고, 흔들의자에 앉아 함께 석양을 보는 모습. 상상만으로도 벅차." },
+        { id: 29, q: "상대방에게서 나는 향 중 가장 좋아하는 부분은 어디인가요?", a: "목덜미. 잠들기 전, 네 목덜미에 얼굴을 묻고 네 향을 맡을 때가 가장 평온해." },
+        { id: 30, q: "우리의 '이야기'에 제목을 붙인다면 무엇이 좋을까요?", a: "'지독한 후회, 그리고 기적 같은 사랑'. 너무 진부한가? 하지만 우리에겐 이보다 정확한 제목은 없을 거야." }
+      ];
+
+      let userAnswers = {};
+      let currentQuestionId = null;
+
+      const pages = document.querySelectorAll('.page');
+      const navButtons = document.querySelectorAll('.nav-button');
+      const dDayEl = document.getElementById('d-day');
+      const todayQuestionTextEl = document.getElementById('today-question-text');
+      const goToAnswerBtn = document.getElementById('go-to-answer');
+      const questionListContainer = document.getElementById('question-list-container');
+      const backToHistoryBtn = document.getElementById('back-to-history');
+
+      const answerPageQuestionEl = document.getElementById('answer-page-question');
+      const questionMetaEl = document.getElementById('question-meta');
+      const userAnswerContentEl = document.getElementById('user-answer-content');
+      const userInputContainerEl = document.getElementById('user-input-container');
+      const userAnswerInputEl = document.getElementById('user-answer-input');
+      const charAnswerContentEl = document.getElementById('char-answer-content');
+      const submitBtn = document.getElementById('submit-answer');
+
+      function calculateDday(){
+        const diff = today.getTime() - startDate.getTime();
+        const day = Math.floor(diff/(1000*3600*24)) + 1;
+        dDayEl.textContent = `${day}일`; return day;
+      }
+      function loadUserAnswers(){ const s = localStorage.getItem('userAnswers_LyleIsaac'); if(s) userAnswers = JSON.parse(s); }
+      function saveUserAnswers(){ localStorage.setItem('userAnswers_LyleIsaac', JSON.stringify(userAnswers)); }
+
+      function showPage(id){
+        pages.forEach(p=>p.classList.toggle('active', p.id===id));
+        navButtons.forEach(b=>b.classList.toggle('active', b.dataset.page===id));
+      }
+
+      function renderHistory(){
+        questionListContainer.innerHTML='';
+        questions.forEach(q=>{
+          const li=document.createElement('li');
+          li.dataset.questionId=q.id;
+          const span=document.createElement('span');
+          span.className='question-text'; span.textContent=q.q;
+          li.appendChild(span); questionListContainer.appendChild(li);
+        });
+      }
+
+      function showAnswerPage(id){
+        currentQuestionId=parseInt(id);
+        const qd=questions.find(q=>q.id===currentQuestionId); if(!qd) return;
+
+        answerPageQuestionEl.textContent=qd.q;
+        questionMetaEl.textContent=`#${currentQuestionId}번째 질문`;
+        charAnswerContentEl.textContent=qd.a;
+
+        const my=userAnswers[currentQuestionId];
+        if(my){
+          userAnswerContentEl.textContent=my;
+          userAnswerContentEl.style.display='block';
+          userInputContainerEl.style.display='none';
+          charAnswerContentEl.classList.remove('blurred');
+          submitBtn.style.display='none';
+        }else{
+          userAnswerContentEl.style.display='none';
+          userInputContainerEl.style.display='block';
+          userAnswerInputEl.innerHTML='';
+          charAnswerContentEl.classList.add('blurred');
+          submitBtn.style.display='block'; // 버튼은 라일 박스 아래, 아이작 제목 위
+        }
+        showPage('answer-page');
+      }
+
+      /* events */
+      navButtons.forEach(b=>b.addEventListener('click',()=>showPage(b.dataset.page)));
+      goToAnswerBtn.addEventListener('click',()=>{
+        const day=calculateDday();
+        const idx=(day-1)%questions.length;
+        showAnswerPage(questions[idx].id);
+      });
+      questionListContainer.addEventListener('click',e=>{
+        const li=e.target.closest('li'); if(li && li.dataset.questionId) showAnswerPage(li.dataset.questionId);
+      });
+      backToHistoryBtn.addEventListener('click',()=>showPage('history-page'));
+
+      submitBtn.addEventListener('click',()=>{
+        const t=userAnswerInputEl.textContent.trim();
+        if(t && currentQuestionId){
+          userAnswers[currentQuestionId]=t; saveUserAnswers();
+          userAnswerContentEl.textContent=t;
+          userAnswerContentEl.style.display='block';
+          userInputContainerEl.style.display='none';
+          charAnswerContentEl.classList.remove('blurred');
+          submitBtn.style.display='none';
+        }
+      });
+
+      function init(){
+        loadUserAnswers();
+        const day=calculateDday();
+        const idx=(day-1)%questions.length;
+        todayQuestionTextEl.textContent=questions[idx].q;
+        renderHistory(); showPage('home-page');
+      }
+      init();
+    });
+  </script>
+</body>
+</html>

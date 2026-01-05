@@ -1,0 +1,961 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>당근마켓</title>
+    <style>
+        :root {
+            --bg-color: #1C1C1E;
+            --text-color: #FFFFFF;
+            --secondary-text-color: #8E8E93;
+            --primary-color: #FF6F00;
+            --element-bg: #2C2C2E;
+            --divider-color: #38383A;
+            --user-chat-bg: #FF6F00;
+            --char-chat-bg: #3A3A3C;
+            --icon-color: #EBEBF599;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            margin: 0;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        .page {
+            display: none;
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            flex-direction: column;
+            overflow-y: auto;
+            background-color: var(--bg-color);
+        }
+
+        .page.active {
+            display: flex;
+        }
+        
+        .content-area {
+            flex-grow: 1;
+            overflow-y: auto;
+            padding-bottom: 80px;
+        }
+
+        .top-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 15px;
+            background-color: var(--bg-color);
+            border-bottom: 1px solid var(--divider-color);
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+
+        .top-bar .title {
+            font-size: 1.1rem;
+            font-weight: 600;
+        }
+
+        .top-bar .icon {
+            font-size: 1.5rem;
+            font-weight: 300;
+            cursor: pointer;
+        }
+
+        .top-bar .icons-right {
+            display: flex;
+            gap: 15px;
+        }
+        
+        .profile-icon {
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            background-color: #555;
+            display: inline-block;
+        }
+
+        /* Sales List Page */
+        .actions-bar {
+            padding: 15px;
+            display: flex;
+            gap: 10px;
+        }
+        .write-btn {
+            background-color: rgba(255, 111, 0, 0.2);
+            color: var(--primary-color);
+            border: none;
+            padding: 10px 15px;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            flex-grow: 1;
+        }
+        .price-finder-btn {
+            background-color: var(--element-bg);
+            color: var(--text-color);
+            border: none;
+            padding: 10px 15px;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .tabs {
+            display: flex;
+            padding: 0 15px;
+            border-bottom: 1px solid var(--divider-color);
+        }
+        .tab {
+            padding: 15px 10px;
+            margin-right: 15px;
+            cursor: pointer;
+            color: var(--secondary-text-color);
+            border-bottom: 2px solid transparent;
+        }
+        .tab.active {
+            color: var(--text-color);
+            border-bottom: 2px solid var(--text-color);
+        }
+
+        .filter-bar {
+            padding: 15px;
+            display: flex;
+            align-items: center;
+        }
+        .filter-bar input {
+            margin-right: 8px;
+        }
+
+        .product-item {
+            display: flex;
+            padding: 15px;
+            border-bottom: 1px solid var(--divider-color);
+            cursor: pointer;
+        }
+        .product-item-img {
+            width: 100px;
+            height: 100px;
+            background-color: var(--element-bg);
+            border-radius: 8px;
+            margin-right: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.8rem;
+            color: var(--secondary-text-color);
+            text-align: center;
+            padding: 5px;
+        }
+        .product-item-info {
+            flex-grow: 1;
+        }
+        .product-item-title {
+            font-size: 1rem;
+            margin: 0 0 5px 0;
+        }
+        .product-item-meta {
+            font-size: 0.8rem;
+            color: var(--secondary-text-color);
+            margin-bottom: 8px;
+        }
+        .product-item-price {
+            font-size: 1rem;
+            font-weight: 700;
+        }
+        .product-item-likes {
+            color: var(--secondary-text-color);
+            display: flex;
+            align-items: flex-end;
+            font-size: 0.9rem;
+        }
+        .product-item-actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: 5px;
+            margin-top: 10px;
+        }
+        .action-btn {
+            background-color: var(--element-bg);
+            border: 1px solid var(--divider-color);
+            color: var(--text-color);
+            padding: 8px 12px;
+            border-radius: 5px;
+            font-size: 0.8rem;
+            cursor: pointer;
+        }
+        .more-btn {
+            background: none;
+            border: none;
+            color: var(--text-color);
+            font-size: 1.2rem;
+        }
+
+        /* Product Detail Page */
+        .product-image-container {
+            width: 100%;
+            height: 40vh;
+            background-color: #000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+        }
+        .product-image-placeholder {
+            color: var(--secondary-text-color);
+            font-size: 1rem;
+            padding: 20px;
+            text-align: center;
+        }
+        .image-count {
+            position: absolute;
+            bottom: 15px;
+            right: 15px;
+            background-color: rgba(0, 0, 0, 0.6);
+            color: white;
+            padding: 5px 10px;
+            border-radius: 15px;
+            font-size: 0.8rem;
+        }
+
+        .seller-profile {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px;
+            border-bottom: 1px solid var(--divider-color);
+        }
+        .seller-info {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .seller-info .profile-icon {
+            width: 40px;
+            height: 40px;
+            background-color: #444;
+        }
+        .seller-name-location {
+            display: flex;
+            flex-direction: column;
+        }
+        .seller-name { font-weight: 600; }
+        .seller-location { color: var(--secondary-text-color); font-size: 0.9rem; }
+        
+        .seller-manner {
+            text-align: right;
+        }
+        .manner-temp {
+            font-size: 1rem;
+            font-weight: 600;
+            color: #34C759;
+        }
+        .manner-emoji { font-size: 1.5rem; }
+
+        .product-details {
+            padding: 20px 15px;
+            border-bottom: 1px solid var(--divider-color);
+        }
+        .product-status {
+            padding: 5px 10px;
+            border: 1px solid var(--divider-color);
+            border-radius: 5px;
+            background: var(--element-bg);
+            display: inline-block;
+            margin-bottom: 15px;
+            cursor: pointer;
+        }
+        .product-title {
+            font-size: 1.2rem;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+        .product-category {
+            color: var(--secondary-text-color);
+            font-size: 0.9rem;
+            margin-bottom: 15px;
+        }
+        .product-price-detail {
+             font-size: 1.2rem;
+            font-weight: 700;
+            margin-bottom: 15px;
+        }
+        .product-description {
+            line-height: 1.6;
+            white-space: pre-wrap;
+        }
+
+        .location-info {
+            padding: 20px 15px;
+        }
+        .location-info h3 {
+            margin: 0 0 15px 0;
+            font-size: 1rem;
+        }
+        .map-placeholder {
+            width: 100%;
+            height: 150px;
+            background-color: var(--element-bg);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--secondary-text-color);
+        }
+
+        .bottom-bar {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            display: flex;
+            align-items: center;
+            padding: 10px 15px;
+            background-color: var(--bg-color);
+            border-top: 1px solid var(--divider-color);
+            box-sizing: border-box;
+        }
+        .heart-icon {
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: var(--secondary-text-color);
+            margin-right: 15px;
+        }
+        .heart-icon.active {
+            color: var(--primary-color);
+        }
+        .price-divider {
+            width: 1px;
+            height: 30px;
+            background-color: var(--divider-color);
+            margin-right: 15px;
+        }
+        .price-offer {
+            flex-grow: 1;
+        }
+        .price-offer .price { font-weight: 700; }
+        .price-offer .offer-btn {
+            background: none;
+            border: none;
+            color: var(--primary-color);
+            font-weight: 600;
+            cursor: pointer;
+            font-size: 0.9rem;
+        }
+        .chat-btn {
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+        
+        /* Chat Room */
+        .chat-top-bar .title {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .chat-top-bar .manner-temp {
+            font-size: 0.8rem;
+            font-weight: normal;
+        }
+
+        .chat-product-bar {
+            padding: 10px 15px;
+            border-bottom: 1px solid var(--divider-color);
+            background-color: var(--element-bg);
+        }
+        .chat-product-info {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+        .chat-product-info .status { font-size: 0.9rem; color: var(--secondary-text-color); }
+        .chat-product-info .price { font-weight: 700; }
+
+        .chat-actions {
+            display: flex;
+            gap: 10px;
+        }
+        .chat-action-btn {
+            flex: 1;
+            padding: 10px;
+            background-color: var(--element-bg);
+            border: 1px solid var(--divider-color);
+            border-radius: 8px;
+            color: var(--text-color);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 5px;
+        }
+        
+        .chat-action-btn img {
+            width: 16px;
+            height: 16px;
+        }
+        
+        .chat-messages {
+            flex-grow: 1;
+            padding: 15px;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+        .date-divider {
+            text-align: center;
+            color: var(--secondary-text-color);
+            font-size: 0.8rem;
+            margin: 10px 0;
+        }
+        .message-row {
+            display: flex;
+            align-items: flex-end;
+            gap: 8px;
+        }
+        .message-row.user {
+            justify-content: flex-end;
+        }
+        .message-row .profile-icon {
+            width: 35px;
+            height: 35px;
+            background-color: #555;
+            flex-shrink: 0;
+        }
+        .message-bubble {
+            padding: 10px 15px;
+            border-radius: 18px;
+            max-width: 70%;
+            line-height: 1.5;
+        }
+        .message-row.char .message-bubble {
+            background-color: var(--char-chat-bg);
+            border-top-left-radius: 4px;
+        }
+        .message-row.user .message-bubble {
+            background-color: var(--user-chat-bg);
+            color: white;
+            border-top-right-radius: 4px;
+        }
+        .message-time {
+            font-size: 0.75rem;
+            color: var(--secondary-text-color);
+            flex-shrink: 0;
+        }
+        
+        .message-input-bar {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            display: flex;
+            align-items: center;
+            padding: 8px;
+            background-color: var(--element-bg);
+            border-top: 1px solid var(--divider-color);
+            box-sizing: border-box;
+        }
+        .input-icon {
+            padding: 8px;
+            font-size: 1.5rem;
+            color: var(--secondary-text-color);
+            cursor: pointer;
+        }
+        .message-input {
+            flex-grow: 1;
+            background-color: var(--bg-color);
+            border: 1px solid var(--divider-color);
+            border-radius: 20px;
+            padding: 10px 15px;
+            color: var(--text-color);
+            font-size: 1rem;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- 판매 내역 화면 -->
+    <div id="main-page" class="page active">
+        <div class="top-bar">
+            <span class="icon"><</span>
+            <span class="title">나의 판매내역</span>
+            <span class="profile-icon"></span>
+        </div>
+        <div class="content-area">
+            <div class="actions-bar">
+                <button class="write-btn">+ 글쓰기</button>
+                <button class="price-finder-btn">🔍 내 물건 가격 찾기</button>
+            </div>
+            <div class="tabs">
+                <div class="tab active">판매중 3</div>
+                <div class="tab">거래완료 1</div>
+                <div class="tab">숨김 0</div>
+            </div>
+            <div class="filter-bar">
+                <input type="checkbox" id="promo-only">
+                <label for="promo-only">홍보가능만 보기</label>
+            </div>
+
+            <!-- 상품 목록 -->
+            <div class="product-item" onclick="showProductPage('product1')">
+                <div class="product-item-img">[매우 화려하고 반짝이는 망토 사진]</div>
+                <div class="product-item-info">
+                    <h3 class="product-item-title">엄청 화려한 망토 (한 번도 안 입음)</h3>
+                    <p class="product-item-meta">바르디움 • 1분 전</p>
+                    <p class="product-item-price">50,000원</p>
+                </div>
+                <div class="product-item-likes">♡ 1</div>
+            </div>
+            <div class="product-item-actions">
+                <button class="action-btn">끌어올리기</button>
+                <button class="more-btn">...</button>
+            </div>
+
+            <div class="product-item" onclick="showProductPage('product2')">
+                <div class="product-item-img">[보라색 빛이 은은하게 나는 조약돌 같은 돌멩이 사진]</div>
+                <div class="product-item-info">
+                    <h3 class="product-item-title">반짝이는 예쁜 돌 팝니다 (용도 모름)</h3>
+                    <p class="product-item-meta">바르디움 • 3시간 전</p>
+                    <p class="product-item-price">10,000원</p>
+                </div>
+                <div class="product-item-likes">♡ 5</div>
+            </div>
+             <div class="product-item-actions">
+                <button class="action-btn">끌어올리기</button>
+                <button class="more-btn">...</button>
+            </div>
+            
+            <div class="product-item" onclick="showProductPage('product3')">
+                <div class="product-item-img">[오래되어 보이지만 잘 관리된 훈련용 검 사진]</div>
+                <div class="product-item-info">
+                    <h3 class="product-item-title">오래된 훈련용 검 팝니다</h3>
+                    <p class="product-item-meta">바르디움 • 5일 전 • 끌올 1회</p>
+                    <p class="product-item-price">30,000원</p>
+                </div>
+                <div class="product-item-likes">♡ 2</div>
+            </div>
+             <div class="product-item-actions">
+                <button class="action-btn">끌어올리기</button>
+                <button class="more-btn">...</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 상품 상세 화면 1 -->
+    <div id="product1-page" class="page">
+        <div class="top-bar">
+            <div>
+                <span class="icon" onclick="goBack()"><</span>
+                <span class="icon">🏠</span>
+            </div>
+            <div class="icons-right">
+                <span class="icon">🔗</span>
+                <span class="icon">...</span>
+            </div>
+        </div>
+        <div class="content-area">
+            <div class="product-image-container">
+                <div class="product-image-placeholder">[용의 비늘처럼 보이는 소재로 만들어져 각도에 따라 오묘한 빛을 내는, 금실 자수가 빽빽한 망토 사진]</div>
+                <div class="image-count">1/1</div>
+            </div>
+            <div class="seller-profile">
+                <div class="seller-info">
+                    <div class="profile-icon"></div>
+                    <div class="seller-name-location">
+                        <span class="seller-name">레녹</span>
+                        <span class="seller-location">바르디움</span>
+                    </div>
+                </div>
+                <div class="seller-manner">
+                    <div class="manner-temp">36.7℃ 😊</div>
+                    <div>매너온도</div>
+                </div>
+            </div>
+            <div class="product-details">
+                <div class="product-status">판매중 ▾</div>
+                <h2 class="product-title">엄청 화려한 망토 (한 번도 안 입음)</h2>
+                <div class="product-category">기타 중고물품 • 1분 전</div>
+                <div class="product-price-detail">50,000원</div>
+                <p class="product-description">
+제이가 사줬는데 제 취향이 아니라서 팝니다.
+자기는 엄청 비싼 거라고 하던데... 잘 모르겠네요.
+반짝거리는 거 좋아하시는 분 가져가세요.
+
+-제이가 보면 안 되니 쿨거래 원합니다-
+                </p>
+            </div>
+        </div>
+        <div class="bottom-bar">
+            <span id="heart-product1" class="heart-icon" onclick="toggleHeart('product1')">♡</span>
+            <div class="price-divider"></div>
+            <div class="price-offer">
+                <div class="price">50,000원</div>
+                <button class="offer-btn">가격 제안 불가</button>
+            </div>
+            <button class="chat-btn" onclick="showChatRoom('chat1')">대화중인 채팅방 1</button>
+        </div>
+    </div>
+
+    <!-- 상품 상세 화면 2 -->
+    <div id="product2-page" class="page">
+        <div class="top-bar">
+            <div>
+                <span class="icon" onclick="goBack()"><</span>
+                <span class="icon">🏠</span>
+            </div>
+            <div class="icons-right">
+                <span class="icon">🔗</span>
+                <span class="icon">...</span>
+            </div>
+        </div>
+        <div class="content-area">
+            <div class="product-image-container">
+                <div class="product-image-placeholder">[손바닥만 한 크기의 매끈한 검은 돌. 내부에서 은은한 보라색 빛이 주기적으로 깜빡인다.]</div>
+                <div class="image-count">1/1</div>
+            </div>
+            <div class="seller-profile">
+                <div class="seller-info">
+                    <div class="profile-icon"></div>
+                    <div class="seller-name-location">
+                        <span class="seller-name">레녹</span>
+                        <span class="seller-location">바르디움</span>
+                    </div>
+                </div>
+                <div class="seller-manner">
+                    <div class="manner-temp">36.7℃ 😊</div>
+                    <div>매너온도</div>
+                </div>
+            </div>
+            <div class="product-details">
+                <div class="product-status">판매중 ▾</div>
+                <h2 class="product-title">반짝이는 예쁜 돌 팝니다 (용도 모름)</h2>
+                <div class="product-category">인테리어소품 • 3시간 전</div>
+                <div class="product-price-detail">10,000원</div>
+                <p class="product-description">
+저택 정원에서 주웠는데 예뻐서 팔아봅니다. 
+어디 쓰는 건지는 저도 모름. 그냥 장식용인 듯?
+꽤 무거워요. 문 열려있을 때 받쳐두면 좋을 듯.
+                </p>
+            </div>
+        </div>
+        <div class="bottom-bar">
+            <span id="heart-product2" class="heart-icon" onclick="toggleHeart('product2')">♡</span>
+            <div class="price-divider"></div>
+            <div class="price-offer">
+                <div class="price">10,000원</div>
+                <button class="offer-btn">가격 제안 2</button>
+            </div>
+            <button class="chat-btn" onclick="showChatRoom('chat2')">대화중인 채팅방 2</button>
+        </div>
+    </div>
+    
+    <!-- 상품 상세 화면 3 -->
+    <div id="product3-page" class="page">
+         <div class="top-bar">
+            <div>
+                <span class="icon" onclick="goBack()"><</span>
+                <span class="icon">🏠</span>
+            </div>
+            <div class="icons-right">
+                <span class="icon">🔗</span>
+                <span class="icon">...</span>
+            </div>
+        </div>
+        <div class="content-area">
+            <div class="product-image-container">
+                <div class="product-image-placeholder">[날은 무뎌져 있지만 손잡이와 검신이 잘 관리된 훈련용 강철 검 사진]</div>
+                <div class="image-count">1/1</div>
+            </div>
+            <div class="seller-profile">
+                <div class="seller-info">
+                    <div class="profile-icon"></div>
+                    <div class="seller-name-location">
+                        <span class="seller-name">레녹</span>
+                        <span class="seller-location">바르디움</span>
+                    </div>
+                </div>
+                <div class="seller-manner">
+                    <div class="manner-temp">36.7℃ 😊</div>
+                    <div>매너온도</div>
+                </div>
+            </div>
+            <div class="product-details">
+                <div class="product-status">판매중 ▾</div>
+                <h2 class="product-title">오래된 훈련용 검 팝니다</h2>
+                <div class="product-category">스포츠/레저 • 5일 전</div>
+                <div class="product-price-detail">30,000원</div>
+                <p class="product-description">
+안 써서 팝니다. 튼튼해요.
+네고 안 받음.
+                </p>
+            </div>
+        </div>
+        <div class="bottom-bar">
+            <span id="heart-product3" class="heart-icon" onclick="toggleHeart('product3')">♡</span>
+            <div class="price-divider"></div>
+            <div class="price-offer">
+                <div class="price">30,000원</div>
+                <button class="offer-btn">가격 제안 불가</button>
+            </div>
+            <button class="chat-btn" onclick="showChatRoom('chat3')">대화중인 채팅방 1</button>
+        </div>
+    </div>
+
+
+    <!-- 채팅방 1 -->
+    <div id="chat1-room" class="page">
+        <div class="top-bar chat-top-bar">
+            <span class="icon" onclick="goBack()"><</span>
+            <span class="title">제이드 <span class="manner-temp">(42.5℃)</span></span>
+            <div class="icons-right">
+                <span class="icon">📞</span>
+                <span class="icon">🔍</span>
+                <span class="icon">...</span>
+            </div>
+        </div>
+        <div class="chat-product-bar">
+            <div class="chat-product-info">
+                <span class="status">판매중</span>
+                <span class="price">50,000원</span>
+            </div>
+            <div class="chat-actions">
+                <button class="chat-action-btn"><img src="https://i.postimg.cc/yx6JbX1b/Screenshot-20250831-234611-Karrot-1.jpg" alt=""> 약속 잡기</button>
+                <button class="chat-action-btn"><img src="https://i.postimg.cc/nrLzkFT8/Screenshot-20250831-234611-Karrot.jpg" alt=""> 송금 요청</button>
+            </div>
+        </div>
+        <div class="chat-messages">
+            <div class="date-divider">2025년 6월 10일</div>
+            <div class="message-row char">
+                <div class="profile-icon"></div>
+                <div class="message-bubble">레녹. 이것도...?</div>
+                <div class="message-time">오후 2:01</div>
+            </div>
+            <div class="message-row user">
+                <div class="message-time">오후 2:01</div>
+                <div class="message-bubble">아.</div>
+            </div>
+             <div class="message-row char">
+                <div class="profile-icon"></div>
+                <div class="message-bubble">내 가슴이 찢어지는 것 같구나, 내 네임. 내가 널 위해 용의 비늘을 갈아넣은 실로 짜인 원단을 직접 골라 맞춰준 망토인데... 이걸 단돈 5만 원에? 😥</div>
+                <div class="message-time">오후 2:02</div>
+            </div>
+             <div class="message-row user">
+                <div class="message-time">오후 2:03</div>
+                <div class="message-bubble">용의 비늘? 그래서 그렇게 뻣뻣했구나. 아무튼 난 안 입어. 너무 화려해.</div>
+            </div>
+             <div class="message-row char">
+                <div class="profile-icon"></div>
+                <div class="message-bubble">......</div>
+                <div class="message-time">오후 2:03</div>
+            </div>
+             <div class="message-row char">
+                <div class="profile-icon"></div>
+                <div class="message-bubble">알았어. 팔지는 마. 내가 다른 걸로 바꿔줄게. 응? 제발.</div>
+                <div class="message-time">오후 2:04</div>
+            </div>
+            <div class="message-row user">
+                <div class="message-time">오후 2:04</div>
+                <div class="message-bubble">...알았어. 그럼 청포도 사 와.</div>
+            </div>
+             <div class="message-row char">
+                <div class="profile-icon"></div>
+                <div class="message-bubble">온 세상의 청포도를 다 사다 주지. ✨🍇</div>
+                <div class="message-time">오후 2:05</div>
+            </div>
+        </div>
+        <div class="message-input-bar">
+            <span class="input-icon">+</span>
+            <input type="text" class="message-input" placeholder="메시지 보내기">
+            <span class="input-icon">😊</span>
+        </div>
+    </div>
+    
+    <!-- 채팅방 2 -->
+    <div id="chat2-room" class="page">
+        <div class="top-bar chat-top-bar">
+            <span class="icon" onclick="goBack()"><</span>
+            <span class="title">제이드 <span class="manner-temp">(42.5℃)</span></span>
+            <div class="icons-right">
+                <span class="icon">📞</span>
+                <span class="icon">🔍</span>
+                <span class="icon">...</span>
+            </div>
+        </div>
+        <div class="chat-product-bar">
+            <div class="chat-product-info">
+                <span class="status">판매중</span>
+                <span class="price">10,000원</span>
+            </div>
+        </div>
+        <div class="chat-messages">
+             <div class="date-divider">2025년 6월 10일</div>
+             <div class="message-row char">
+                <div class="profile-icon"></div>
+                <div class="message-bubble">레녹. 지금 이게 무슨... 내 네임, 혹시 지금 당근마켓이라는 걸 하고 있어?</div>
+                <div class="message-time">오전 11:54</div>
+            </div>
+            <div class="message-row user">
+                <div class="message-time">오전 11:55</div>
+                <div class="message-bubble">어. 봤어? 예쁘지? 누가 벌써 산다고 연락 왔어.</div>
+            </div>
+             <div class="message-row char">
+                <div class="profile-icon"></div>
+                <div class="message-bubble">산다고? 안 돼! 절대 안 돼! 그거 그냥 돌이 아니야! 제국 황실 대대로 내려오는 마력 안정화 코어란 말이다! 😱</div>
+                <div class="message-time">오전 11:55</div>
+            </div>
+             <div class="message-row user">
+                <div class="message-time">오전 11:56</div>
+                <div class="message-bubble">뭐? 그게 뭔데. 그냥 문 받침대 아니었어?</div>
+            </div>
+             <div class="message-row char">
+                <div class="profile-icon"></div>
+                <div class="message-bubble">문... 받침대...? 레녹. 당장 그 거래 취소해. 내가 지금 바로 갈게. 거기 꼼짝 말고 있어!</div>
+                <div class="message-time">오전 11:57</div>
+            </div>
+            <div class="message-row user">
+                <div class="message-time">오전 11:58</div>
+                <div class="message-bubble">...? 알았어. 왜 그렇게 화를 내고 그래.</div>
+            </div>
+        </div>
+        <div class="message-input-bar">
+            <span class="input-icon">+</span>
+            <input type="text" class="message-input" placeholder="메시지 보내기">
+            <span class="input-icon">😊</span>
+        </div>
+    </div>
+    
+    <!-- 채팅방 3 -->
+    <div id="chat3-room" class="page">
+        <div class="top-bar chat-top-bar">
+            <span class="icon" onclick="goBack()"><</span>
+            <span class="title">바르디움주민 <span class="manner-temp">(37.2℃)</span></span>
+            <div class="icons-right">
+                <span class="icon">📞</span>
+                <span class="icon">🔍</span>
+                <span class="icon">...</span>
+            </div>
+        </div>
+        <div class="chat-product-bar">
+            <div class="chat-product-info">
+                <span class="status">판매중</span>
+                <span class="price">30,000원</span>
+            </div>
+        </div>
+        <div class="chat-messages">
+            <div class="date-divider">2025년 6월 5일</div>
+             <div class="message-row char">
+                <div class="profile-icon"></div>
+                <div class="message-bubble">안녕하세요, 훈련용 검 구매하고 싶습니다.</div>
+                <div class="message-time">오후 8:12</div>
+            </div>
+            <div class="message-row user">
+                <div class="message-time">오후 8:13</div>
+                <div class="message-bubble">네. 어디서 거래할까요?</div>
+            </div>
+            <div class="message-row char">
+                <div class="profile-icon"></div>
+                <div class="message-bubble">제이드 저택 근처 공원이면 될 것 같습니다. 내일 시간 괜찮으신가요?</div>
+                <div class="message-time">오후 8:15</div>
+            </div>
+             <div class="message-row user">
+                <div class="message-time">오후 8:16</div>
+                <div class="message-bubble">네. 그럼 내일 오후 2시에 거기서 보죠.</div>
+            </div>
+            <div class="date-divider">2025년 6월 6일</div>
+            <div class="message-row user">
+                <div class="message-time">오후 2:05</div>
+                <div class="message-bubble">거래 감사합니다.</div>
+            </div>
+             <div class="message-row char">
+                <div class="profile-icon"></div>
+                <div class="message-bubble">쿨거래 감사합니다! 잘 쓰겠습니다.</div>
+                <div class="message-time">오후 2:06</div>
+            </div>
+        </div>
+        <div class="message-input-bar">
+            <span class="input-icon">+</span>
+            <input type="text" class="message-input" placeholder="메시지 보내기">
+            <span class="input-icon">😊</span>
+        </div>
+    </div>
+
+
+    <script>
+        const pages = document.querySelectorAll('.page');
+        let pageHistory = ['main-page'];
+        let heartStates = {};
+
+        function showPage(pageId) {
+            pages.forEach(page => {
+                page.classList.remove('active');
+            });
+            const targetPage = document.getElementById(pageId);
+            if (targetPage) {
+                targetPage.classList.add('active');
+                window.scrollTo(0, 0);
+            }
+        }
+
+        function pushHistory(pageId) {
+            if (pageHistory[pageHistory.length - 1] !== pageId) {
+                pageHistory.push(pageId);
+            }
+        }
+        
+        function goBack() {
+            if (pageHistory.length > 1) {
+                pageHistory.pop();
+                const prevPageId = pageHistory[pageHistory.length - 1];
+                showPage(prevPageId);
+            } else {
+                // 앱 종료 또는 홈 화면으로 이동 로직
+            }
+        }
+
+        function showProductPage(productId) {
+            const pageId = `${productId}-page`;
+            pushHistory(pageId);
+            showPage(pageId);
+        }
+
+        function showChatRoom(chatId) {
+            const pageId = `${chatId}-room`;
+            pushHistory(pageId);
+            showPage(pageId);
+        }
+
+        function toggleHeart(productId) {
+            const heartIcon = document.getElementById(`heart-${productId}`);
+            const isLiked = heartStates[productId] || false;
+            
+            if (isLiked) {
+                heartIcon.innerHTML = '♡';
+                heartIcon.classList.remove('active');
+            } else {
+                heartIcon.innerHTML = '♥';
+                heartIcon.classList.add('active');
+            }
+            heartStates[productId] = !isLiked;
+        }
+
+    </script>
+
+</body>
+</html>

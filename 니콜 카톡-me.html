@@ -1,0 +1,464 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>니콜 하트의 카톡</title>
+    <meta name="description" content="니콜 하트의 카카오톡 시뮬레이터입니다.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
+    <style>
+        :root{
+            --ka-bg-chat:#b2c7d9; --ka-bubble-me:#fee500; --ka-bubble-you:#fff;
+            --ka-text:#111; --ka-meta:#8e9aae; --ka-divider:#e5e5ea; --ka-main-bg:#f7f7f7; --ka-accent:#111;
+            --status-bar-h:28px; --header-h:36px;
+            --tabbar-h:56px; --composer-h:56px;
+        }
+        body{margin:0;background:#333;height:100vh;display:flex;align-items:center;justify-content:center;font-family:'Noto Sans KR',sans-serif}
+        .phone{aspect-ratio:390/844;width:390px;height:844px;max-width:90vw;max-height:90vh;border:12px solid #000;border-radius:50px;background:#000;position:relative;box-shadow:0 0 30px rgba(0,0,0,.5)}
+        .screen{width:100%;height:100%;border-radius:38px;overflow:hidden;display:flex;flex-direction:column;background:var(--ka-main-bg);color:var(--ka-text);position:relative}
+        .page{position:absolute;inset:0;display:flex;flex-direction:column;opacity:0;visibility:hidden;transition:.2s}
+        .page.active{opacity:1;visibility:visible;z-index:10}
+        .status-bar{position:sticky;top:0;height:var(--status-bar-h);display:flex;align-items:center;justify-content:space-between;padding:0 20px;background:rgba(255,255,255,.95);backdrop-filter:blur(8px);z-index:30;font-size:13px;font-weight:600;}
+        .app-header{position:sticky;top:var(--status-bar-h);z-index:25;background:#fff;border-bottom:1px solid var(--ka-divider);padding:6px 12px;font-weight:600;font-size:16px;display:flex;align-items:center;gap:8px;min-height:var(--header-h)}
+        .app-header .back-btn{cursor:pointer;font-size:20px;padding:4px;}
+        #friends .content-body,#chats .content-body,#profile-detail .content-body{padding-top:calc(var(--status-bar-h) + var(--header-h));background:#fff}
+        #chat-detail .content-body{padding-top:calc(var(--status-bar-h) + var(--header-h));background:var(--ka-bg-chat)}
+        .content-body{flex:1;overflow:auto;}
+        .list{display:flex;flex-direction:column}
+        .item{display:flex;align-items:center;gap:12px;padding:10px 14px;background:#fff;border-bottom:1px solid #f2f2f2;cursor:pointer}
+        .item:last-child{border-bottom:none;}
+        .item .info{display:flex;flex-direction:column;gap:3px;flex:1;overflow:hidden;}
+        .item .info .name{font-weight:600;font-size:15px;}
+        .item .info .subtext{font-size:13px;color:var(--ka-meta);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+        .avatar{width:42px;height:42px;border-radius:16px;overflow:hidden;display:flex;align-items:center;justify-content:center;font-weight:700;color:#fff;flex-shrink:0}
+        .avatar.profile{width:70px;height:70px;border-radius:24px;}
+        .avatar img{width:100%;height:100%;object-fit:cover}
+        .avatar.fallback{background:#949aa1;font-size:18px;}
+        .meta{margin-left:auto;font-size:12px;color:var(--ka-meta);display:flex;flex-direction:column;align-items:flex-end;gap:5px;align-self:flex-start;}
+        .badge{min-width:18px;height:18px;padding:0 6px;background:#ff4d4f;color:#fff;border-radius:9px;font-size:12px;display:inline-flex;align-items:center;justify-content:center;font-weight:bold;}
+        .divider{height:1px;background:var(--ka-divider);margin:8px 14px;}
+        .my-profile .name{font-size:18px;} .my-profile .subtext{font-size:14px;}
+        #profile-detail{background:#f0f0f0;justify-content:flex-end;}
+        .profile-card{text-align:center;color:var(--ka-text);padding:80px 0 30px; margin-top:auto;}
+        .profile-card .avatar.profile{margin:0 auto 16px; width:90px; height:90px; border-radius:30px;}
+        .profile-card .name{font-size:20px;font-weight:600;}
+        .profile-card .bio{font-size:15px;color:var(--ka-meta);margin-top:6px;}
+        .profile-actions{display:flex;justify-content:center;gap:10px;padding:20px;border-top:1px solid var(--ka-divider);background:#f0f0f0;}
+        .action-btn{cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:8px;font-size:12px;color:var(--ka-text);width:70px;}
+        .action-btn .icon{width:28px;height:28px;background:rgba(0,0,0,0.05);border-radius:99px;display:flex;align-items:center;justify-content:center;font-size:16px;}
+        .chat-body{display:flex;flex-direction:column;gap:12px;padding:14px;}
+        .msg{display:flex;flex-direction:column;gap:4px;max-width:100%}
+        .msg.me{align-items:flex-end} .msg.you{align-items:flex-start}
+        .bubble{max-width:75%;padding:8px 12px;border-radius:16px;line-height:1.55;word-break:break-word;box-shadow:0 1px 0 rgba(0,0,0,.03)}
+        .bubble.me{background:var(--ka-bubble-me);color:#111;margin-left:52px}
+        .bubble.you{background:var(--ka-bubble-you);color:#111;margin-right:52px}
+        .timestamp{font-size:10px;color:var(--ka-meta)}
+        .timestamp.me{align-self:flex-end;margin-right:6px} .timestamp.you{align-self:flex-start;margin-left:6px}
+        .bubble.me + .timestamp{align-self:flex-end;margin-right:6px}
+        .tabbar{position:absolute;left:0;right:0;bottom:0;height:var(--tabbar-h);display:flex;align-items:center;justify-content:space-around;gap:8px;background:#f9f9f9;border-top:1px solid var(--ka-divider);z-index:40}
+        .tab{flex:1;text-align:center;padding:10px 0;font-weight:700;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:4px;font-size:12px;color:var(--ka-meta)}
+        .tab.active{color:var(--ka-accent)}
+        .tab .icon{font-size:20px;}
+        .page .composer{display:none}
+        #chat-detail .content-body{padding-bottom:calc(var(--composer-h) + 10px)}
+        #chat-detail .composer{display:flex;position:absolute;left:0;right:0;bottom:0;height:var(--composer-h);background:#fff;border-top:1px solid var(--ka-divider);gap:8px;padding:8px 10px; align-items:center;}
+        .composer input{flex:1;height:100%;box-sizing:border-box;padding:10px 12px;border:none;border-radius:12px;background:#f6f6f6;font-size:15px;}
+        .composer button{padding:0 14px;border:none;border-radius:12px;background:var(--ka-bubble-me);color:var(--ka-text);font-weight:700;cursor:pointer;align-self:stretch;font-size:14px; transition: background .2s;}
+        .composer input:not(:placeholder-shown) + button{background:var(--ka-accent); color:#fff;}
+        .screen.chat-mode .tabbar{display:none}
+    </style>
+</head>
+<body>
+<div class="phone">
+    <div class="screen">
+        <div class="status-bar">
+            <span id="clock">오후 9:41</span>
+            <span>📶 LTE 🔋</span>
+        </div>
+        
+        <div class="page active" id="friends">
+            <header class="app-header">친구</header>
+            <div class="content-body">
+                <div class="list" id="friends-list"></div>
+            </div>
+        </div>
+
+        <div class="page" id="chats">
+            <header class="app-header">채팅</header>
+            <div class="content-body">
+                <div class="list" id="chats-list"></div>
+            </div>
+        </div>
+
+        <div class="page" id="chat-detail">
+            <header class="app-header">
+                <span class="back-btn" onclick="showPage('chats')">‹</span>
+                <span id="chat-header-name"></span>
+            </header>
+            <div class="content-body">
+                <div class="chat-body" id="chat-body-content"></div>
+            </div>
+            <div class="composer">
+                <input type="text" id="message-input" placeholder="메시지 입력..." onkeyup="if(event.keyCode===13) sendMessage()">
+                <button onclick="sendMessage()">전송</button>
+            </div>
+        </div>
+
+        <div class="page" id="profile-detail">
+            <header class="app-header" style="background:transparent; border:none; color:#111;">
+                 <span class="back-btn" onclick="showPage('friends')">‹</span>
+            </header>
+            <div class="content-body" style="padding:0; background:transparent;">
+                <div id="profile-card-content"></div>
+                <div class="profile-actions" id="profile-actions-content"></div>
+            </div>
+        </div>
+        
+        <div class="tabbar">
+            <div class="tab active" id="tab-friends" onclick="showPage('friends')">
+                <span class="icon">👤</span><span>친구</span>
+            </div>
+            <div class="tab" id="tab-chats" onclick="showPage('chats')">
+                <span class="icon">💬</span><span>채팅</span>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+const now = new Date();
+const phoneData = {
+    me: {
+        id: "me",
+        name: "니콜 하트",
+        initial: "N",
+        color: "#4a90e2",
+        bio: "Math is the only universal language.",
+        photoUrl: "https://image.pollinations.ai/prompt/glowing%20abstract%20fractal%20geometry"
+    },
+    friends: [
+        { id: "raymon", name: "레이먼 맥카터", initial: "R", bio: "QB1 🏈 | Asbury High", isFavorite: true, color: "#f5a623", photoUrl: "https://image.pollinations.ai/prompt/golden%20retriever%20wearing%20a%20tiny%20football%20helmet" },
+        { id: "andy", name: "앤디 블랙", initial: "A", bio: "...", isFavorite: true, color: "#4a4a4a", photoUrl: "https://image.pollinations.ai/prompt/a%20sleek%20black%20cat%20with%20piercing%20green%20eyes" },
+        { id: "justin", name: "저스틴 밀러", initial: "J", bio: "수학 클럽 📚", isFavorite: false, color: "#7ed321", photoUrl: "https://image.pollinations.ai/prompt/a%20stack%20of%20old%20math%20textbooks" },
+        { id: "mom", name: "엄마", initial: "M", bio: "내 소중한 아들❤️", isFavorite: false, color: "#d0021b", photoUrl: "https://image.pollinations.ai/prompt/a%20cozy%20knitted%20red%20sweater" },
+        { id: "math_prez", name: "수학클럽 회장", initial: "회", bio: "π > e", isFavorite: false, color: "#bd10e0" },
+        { id: "sarah", name: "사라 윌리엄스", initial: "S", bio: "Music is my life 🎧", isFavorite: false, color: "#f8e71c", photoUrl: "https://image.pollinations.ai/prompt/vintage%20cassette%20tape" },
+        { id: "jessica", name: "제시카 첸", initial: "J", bio: "Life is short, eat dessert first.", isFavorite: false, color: "#e4a78a", photoUrl: "https://image.pollinations.ai/prompt/a%20cup%20of%20beautiful%20latte%20art" },
+        { id: "mike", name: "마이크 토레스", initial: "M", bio: "Ball is life 🏀", isFavorite: false, color: "#f56a23", photoUrl: "https://image.pollinations.ai/prompt/a%20basketball%20on%20an%20outdoor%20court" },
+        { id: "emma", name: "엠마 데이비스", initial: "E", bio: "Art student", isFavorite: false, color: "#50e3c2", photoUrl: "https://image.pollinations.ai/prompt/a%20paintbrush%20with%20colorful%20paint" },
+        { id: "tyler", name: "타일러 존슨", initial: "T", bio: "Skate or die", isFavorite: false, color: "#9013fe", photoUrl: "https://image.pollinations.ai/prompt/a%20cool%20skateboard%20with%20graffiti" },
+        { id: "coach_j", name: "존슨 코치님", initial: "코", bio: "Asbury High Football Coach", isFavorite: false, color: "#053476", photoUrl: "https://image.pollinations.ai/prompt/a%20silver%20coach's%20whistle" }
+    ],
+    chats: [
+        {
+            id: "chat_raymon", with: "raymon", lastMessage: "금요일에 보자! 기대할게 😉", unread: 0, updatedAt: new Date(now.getTime() - 60000 * 2),
+            messages: [
+                { from: "you", text: "니키, 어제 영화볼 때 진짜 귀여웠어ㅋㅋ", time: new Date(now.getTime() - 60000 * 120) },
+                { from: "me", text: "뭐래. 그냥 좀 피곤해서 그랬어.", time: new Date(now.getTime() - 60000 * 119) },
+                { from: "you", text: "피곤한 사람이 그렇게 어깨를 들썩이면서 봐? 😂", time: new Date(now.getTime() - 60000 * 118) },
+                { from: "you", text: "아무튼, 너랑 같이 있으니까 좋더라.", time: new Date(now.getTime() - 60000 * 117) },
+                { from: "me", text: "...", time: new Date(now.getTime() - 60000 * 116) },
+                { from: "me", text: "나도.. 나쁘진 않았어.", time: new Date(now.getTime() - 60000 * 115) },
+                { from: "you", text: "봐봐! 솔직하질 못해요 아주", time: new Date(now.getTime() - 60000 * 114) },
+                { from: "you", text: "이번 주 금요일 파티 말이야", time: new Date(now.getTime() - 60000 * 50) },
+                { from: "you", text: "저녁 7시부터 시작할거야. 너무 늦게 오지 마", time: new Date(now.getTime() - 60000 * 49) },
+                { from: "me", text: "알았어. 7시.", time: new Date(now.getTime() - 60000 * 48) },
+                { from: "you", text: "애들 많이 올 건데, 불편하면 나나 앤디 옆에 꼭 붙어있어", time: new Date(now.getTime() - 60000 * 47) },
+                { from: "me", text: "내가 애도 아니고.. 괜찮아.", time: new Date(now.getTime() - 60000 * 46) },
+                { from: "you", text: "우리한텐 아직 애기 같은데? ㅋㅋ", time: new Date(now.getTime() - 60000 * 45) },
+                { from: "me", text: "ㅡㅡ", time: new Date(now.getTime() - 60000 * 44) },
+                { from: "you", text: "알았어 알았어 화내지마", time: new Date(now.getTime() - 60000 * 43) },
+                { from: "you", text: "그날은 공부 생각하지 말고 그냥 푹 쉬어. 알았지?", time: new Date(now.getTime() - 60000 * 10) },
+                { from: "me", text: "응. 그럴게.", time: new Date(now.getTime() - 60000 * 9) },
+                { from: "you", text: "금요일에 보자! 기대할게 😉", time: new Date(now.getTime() - 60000 * 2) },
+            ]
+        },
+        {
+            id: "chat_andy", with: "andy", lastMessage: "그래.", unread: 1, updatedAt: new Date(now.getTime() - 60000 * 5),
+            messages: [
+                { from: "you", text: "어제 그렇게 긴장할 줄은 몰랐네.", time: new Date(now.getTime() - 60000 * 150) },
+                { from: "me", text: "긴장한 거 아니라고.", time: new Date(now.getTime() - 60000 * 149) },
+                { from: "you", text: "귀 빨개진 건 어떻게 설명할 건데.", time: new Date(now.getTime() - 60000 * 148) },
+                { from: "me", text: "그건... 방이 더워서 그랬어.", time: new Date(now.getTime() - 60000 * 147) },
+                { from: "you", text: "핑계.", time: new Date(now.getTime() - 60000 * 146) },
+                { from: "you", text: "저스틴이랑 스터디는 어땠어.", time: new Date(now.getTime() - 60000 * 80) },
+                { from: "me", text: "그냥.. 수학 문제 풀었지 뭐.", time: new Date(now.getTime() - 60000 * 79) },
+                { from: "you", text: "걔가 너한테 뭐 이상한 짓 안 했고?", time: new Date(now.getTime() - 60000 * 78) },
+                { from: "me", text: "전혀. 그냥 스터디만 했어.", time: new Date(now.getTime() - 60000 * 77) },
+                { from: "you", text: "그래.", time: new Date(now.getTime() - 60000 * 76) },
+                { from: "you", text: "금요일에 레이먼 집에서 하는 파티.", time: new Date(now.getTime() - 60000 * 15) },
+                { from: "you", text: "시끄러울 거야. 각오해.", time: new Date(now.getTime() - 60000 * 14) },
+                { from: "me", text: "알아. 괜찮아.", time: new Date(now.getTime() - 60000 * 13) },
+                { from: "you", text: "불편하면 나한테 말해.", time: new Date(now.getTime() - 60000 * 12) },
+                { from: "me", text: "응. 고마워.", time: new Date(now.getTime() - 60000 * 11) },
+                { from: "you", text: "그래.", time: new Date(now.getTime() - 60000 * 5) },
+            ]
+        },
+        {
+            id: "group_math", with: "math_prez", lastMessage: "네, 회장님.", unread: 0, updatedAt: new Date(now.getTime() - 60000 * 180),
+            messages: [
+                { from: "you", text: "수학 클럽 멤버들께 알립니다. 다음 주 경시대회 대비 최종 모의고사가 토요일 오전에 있습니다.", time: new Date(now.getTime() - 60000 * 182) },
+                { from: "you", text: "모두 필참해주시기 바랍니다.", time: new Date(now.getTime() - 60000 * 181) },
+                { from: "me", text: "네, 회장님.", time: new Date(now.getTime() - 60000 * 180) },
+            ]
+        },
+        {
+            id: "chat_justin", with: "justin", lastMessage: "그래. 다음 스터디 때 보자.", unread: 0, updatedAt: new Date(now.getTime() - 60000 * 240),
+            messages: [
+                { from: "you", text: "니콜, 어제 스터디 정말 고마웠어! 네 설명 덕분에 어려운 문제 다 이해했어.", time: new Date(now.getTime() - 60000 * 243) },
+                { from: "me", text: "별거 아냐. 다들 열심히 했으니까.", time: new Date(now.getTime() - 60000 * 242) },
+                { from: "you", text: "다음에 또 같이 스터디 할 수 있을까? 너랑 하면 집중이 더 잘 되는 것 같아!", time: new Date(now.getTime() - 60000 * 241) },
+                { from: "me", text: "그래. 다음 스터디 때 보자.", time: new Date(now.getTime() - 60000 * 240) },
+            ]
+        },
+        {
+            id: "chat_mom", with: "mom", lastMessage: "네 엄마, 걱정마세요. 잘 챙겨먹고 있어요.", unread: 0, updatedAt: new Date(now.getTime() - 60000 * 480),
+            messages: [
+                { from: "you", text: "아들, 밥은 잘 챙겨 먹고 다니니? 엄마가 항상 걱정이야.", time: new Date(now.getTime() - 60000 * 482) },
+                { from: "you", text: "공부도 좋지만 건강이 최고란다.", time: new Date(now.getTime() - 60000 * 481) },
+                { from: "me", text: "네 엄마, 걱정마세요. 잘 챙겨먹고 있어요.", time: new Date(now.getTime() - 60000 * 480) },
+            ]
+        },
+        {
+            id: "chat_mike", with: "mike", lastMessage: "미안, 주말엔 좀 바빠서.", unread: 0, updatedAt: new Date(now.getTime() - 60000 * 900),
+            messages: [
+                { from: "you", text: "헤이 니콜, 이번 주말에 농구 한 게임 어때?", time: new Date(now.getTime() - 60000 * 901) },
+                { from: "me", text: "미안, 주말엔 좀 바빠서.", time: new Date(now.getTime() - 60000 * 900) },
+            ]
+        },
+        {
+            id: "chat_jessica", with: "jessica", lastMessage: "응, 보내줄게. 잠깐만.", unread: 0, updatedAt: new Date(now.getTime() - 60000 * 1500),
+            messages: [
+                { from: "you", text: "니콜, 혹시 어제 역사 수업 필기한 거 사진 좀 보내줄 수 있어? ㅠㅠ", time: new Date(now.getTime() - 60000 * 1501) },
+                { from: "me", text: "응, 보내줄게. 잠깐만.", time: new Date(now.getTime() - 60000 * 1500) },
+            ]
+        },
+        {
+            id: "chat_coach_j", with: "coach_j", lastMessage: "감사합니다. 저도 열심히 하겠습니다.", unread: 0, updatedAt: new Date(now.getTime() - 60000 * 2500),
+            messages: [
+                { from: "you", text: "하트 학생, 자네 성적표를 봤네. 아주 훌륭해. 우리 팀 선수들에게도 좋은 귀감이 되고 있어.", time: new Date(now.getTime() - 60000 * 2501) },
+                { from: "me", text: "감사합니다. 저도 열심히 하겠습니다.", time: new Date(now.getTime() - 60000 * 2500) },
+            ]
+        }
+    ]
+};
+
+let currentChatId = null;
+let currentOpenPage = 'friends';
+
+function avatarEl(entity, isProfile = false) {
+    const className = `avatar ${isProfile ? 'profile' : ''}`;
+    if (entity.photoUrl) {
+        return `<div class="${className}"><img src="${entity.photoUrl}" alt="${entity.name}"></div>`;
+    }
+    return `<div class="${className} fallback" style="background-color:${entity.color || '#949aa1'}">${entity.initial}</div>`;
+}
+
+function formatTime(t) {
+    if(!t) return '';
+    const date = new Date(t);
+    return date.toLocaleString('ko-KR', { hour: 'numeric', minute: 'numeric', hour12: true });
+}
+
+function renderFriends() {
+    const listEl = document.getElementById('friends-list');
+    
+    const myProfileHtml = `
+        <div class="item my-profile" onclick="openProfile('${phoneData.me.id}')">
+            ${avatarEl(phoneData.me, true)}
+            <div class="info">
+                <div class="name">${phoneData.me.name}</div>
+                <div class="subtext">${phoneData.me.bio}</div>
+            </div>
+        </div>
+        <div class="divider"></div>
+    `;
+
+    const sortedFriends = [...phoneData.friends].sort((a, b) => {
+        if (a.isFavorite && !b.isFavorite) return -1;
+        if (!a.isFavorite && b.isFavorite) return 1;
+        return a.name.localeCompare(b.name);
+    });
+
+    const friendsHtml = sortedFriends.map(friend => `
+        <div class="item" onclick="openProfile('${friend.id}')">
+            ${avatarEl(friend)}
+            <div class="info">
+                <div class="name">${friend.name}</div>
+                <div class="subtext">${friend.bio || ''}</div>
+            </div>
+        </div>
+    `).join('');
+
+    listEl.innerHTML = myProfileHtml + friendsHtml;
+}
+
+function renderChats() {
+    const listEl = document.getElementById('chats-list');
+    const sortedChats = [...phoneData.chats].sort((a, b) => b.updatedAt - a.updatedAt);
+    const chatsHtml = sortedChats.map(chat => {
+        const friend = phoneData.friends.find(f => f.id === chat.with);
+        let chatPartner = friend || (chat.with === "math_prez" ? {name: "수학클럽", initial: "수", color: "#bd10e0"} : {name: "알 수 없음", initial:"?"});
+        return `
+        <div class="item" onclick="openChat('${chat.id}')">
+            ${avatarEl(chatPartner)}
+            <div class="info">
+                <div class="name">${chatPartner.name}</div>
+                <div class="subtext">${chat.lastMessage}</div>
+            </div>
+            <div class="meta">
+                <span>${formatTime(chat.updatedAt)}</span>
+                ${chat.unread > 0 ? `<div class="badge">${chat.unread}</div>` : ''}
+            </div>
+        </div>
+    `}).join('');
+    listEl.innerHTML = chatsHtml;
+}
+
+function renderChatDetail(chat) {
+    const friend = phoneData.friends.find(f => f.id === chat.with);
+    let chatPartner = friend || (chat.with === "math_prez" ? {name: "수학클럽", initial: "수", color: "#bd10e0"} : {name: "알 수 없음", initial:"?"});
+
+    document.getElementById('chat-header-name').textContent = chatPartner.name;
+    const chatBody = document.getElementById('chat-body-content');
+    
+    const messagesHtml = chat.messages.map(msg => {
+        const fromClass = msg.from === 'me' ? 'me' : 'you';
+        return `
+            <div class="msg ${fromClass}">
+                <div class="bubble ${fromClass}">${msg.text}</div>
+                <div class="timestamp ${fromClass}">${formatTime(msg.time)}</div>
+            </div>
+        `;
+    }).join('');
+
+    chatBody.innerHTML = messagesHtml;
+    chatBody.parentElement.scrollTop = chatBody.parentElement.scrollHeight;
+}
+
+
+function openProfile(entityId) {
+    const isMe = entityId === phoneData.me.id;
+    const entity = isMe ? phoneData.me : phoneData.friends.find(f => f.id === entityId);
+    if (!entity) return;
+
+    const profileCard = document.getElementById('profile-card-content');
+    const profileActions = document.getElementById('profile-actions-content');
+
+    profileCard.innerHTML = `
+        <div class="profile-card">
+            ${avatarEl(entity, true)}
+            <div class="name">${entity.name}</div>
+            <div class="bio">${entity.bio || ''}</div>
+        </div>
+    `;
+
+    if (isMe) {
+        profileActions.innerHTML = `
+            <div class="action-btn">
+                <div class="icon">✏️</div>
+                <span>프로필 편집</span>
+            </div>
+        `;
+    } else {
+        profileActions.innerHTML = `
+            <div class="action-btn" onclick="openChatByFriendId('${entity.id}')">
+                <div class="icon">💬</div>
+                <span>1:1 채팅</span>
+            </div>
+        `;
+    }
+    showPage('profile-detail');
+}
+
+
+function openChatByFriendId(friendId) {
+    let chat = phoneData.chats.find(c => c.with === friendId);
+    if (!chat) {
+        chat = {
+            id: 'chat_' + friendId,
+            with: friendId,
+            lastMessage: '',
+            unread: 0,
+            updatedAt: new Date(),
+            messages: []
+        };
+        phoneData.chats.push(chat);
+    }
+    openChat(chat.id);
+}
+
+function openChat(chatId) {
+    const chat = phoneData.chats.find(c => c.id === chatId);
+    if (!chat) return;
+
+    if (chat.unread > 0) {
+        chat.unread = 0;
+        renderChats();
+    }
+    
+    currentChatId = chatId;
+    renderChatDetail(chat);
+    showPage('chat-detail');
+}
+
+function sendMessage() {
+    const input = document.getElementById('message-input');
+    const text = input.value.trim();
+    if (!text || !currentChatId) return;
+
+    const chat = phoneData.chats.find(c => c.id === currentChatId);
+    if (!chat) return;
+
+    const newMessage = {
+        from: 'me',
+        text: text,
+        time: new Date()
+    };
+    
+    chat.messages.push(newMessage);
+    chat.lastMessage = text;
+    chat.updatedAt = new Date();
+
+    input.value = '';
+
+    renderChatDetail(chat);
+    renderChats(); // Re-render chat list to update order and preview
+}
+
+function showPage(id) {
+    document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+    const targetPage = document.getElementById(id);
+    if (targetPage) targetPage.classList.add('active');
+    
+    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+    const targetTab = document.getElementById(`tab-${id}`);
+    if (targetTab) targetTab.classList.add('active');
+
+    const screen = document.querySelector('.screen');
+    if (screen) {
+        if (id === 'chat-detail') {
+            screen.classList.add('chat-mode');
+        } else {
+            screen.classList.remove('chat-mode');
+        }
+    }
+    currentOpenPage = id;
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+    renderFriends();
+    renderChats();
+    const clockEl = document.getElementById('clock');
+    if(clockEl) {
+       clockEl.textContent = formatTime(new Date());
+       setInterval(() => {
+           clockEl.textContent = formatTime(new Date());
+       }, 60000);
+    }
+});
+</script>
+</body>
+</html>

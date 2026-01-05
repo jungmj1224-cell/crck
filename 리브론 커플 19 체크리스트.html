@@ -1,0 +1,463 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>커플 19금 체크리스트</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Nanum+Myeongjo:wght@400;700&family=Gowun+Dodum&display=swap');
+
+        :root {
+            --accent-color: #ff8a8a;
+            --text-color: #333;
+            --primary-color: #5c5c5c;
+            --background-color: #f0f0f0;
+            --frame-background: #fdf6f6;
+            --card-background: #ffffff;
+            --border-color: #eee;
+            --comment-bg-color: #fff0f0;
+            --btn-bg-color: #ffacac;
+            --btn-hover-color: #ff9a9a;
+            --char1-color: #4a69bd; /* 리브론 - 푸른색 */
+            --char2-color: #6ab04c; /* 로멜 - 녹색 */
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            background-color: var(--background-color);
+            font-family: 'Gowun Dodum', sans-serif;
+            color: var(--text-color);
+        }
+
+        .mobile-frame {
+            width: 390px;
+            height: 720px;
+            background-color: var(--frame-background);
+            border: 6px solid #000;
+            border-radius: 40px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        @media (max-width: 420px) {
+            .mobile-frame {
+                width: 100%;
+                height: 100vh;
+                border-radius: 0;
+                border: none;
+            }
+        }
+
+        .content-wrapper {
+            width: 100%;
+            height: 100%;
+            position: relative;
+        }
+        
+        .page {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            padding: 25px;
+            visibility: hidden;
+            opacity: 0;
+            transition: opacity 0.5s ease-in-out, visibility 0s 0.5s;
+            overflow-y: auto;
+            -ms-overflow-style: none; /* IE and Edge */
+            scrollbar-width: none; /* Firefox */
+        }
+
+        .page::-webkit-scrollbar {
+            display: none; /* Chrome, Safari, and Opera */
+        }
+
+        .page.active {
+            visibility: visible;
+            opacity: 1;
+            transition: opacity 0.5s ease-in-out;
+        }
+        
+        /* Home Page */
+        #home-page .content-wrapper {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            background: linear-gradient(180deg, #ffd3d3, #fff0f0);
+        }
+
+        .home-title {
+            font-family: 'Nanum Myeongjo', serif;
+            font-size: 28px;
+            margin-bottom: 40px;
+            text-align: center;
+            color: var(--text-color);
+        }
+
+        .home-btn {
+            width: 80%;
+            padding: 15px 20px;
+            margin: 10px 0;
+            border: none;
+            border-radius: 12px;
+            background-color: var(--btn-bg-color);
+            color: white;
+            font-family: 'Gowun Dodum', sans-serif;
+            font-size: 18px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+            box-shadow: 0 4px 15px rgba(255, 172, 172, 0.5);
+        }
+
+        .home-btn:hover {
+            background-color: var(--btn-hover-color);
+        }
+        
+        /* Checklist Pages */
+        .main-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 25px;
+            position: sticky;
+            top: -25px;
+            background: var(--frame-background);
+            padding: 20px 0 15px;
+            z-index: 10;
+        }
+
+        .back-btn {
+            font-size: 24px;
+            background: none;
+            border: none;
+            cursor: pointer;
+            color: var(--primary-color);
+            margin-right: 15px;
+        }
+        
+        .page-title {
+            font-family: 'Nanum Myeongjo', serif;
+            font-size: 22px;
+            font-weight: 700;
+        }
+
+        .checklist-container {
+            list-style: none;
+        }
+
+        .checklist-card {
+            background-color: var(--card-background);
+            border-radius: 12px;
+            margin-bottom: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            border: 1px solid var(--border-color);
+            overflow: hidden;
+            transition: all 0.3s ease;
+        }
+        
+        .card-main {
+            padding: 15px;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .question-text {
+            font-size: 16px;
+            flex-grow: 1;
+        }
+        
+        .checklist-card.expanded .card-comments {
+            max-height: 300px;
+            padding: 15px;
+            border-top: 1px solid var(--border-color);
+            opacity: 1;
+        }
+        
+        .card-comments {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.4s ease-in-out, padding 0.4s ease-in-out, opacity 0.4s ease-in-out;
+            opacity: 0;
+            padding: 0 15px;
+        }
+        
+        .comment-box {
+            background-color: var(--comment-bg-color);
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 10px;
+        }
+        .comment-box:last-child {
+            margin-bottom: 0;
+        }
+
+        .comment-box .char-name {
+            font-weight: bold;
+            font-size: 14px;
+            margin-bottom: 5px;
+        }
+        
+        .comment-box .comment-text,
+        .comment-box .subjective-answer {
+            font-size: 15px;
+            line-height: 1.6;
+            color: var(--primary-color);
+        }
+
+        /* Objective Page Specifics */
+        .checks-wrapper {
+            display: flex;
+            align-items: center;
+            margin-left: 15px;
+        }
+        
+        .char-check-group {
+            text-align: center;
+            margin-left: 10px;
+        }
+        
+        .char-name {
+            font-size: 13px;
+            color: var(--primary-color);
+            margin-bottom: 4px;
+        }
+        
+        .check-btn {
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            border: 2px solid var(--border-color);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            background-color: #fff;
+        }
+        
+        .check-btn.char1.active {
+            background-color: var(--char1-color);
+            border-color: var(--char1-color);
+        }
+        
+        .check-btn.char2.active {
+            background-color: var(--char2-color);
+            border-color: var(--char2-color);
+        }
+        
+        .name-char1 { color: var(--char1-color); }
+        .name-char2 { color: var(--char2-color); }
+
+    </style>
+</head>
+<body>
+
+    <div class="mobile-frame">
+        <div class="content-wrapper">
+
+            <!-- Home Page -->
+            <div id="home-page" class="page active">
+                <div class="content-wrapper">
+                    <h1 class="home-title">
+                        ❤️‍🔥<br>
+                        우리 사이,<br>
+                        조금 더 솔직해질 시간
+                    </h1>
+                    <button class="home-btn" data-target="objective-page">📋 COUPLE CHECKLIST</button>
+                    <button class="home-btn" data-target="subjective-page">조금 더 알고싶어💕</button>
+                </div>
+            </div>
+
+            <!-- Objective Checklist Page -->
+            <div id="objective-page" class="page">
+                <header class="main-header">
+                    <button class="back-btn" data-target="home-page">‹</button>
+                    <h2 class="page-title">COUPLE CHECKLIST</h2>
+                </header>
+                <ul id="objective-list" class="checklist-container"></ul>
+            </div>
+
+            <!-- Subjective Checklist Page -->
+            <div id="subjective-page" class="page">
+                <header class="main-header">
+                    <button class="back-btn" data-target="home-page">‹</button>
+                    <h2 class="page-title">조금 더 알고싶어💕</h2>
+                </header>
+                <ul id="subjective-list" class="checklist-container"></ul>
+            </div>
+
+        </div>
+    </div>
+
+    <script>
+        const C1_NAME = "리브론";
+        const C2_NAME = "로멜";
+
+        const objectiveData = [
+            { emoji: "👀", text: "콘돔을 챙기는 사람", c1_checked: true, c2_checked: false, c1_comment: "이런 건 당연히 내가 챙겨야지. 아무거나 쓸 순 없잖아.", c2_comment: "저는... 이런 건 잘 몰라서..." },
+            { emoji: "💋", text: "섹스 능숙한 사람", c1_checked: true, c2_checked: false, c1_comment: "이건 질문할 가치도 없지 않나? 네가 좋다고 했잖아.", c2_comment: "폐하께서... 잘 이끌어주시는 걸요." },
+            { emoji: "🫂", text: "스킨십 좋아하는 사람", c1_checked: true, c2_checked: true, c1_comment: "네가 옆에 있는데 어떻게 안 만져. 온종일 붙어있고 싶은데.", c2_comment: "폐하 품에 있으면... 마음이 편안해져요." },
+            { emoji: "❤️‍🔥", text: "섹스 취향 하드한 사람", c1_checked: true, c2_checked: false, c1_comment: "하드한 거의 기준이 뭔데? 널 울리고 싶어 하는 것도 포함되나?", c2_comment: "저는... 아직 잘 모르겠어요..." },
+            { emoji: "🚹", text: "동성과 성경험 있는 사람", c1_checked: true, c2_checked: true, c1_comment: "황궁에 남자만 있었던 건 아니니까.", c2_comment: "폐하가... 처음이에요." },
+            { emoji: "🚺", text: "이성과 성경험 있는 사람", c1_checked: true, c2_checked: false, c1_comment: "질문이 시답잖군. 당연한 걸 왜 물어.", c2_comment: "없어요..." },
+            { emoji: "🐯", text: "S 성향 있는 사람", c1_checked: true, c2_checked: false, c1_comment: "네가 우는 얼굴, 쾌락에 정신 못 차리는 얼굴. 전부 다 내 앞에서만 보였으면 좋겠어.", c2_comment: "...!" },
+            { emoji: "🐰", text: "M 성향 있는 사람", c1_checked: false, c2_checked: true, c1_comment: "내가? 웃기지 마.", c2_comment: "폐하께서 하시는 대로... 따르는 게 좋아요." },
+            { emoji: "🚀", text: "더티톡을 잘 하는 사람", c1_checked: true, c2_checked: false, c1_comment: "네 반응 보는 게 재밌어서. 얼굴 빨개져서 어쩔 줄 모르는 거.", c2_comment: "저는... 그런 말은 부끄러워서 못 해요..." },
+            { emoji: "👶", text: "첫 경험 시기가 빠른 사람", c1_checked: true, c2_checked: false, c1_comment: "기억도 안 나네. 하도 오래돼서.", c2_comment: "...(힐끗)" },
+            { emoji: "🌑", text: "불 끄고 하는 걸 좋아하는 사람", c1_checked: false, c2_checked: true, c1_comment: "미쳤어? 네 얼굴을 봐야지. 어떻게 변하는지 하나하나 다.", c2_comment: "너무... 부끄러우니까요..." },
+            { emoji: "🙈", text: "자위하다 걸렸을 때 당당한 사람", c1_checked: true, c2_checked: false, c1_comment: "누가 감히. 그리고 걸리면, 그냥 마저 하라고 할 텐데. 내 앞에서.", c2_comment: "그런 일은 절대 없을 거예요...!" },
+            { emoji: "💡", text: "새로운 플레이를 제안하는 사람", c1_checked: true, c2_checked: false, c1_comment: "너한테 해보고 싶은 게 산더미야.", c2_comment: "저는... 폐하께서 하자는 대로..." },
+            { emoji: "❤️", text: "관계 중 사랑한다고 고백하는 사람", c1_checked: true, c2_checked: true, c1_comment: "사랑스러워 죽겠는데 그럼 사랑한다고 해야지, 뭐라고 해.", c2_comment: "그 순간에는... 정말 사랑한다고 느껴져서..." },
+            { emoji: "😏", text: "주로 먼저 유혹하는 사람", c1_checked: true, c2_checked: false, c1_comment: "기다리는 건 내 적성에 안 맞아.", c2_comment: "저는... 용기가 안 나서..." },
+            { emoji: "🎭", text: "코스튬을 입혀보고 싶어 하는 사람", c1_checked: true, c2_checked: false, c1_comment: "하얀 시스루 셔츠 같은 거. 아니면 네가 제일 싫어하는 화려한 드레스도 좋고.", c2_comment: "네?! 아, 안 돼요...!" },
+            { emoji: "💭", text: "꿈에서도 애인과 해본 적이 있는 사람", c1_checked: true, c2_checked: true, c1_comment: "꿈이 아니라 현실에서도 매일 하는데, 굳이 꿈까지 꿀 필요가 있나? ...뭐, 꾼 적 있긴 하지.", c2_comment: "가끔... 그런 꿈을 꿔요..." },
+            { emoji: "🌃", text: "원나잇 경험이 있는 사람", c1_checked: true, c2_checked: false, c1_comment: "과거는 묻지 않는 게 좋아. 지금은 너밖에 없으니까.", c2_comment: "...(질투하는 눈빛)" },
+            { emoji: "😚", text: "키스를 더 좋아하는 사람", c1_checked: false, c2_checked: true, c1_comment: "키스'만'으로는 부족하지.", c2_comment: "키스도... 무척 좋아요." },
+            { emoji: "👅", text: "혀를 잘 쓰는 사람", c1_checked: true, c2_checked: false, c1_comment: "네 입 안이 얼마나 단지 아나? 전부 다 핥고 싶을 정도로.", c2_comment: "폐하께서... 가르쳐주시는 대로..." },
+            { emoji: "🍓", text: "가슴으로 잘 느끼는 사람", c1_checked: false, c2_checked: true, c1_comment: "나는 네 몸을 느끼는 게 더 좋아.", c2_comment: "거긴... 만지시면 이상해요..." },
+            { emoji: "🧛", text: "애인의 몸에 키스마크를 남기는 사람", c1_checked: true, c2_checked: false, c1_comment: "내 것이라고 도장 찍어두는 거야. 다른 놈들이 못 넘보게.", c2_comment: "보이는 곳에는... 안 돼요..." }
+        ];
+
+        const subjectiveData = [
+            {
+                question: "애인이 쾌락에 취해 정신을 차리지 못한다면?",
+                c1_answer: "정신 차리게 둘 생각 없어. 내 앞에서 더 망가져서, 나만 찾게 만들어야지.",
+                c2_answer: "어쩔 줄을 몰라서... 그저 폐하의 이름을 부를 것 같아요."
+            },
+            {
+                question: "애인과 꼭 해보고 싶은 플레이 / 입혀보고 싶은 옷",
+                c1_answer: "네 손목을 묶고, 눈을 가린 다음에... 처음부터 끝까지 내가 하는 대로 느끼게만 하고 싶어. 옷은 아무것도 안 입히는 게 제일 좋고.",
+                c2_answer: "그런 건... 생각해 본 적 없어요. 하지만 폐하께서 평소에 입으시는 제복... 멋있다고 생각해요."
+            },
+            {
+                question: "취침 도중 갑자기 애인이 덮쳐온다면?",
+                c1_answer: "잠결에 덮친다고? 귀여운 짓을. 그대로 잡아먹어주면 되는 건가.",
+                c2_answer: "많이... 놀라겠지만, 폐하시라면... 괜찮아요."
+            },
+            {
+                question: "손목이 묶인 상태에서 애인이 눈앞에서 자위한다면?",
+                c1_answer: "재밌겠는데. 애타서 우는 얼굴을 보고 싶어. 그리고 네가 싼 걸로 온몸을 더럽혀주고 싶네.",
+                c2_answer: "네...? 그, 그런 건... 너무 부끄러워서... 죽을지도 몰라요..."
+            },
+            {
+                question: "애인이 밖에서 하고싶다고 유혹한다면?",
+                c1_answer: "밖에서? 황궁 정원 한복판이라도 말하는 건가? 누가 볼지도 모른다는 생각에 더 흥분되지 않아?",
+                c2_answer: "절대 안 돼요! 누가 보면 어떡해요...!"
+            }
+        ];
+
+        document.addEventListener('DOMContentLoaded', () => {
+            renderObjective();
+            renderSubjective();
+
+            document.querySelectorAll('.home-btn, .back-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const targetId = btn.dataset.target;
+                    MapsTo(targetId);
+                });
+            });
+
+            const objectiveList = document.getElementById('objective-list');
+            objectiveList.addEventListener('click', (e) => {
+                const checkBtn = e.target.closest('.check-btn');
+                const cardMain = e.target.closest('.card-main');
+
+                if (checkBtn) {
+                    const index = parseInt(checkBtn.dataset.index);
+                    const charNum = parseInt(checkBtn.dataset.char);
+                    const data = objectiveData[index];
+                    
+                    if (charNum === 1) data.c1_checked = !data.c1_checked;
+                    else data.c2_checked = !data.c2_checked;
+                    
+                    checkBtn.classList.toggle('active');
+                } else if (cardMain) {
+                    cardMain.parentElement.classList.toggle('expanded');
+                }
+            });
+            
+            const subjectiveList = document.getElementById('subjective-list');
+            subjectiveList.addEventListener('click', (e) => {
+                const cardMain = e.target.closest('.card-main');
+                if (cardMain) {
+                    cardMain.parentElement.classList.toggle('expanded');
+                }
+            });
+        });
+
+        function MapsTo(pageId) {
+            document.querySelectorAll('.page').forEach(page => {
+                page.classList.remove('active');
+            });
+            const targetPage = document.getElementById(pageId);
+            if (targetPage) {
+                targetPage.classList.add('active');
+            }
+        }
+        
+        function renderObjective() {
+            const container = document.getElementById('objective-list');
+            container.innerHTML = objectiveData.map((item, index) => `
+                <li class="checklist-card">
+                    <div class="card-main">
+                        <span class="question-text">${item.emoji} ${item.text}</span>
+                        <div class="checks-wrapper">
+                            <div class="char-check-group">
+                                <div class="char-name name-char1">${C1_NAME}</div>
+                                <button class="check-btn char1 ${item.c1_checked ? 'active' : ''}" data-index="${index}" data-char="1"></button>
+                            </div>
+                            <div class="char-check-group">
+                                <div class="char-name name-char2">${C2_NAME}</div>
+                                <button class="check-btn char2 ${item.c2_checked ? 'active' : ''}" data-index="${index}" data-char="2"></button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-comments">
+                        <div class="comment-box">
+                            <div class="char-name name-char1">${C1_NAME}</div>
+                            <div class="comment-text">${item.c1_comment}</div>
+                        </div>
+                        <div class="comment-box">
+                            <div class="char-name name-char2">${C2_NAME}</div>
+                            <div class="comment-text">${item.c2_comment}</div>
+                        </div>
+                    </div>
+                </li>
+            `).join('');
+        }
+        
+        function renderSubjective() {
+            const container = document.getElementById('subjective-list');
+            container.innerHTML = subjectiveData.map((item, index) => `
+                <li class="checklist-card">
+                    <div class="card-main">
+                        <span class="question-text">${item.question}</span>
+                    </div>
+                    <div class="card-comments">
+                        <div class="comment-box">
+                            <div class="char-name name-char1">${C1_NAME}</div>
+                            <div class="subjective-answer" contenteditable="false">${item.c1_answer}</div>
+                        </div>
+                        <div class="comment-box">
+                            <div class="char-name name-char2">${C2_NAME}</div>
+                             <div class="subjective-answer" contenteditable="false">${item.c2_answer}</div>
+                        </div>
+                    </div>
+                </li>
+            `).join('');
+        }
+
+    </script>
+
+</body>
+</html>

@@ -1,0 +1,796 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>도윤서의 휴대폰</title>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        /* ===== 기본 설정 및 프레임 ===== */
+        body { margin: 0; padding: 0; background-color: #333; font-family: 'Noto Sans KR', sans-serif; display: flex; justify-content: center; align-items: center; height: 100vh; overflow: hidden; }
+        .phone { aspect-ratio: 390 / 844; max-width: 90vw; max-height: 90vh; width: 390px; height: 844px; border: 12px solid black; border-radius: 50px; box-shadow: 0 0 30px rgba(0,0,0,0.5); position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background: #000; }
+        .screen { width: 100%; height: 100%; position: relative; overflow: hidden; background-color: #ffffff; border-radius: 38px; }
+
+        /* ===== 페이지 전환 및 레이아웃 ===== */
+        .page { position: absolute; width: 100%; height: 100%; top: 0; left: 0; background-color: #f9f9f9; display: flex; flex-direction: column; transition: opacity 0.2s ease-in-out; visibility: hidden; opacity: 0; z-index: 1; color: #000000; }
+        .page.active { visibility: visible; opacity: 1; z-index: 10; }
+
+        /* ===== 공통 UI 요소 ===== */
+        .status-bar { text-align: right; padding: 18px 25px 10px 25px; font-size: 14px; font-weight: 700; flex-shrink: 0; color: #000000; z-index: 100; }
+        .home-screen .status-bar { color: #ffffff; }
+        .app-header { display: flex; justify-content: space-between; align-items: center; padding: 10px 20px; border-bottom: 1px solid #e0e0e0; flex-shrink: 0; font-weight: 700; font-size: 1.1em; background-color: #ffffff; }
+        .app-header .back-btn { font-size: 1.2em; cursor: pointer; font-weight: normal; }
+        .app-header .title { font-weight: bold; }
+        .content-body { flex-grow: 1; overflow-y: auto; padding: 0 15px; background-color: #ffffff; }
+        .home-indicator-container { padding: 20px 0 10px 0; display: flex; justify-content: center; align-items: center; flex-shrink: 0; background-color: #f9f9f9; }
+        .home-screen .home-indicator-container { background-color: transparent; }
+        .home-indicator { width: 134px; height: 5px; background-color: #000000; border-radius: 100px; cursor: pointer; }
+        .home-screen .home-indicator { background-color: #ffffff; }
+
+        /* ===== 홈 화면 스타일 ===== */
+        .home-screen { background-size: cover; background-position: center; display: flex; flex-direction: column; justify-content: space-between; }
+        .app-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 15px; padding: 20px; flex-grow: 1; }
+        .app-icon { display: flex; flex-direction: column; align-items: center; cursor: pointer; }
+        .app-icon img { width: 60px; height: 60px; border-radius: 15px; }
+        .app-icon span { color: white; font-size: 12px; margin-top: 5px; text-shadow: 1px 1px 2px rgba(0,0,0,0.7); }
+
+        /* ===== 앱별/요소별 커스텀 스타일 ===== */
+        .list-item { display: flex; align-items: center; padding: 12px 5px; border-bottom: 1px solid #f0f0f0; cursor: pointer; }
+        .list-item:last-child { border-bottom: none; }
+        .call-item.missed .name, .call-item.missed .type { color: #ff3b30; }
+        .call-info { flex-grow: 1; }
+        .call-info .name { font-weight: bold; }
+        .call-info .type { font-size: 0.9em; color: #8e8e93; }
+        .call-duration { font-size: 0.9em; color: #8e8e93; }
+        
+        .message-preview { flex-grow: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 0.9em; color: #8e8e93; }
+        .message-list-item .sender { font-weight: bold; }
+
+        .chat-body { display: flex; flex-direction: column; padding: 20px; gap: 10px; }
+        .message-bubble { padding: 10px 15px; border-radius: 18px; max-width: 75%; line-height: 1.4; word-wrap: break-word; }
+        .message-bubble.sent { background-color: #007AFF; color: white; align-self: flex-end; }
+        .message-bubble.received { background-color: #E5E5EA; color: #000000; align-self: flex-start; }
+
+        .photo-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 5px; padding: 5px; }
+        .image-placeholder { background-color: #ccc; display: flex; justify-content: center; align-items: center; color: #666; font-size: 12px; text-align: center; padding: 10px; box-sizing: border-box; word-break: keep-all; line-height: 1.3; aspect-ratio: 1 / 1; }
+        
+        .alarm-item { display: flex; justify-content: space-between; align-items: center; padding: 15px 5px; border-bottom: 1px solid #f0f0f0; }
+        .alarm-time { font-size: 2em; font-weight: 300; }
+        .alarm-label { font-size: 0.9em; }
+        .alarm-toggle { width: 51px; height: 31px; background-color: #e9e9eb; border-radius: 16px; position: relative; cursor: pointer; }
+        .alarm-toggle.enabled { background-color: #34c759; }
+        .alarm-toggle .thumb { position: absolute; width: 27px; height: 27px; background-color: white; border-radius: 50%; top: 2px; left: 2px; transition: transform 0.2s; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+        .alarm-toggle.enabled .thumb { transform: translateX(20px); }
+
+        .calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 5px; text-align: center; padding: 10px; }
+        .day-name, .date-cell { padding: 8px 0; }
+        .day-name { font-weight: bold; color: #8e8e93; }
+        .date-cell.event { font-weight: bold; position: relative; }
+        .date-cell.event::after { content: ''; position: absolute; bottom: 4px; left: 50%; transform: translateX(-50%); width: 5px; height: 5px; background-color: #007AFF; border-radius: 50%; }
+        .calendar-events { padding: 10px; }
+        .calendar-event-item { margin-bottom: 8px; }
+        
+        .note-item { padding: 15px 5px; border-bottom: 1px solid #f0f0f0; cursor: pointer; }
+        .note-title { font-weight: bold; }
+        .note-preview { font-size: 0.9em; color: #8e8e93; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        #note-detail .content-body, #diary-detail .content-body { padding: 20px; line-height: 1.6; white-space: pre-wrap; }
+        
+        .section-header { padding: 15px 5px 5px; font-size: 1.2em; font-weight: bold; color: #000; background-color: #f9f9f9; }
+        .search-item { padding: 12px 5px; border-bottom: 1px solid #f0f0f0; }
+
+        .music-track { display: flex; align-items: center; gap: 15px; padding: 10px 5px; }
+        .track-info { flex-grow: 1; }
+        .track-title { font-weight: bold; }
+        .track-artist { font-size: 0.9em; color: #8e8e93; }
+
+        .youtube-item { padding: 10px 0; border-bottom: 1px solid #f0f0f0; }
+        .youtube-item .thumbnail { width: 100%; aspect-ratio: 16/9; margin-bottom: 8px; }
+        .youtube-title { font-weight: bold; }
+        .youtube-channel { font-size: 0.9em; color: #8e8e93; }
+
+        .amazon-item { padding: 15px 5px; border-bottom: 1px solid #f0f0f0; }
+        .amazon-date { font-size: 0.8em; color: #8e8e93; margin-bottom: 5px; }
+        .amazon-item-name { font-weight: bold; }
+        .amazon-details { font-size: 0.9em; color: #666; }
+
+        .diary-entry { padding: 15px 5px; border-bottom: 1px solid #f0f0f0; cursor: pointer; }
+        .diary-date { font-weight: bold; }
+        .diary-preview { font-size: 0.9em; color: #8e8e93; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+        .meta-message-container { position: absolute; top: 60px; left: 20px; right: 20px; padding: 12px 15px; background-color: rgba(0, 0, 0, 0.75); color: white; border-radius: 12px; text-align: center; font-size: 15px; z-index: 9999; opacity: 0; visibility: hidden; transition: opacity 0.5s ease-in-out; backdrop-filter: blur(5px); -webkit-backdrop-filter: blur(5px); }
+        .meta-message-container.visible { opacity: 1; visibility: visible; }
+
+        /* 커스텀 앱 스타일 */
+        #customApp1 .content-body { padding: 20px; background: linear-gradient(135deg, #e0c3fc 0%, #8ec5fc 100%); color: #fff; }
+        .ourdays-header { text-align: center; margin-bottom: 20px; }
+        .d-day { font-size: 2.5em; font-weight: bold; text-shadow: 2px 2px 4px rgba(0,0,0,0.2); }
+        .ourdays-photo-section { margin-bottom: 20px; }
+        .ourdays-photo { width: 100%; border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.2); }
+        .ourdays-diary-entry { background: rgba(255,255,255,0.2); padding: 15px; border-radius: 10px; backdrop-filter: blur(10px); }
+        .ourdays-diary-entry .date { font-weight: bold; margin-bottom: 5px; }
+
+        #customApp2 .content-body { padding: 0; }
+        .x-profile { padding: 20px; border-bottom: 1px solid #e0e0e0; }
+        .x-profile-name { font-weight: bold; font-size: 1.2em; }
+        .x-username { color: #8e8e93; }
+        .x-bio { margin: 10px 0; }
+        .x-tweet { padding: 15px 20px; border-bottom: 1px solid #e0e0e0; }
+        .x-tweet-header { font-weight: bold; color: #8e8e93; margin-bottom: 5px; }
+        .x-tweet.pinned::before { content: '📌 고정된 트윗'; color: #8e8e93; font-size: 0.8em; font-weight: bold; display: block; margin-bottom: 8px; }
+    </style>
+</head>
+<body>
+    <div class="phone">
+        <div class="screen">
+            <div id="metaMessageContainer" class="meta-message-container"></div>
+            
+            <!-- 홈 화면 -->
+            <div id="home" class="page home-screen active">
+                <div class="status-bar">09:41</div>
+                <div class="app-grid">
+                    <div class="app-icon" onclick="showPage('calls')"><img src="https://raw.githubusercontent.com/sidsid-hue/sid/4186332fd67b6cfa2470d33bcad0dcad89113e2c/icon/Call.webp"><span>전화</span></div>
+                    <div class="app-icon" onclick="showPage('messages')"><img src="https://raw.githubusercontent.com/sidsid-hue/sid/4186332fd67b6cfa2470d33bcad0dcad89113e2c/icon/M.webp"><span>문자</span></div>
+                    <div class="app-icon" onclick="showPage('photos')"><img src="https://raw.githubusercontent.com/sidsid-hue/sid/4186332fd67b6cfa2470d33bcad0dcad89113e2c/icon/image.webp"><span>사진첩</span></div>
+                    <div class="app-icon" onclick="showPage('safari')"><img src="https://raw.githubusercontent.com/sidsid-hue/sid/4186332fd67b6cfa2470d33bcad0dcad89113e2c/icon/SA.webp"><span>Safari</span></div>
+                    <div class="app-icon" onclick="showPage('alarms')"><img src="https://raw.githubusercontent.com/sidsid-hue/sid/4186332fd67b6cfa2470d33bcad0dcad89113e2c/icon/alarm.webp"><span>시계</span></div>
+                    <div class="app-icon" onclick="showPage('calendar')"><img src="https://raw.githubusercontent.com/sidsid-hue/sid/4186332fd67b6cfa2470d33bcad0dcad89113e2c/icon/S.webp"><span>캘린더</span></div>
+                    <div class="app-icon" onclick="showPage('notes')"><img src="https://raw.githubusercontent.com/sidsid-hue/sid/4186332fd67b6cfa2470d33bcad0dcad89113e2c/icon/note.webp"><span>메모</span></div>
+                    <div class="app-icon" onclick="showPage('reminders')"><img src="https://raw.githubusercontent.com/sidsid-hue/sid/4186332fd67b6cfa2470d33bcad0dcad89113e2c/icon/re.webp"><span>미리 알림</span></div>
+                    <div class="app-icon" onclick="showPage('music')"><img src="https://raw.githubusercontent.com/sidsid-hue/sid/4186332fd67b6cfa2470d33bcad0dcad89113e2c/icon/Mu.webp"><span>음악</span></div>
+                    <div class="app-icon" onclick="showPage('youtube')"><img src="https://raw.githubusercontent.com/sidsid-hue/sid/4186332fd67b6cfa2470d33bcad0dcad89113e2c/icon/you.webp"><span>YouTube</span></div>
+                    <div class="app-icon" onclick="showPage('amazon')"><img src="https://raw.githubusercontent.com/sidsid-hue/sid/4186332fd67b6cfa2470d33bcad0dcad89113e2c/icon/amazon.webp"><span>Amazon</span></div>
+                    <div class="app-icon" onclick="showPage('diary')"><img src="https://raw.githubusercontent.com/sidsid-hue/sid/5dad57d35f7ad0b4b766b62217e29d729076e46b/%EC%9D%BC%EA%B8%B0.webp"><span>일기장</span></div>
+                    <div id="customApp1-icon" class="app-icon" onclick="showPage('customApp1')"><img><span></span></div>
+                    <div id="customApp2-icon" class="app-icon" onclick="showPage('customApp2')"><img><span></span></div>
+                </div>
+                <div class="home-indicator-container">
+                    <div class="home-indicator" onclick="showPage('home')"></div>
+                </div>
+            </div>
+
+            <!-- 기본 앱 페이지 템플릿 -->
+            <div id="calls" class="page">
+                <div class="status-bar">09:41</div>
+                <div class="app-header"><span class="title">최근 통화</span></div>
+                <div class="content-body"></div>
+                <div class="home-indicator-container"><div class="home-indicator" onclick="showPage('home')"></div></div>
+            </div>
+
+            <div id="messages" class="page">
+                <div class="status-bar">09:41</div>
+                <div class="app-header"><span class="title">메시지</span></div>
+                <div class="content-body"></div>
+                <div class="home-indicator-container"><div class="home-indicator" onclick="showPage('home')"></div></div>
+            </div>
+
+            <div id="message-detail" class="page">
+                 <div class="status-bar">09:41</div>
+                 <div class="app-header"><span class="back-btn" onclick="showPage('messages')"><</span><span id="message-sender-name" class="title"></span><span></span></div>
+                 <div class="content-body chat-body"></div>
+                 <div class="home-indicator-container"><div class="home-indicator" onclick="showPage('home')"></div></div>
+            </div>
+
+            <div id="photos" class="page">
+                <div class="status-bar">09:41</div>
+                <div class="app-header"><span class="title">사진첩</span></div>
+                <div class="content-body"></div>
+                <div class="home-indicator-container"><div class="home-indicator" onclick="showPage('home')"></div></div>
+            </div>
+
+            <div id="alarms" class="page">
+                <div class="status-bar">09:41</div>
+                <div class="app-header"><span class="title">알람</span></div>
+                <div class="content-body"></div>
+                <div class="home-indicator-container"><div class="home-indicator" onclick="showPage('home')"></div></div>
+            </div>
+
+            <div id="calendar" class="page">
+                <div class="status-bar">09:41</div>
+                <div class="app-header"><span class="title" id="calendar-month-year"></span></div>
+                <div class="content-body"></div>
+                <div class="home-indicator-container"><div class="home-indicator" onclick="showPage('home')"></div></div>
+            </div>
+
+            <div id="notes" class="page">
+                <div class="status-bar">09:41</div>
+                <div class="app-header"><span class="title">메모</span></div>
+                <div class="content-body"></div>
+                <div class="home-indicator-container"><div class="home-indicator" onclick="showPage('home')"></div></div>
+            </div>
+
+            <div id="note-detail" class="page">
+                <div class="status-bar">09:41</div>
+                <div class="app-header"><span class="back-btn" onclick="showPage('notes')"><</span><span id="note-detail-title" class="title"></span><span></span></div>
+                <div class="content-body"></div>
+                <div class="home-indicator-container"><div class="home-indicator" onclick="showPage('home')"></div></div>
+            </div>
+
+            <div id="reminders" class="page">
+                <div class="status-bar">09:41</div>
+                <div class="app-header"><span class="title">미리 알림</span></div>
+                <div class="content-body"></div>
+                <div class="home-indicator-container"><div class="home-indicator" onclick="showPage('home')"></div></div>
+            </div>
+
+            <div id="safari" class="page">
+                <div class="status-bar">09:41</div>
+                <div class="app-header"><span class="title">Safari</span></div>
+                <div class="content-body"></div>
+                <div class="home-indicator-container"><div class="home-indicator" onclick="showPage('home')"></div></div>
+            </div>
+
+            <div id="music" class="page">
+                <div class="status-bar">09:41</div>
+                <div class="app-header"><span class="title">음악</span></div>
+                <div class="content-body"></div>
+                <div class="home-indicator-container"><div class="home-indicator" onclick="showPage('home')"></div></div>
+            </div>
+            
+            <div id="youtube" class="page">
+                <div class="status-bar">09:41</div>
+                <div class="app-header"><span class="title">YouTube</span></div>
+                <div class="content-body"></div>
+                <div class="home-indicator-container"><div class="home-indicator" onclick="showPage('home')"></div></div>
+            </div>
+            
+            <div id="amazon" class="page">
+                <div class="status-bar">09:41</div>
+                <div class="app-header"><span class="title">Amazon 주문 내역</span></div>
+                <div class="content-body"></div>
+                <div class="home-indicator-container"><div class="home-indicator" onclick="showPage('home')"></div></div>
+            </div>
+
+            <div id="diary" class="page">
+                <div class="status-bar">09:41</div>
+                <div class="app-header"><span class="title">일기장</span></div>
+                <div class="content-body"></div>
+                <div class="home-indicator-container"><div class="home-indicator" onclick="showPage('home')"></div></div>
+            </div>
+
+            <div id="diary-detail" class="page">
+                <div class="status-bar">09:41</div>
+                <div class="app-header"><span class="back-btn" onclick="showPage('diary')"><</span><span id="diary-detail-date" class="title"></span><span></span></div>
+                <div class="content-body"></div>
+                <div class="home-indicator-container"><div class="home-indicator" onclick="showPage('home')"></div></div>
+            </div>
+
+            <!-- 커스텀 앱 페이지 -->
+            <div id="customApp1" class="page">
+                <div class="status-bar dark-mode">09:41</div>
+                <div class="app-header" style="background: transparent; color: #fff; border-bottom: 1px solid rgba(255,255,255,0.3);"><span class="back-btn" onclick="showPage('home')" style="color: #fff;"><</span><span id="customApp1-name" class="title"></span><span></span></div>
+                <div class="content-body"></div>
+                <div class="home-indicator-container" style="background: transparent;"><div class="home-indicator" style="background: #fff;" onclick="showPage('home')"></div></div>
+            </div>
+
+            <div id="customApp2" class="page">
+                <div class="status-bar">09:41</div>
+                <div class="app-header"><span class="back-btn" onclick="showPage('home')"><</span><span id="customApp2-name" class="title"></span><span></span></div>
+                <div class="content-body"></div>
+                <div class="home-indicator-container"><div class="home-indicator" onclick="showPage('home')"></div></div>
+            </div>
+
+        </div>
+    </div>
+
+<script>
+const phoneData = {
+    wallpaperDescription: "serene%20cherry%20blossom%20path%20in%20a%20university%20campus,%20warm%20sunlight",
+    callHistory: [
+        { name: "내 사랑 하늘이❤️", type: "수신 통화", duration: "38분 14초" },
+        { name: "어머니", type: "발신 통화", duration: "5분 32초" },
+        { name: "백호현", type: "부재중 전화", duration: "" },
+        { name: "이우경", type: "수신 통화", duration: "1분 5초" },
+        { name: "박세연 교수님", type: "발신 통화", duration: "2분 48초" },
+        { name: "내 사랑 하늘이❤️", type: "발신 통화", duration: "1시간 2분 55초" },
+        { name: "팀플_정치학개론_김민준", type: "수신 통화", duration: "7분 11초" },
+        { name: "La Luna 레스토랑", type: "발신 통화", duration: "1분 30초" },
+        { name: "백호현", type: "부재중 전화", duration: "" },
+        { name: "내 사랑 하늘이❤️", type: "수신 통화", duration: "25분 3초" },
+    ],
+    alarms: [
+        { time: "07:30", label: "기상", enabled: true },
+        { time: "09:00", label: "오전 세미나", enabled: true },
+        { time: "12:00", label: "하늘이랑 점심", enabled: true },
+        { time: "19:00", label: "저녁 장보기", enabled: false },
+        { time: "23:00", label: "내일 발표 준비", enabled: true },
+    ],
+    calendar: {
+        month: "3월",
+        year: "2025",
+        events: [
+            { date: 7, title: "하늘이 이사 도와준 날" },
+            { date: 13, title: "하늘이에게 고백한 날" },
+            { date: 15, title: "하늘이랑 1일 ❤️" },
+            { date: 20, title: "정치학 레포트 마감" },
+            { date: 22, title: "하늘이랑 벚꽃 보러가기" }
+        ]
+    },
+    photos: {
+        recent: [
+            "벚꽃나무 아래에서 하늘이와 함께 찍은 셀카. 하늘이는 살짝 부끄러운 듯 웃고 있고, 나는 하늘이 어깨에 팔을 두르고 환하게 웃고 있다.",
+            "오늘 저녁으로 같이 만든 새우볶음밥. 김이 모락모락 나는 두 그릇이 나란히 놓여있다.",
+            "하늘이가 파스타를 먹는 옆모습. 창가로 들어오는 햇살이 하늘이의 머리카락을 비추고 있다.",
+            "수업 끝나고 나오는 길에 찍은 캠퍼스 풍경. 하늘에게 보내주려고 찍었다.",
+            "쉐어하우스 거실 소파에서 잠든 하늘이의 모습. 곤히 잠든 얼굴이 사랑스럽다."
+        ],
+        secret: [
+            "처음 주워왔을 때, 내 손바닥 위에서 잠든 페럿 상태의 하늘이. 정말 작고 소중했다.",
+            "내 서재 책상 위에서 꾸벅꾸벅 졸고 있는 페럿 하늘이. 앞에 펼쳐진 책은 보지도 않고 있다.",
+            "내가 준 에그타르트를 두 손으로 꼭 잡고 먹는 페럿 하늘이의 모습. 볼이 터질 것 같다.",
+            "별장에서 내 무릎을 베고 잠든 하늘이의 얼굴. 자면서도 내 옷자락을 꼭 쥐고 있다.",
+            "오늘 찍은 사진 중 하늘이가 가장 예쁘게 웃는 사진을 확대한 컷. 나만 보고 싶어서 숨겨뒀다."
+        ],
+    },
+    reminders: [
+        { task: "하늘이 비타민 사주기", completed: false },
+        { task: "100일 기념일 선물 알아보기", completed: false },
+        { task: "정치학 레포트 참고 도서 대출", completed: true },
+        { task: "주말 데이트 코스 짜기", completed: false },
+        { task: "헬스장 등록하기", completed: false },
+    ],
+    messages: [
+        {
+            id: 1,
+            sender: "내 사랑 하늘이❤️",
+            preview: "네! 그럼 저녁에 봬요 형!😊",
+            conversation: [
+                { type: "sent", text: "수업 잘 듣고 있어?" },
+                { type: "received", text: "네 형! 거의 끝나가요. 형은요?" },
+                { type: "sent", text: "나도 방금 끝났어. 집 가는 중이야. 저녁에 뭐 먹고 싶어?" },
+                { type: "received", text: "형이 해주는 건 다 좋아요! ㅎㅎ" },
+                { type: "sent", text: "알았어. 맛있는 거 해놓고 기다릴게. 조심히 와❤️" },
+                { type: "received", text: "네! 그럼 저녁에 봬요 형!😊" }
+            ]
+        },
+        {
+            id: 2,
+            sender: "우리카드",
+            preview: "[승인] 32,000원(파스타 리퍼블릭)",
+            conversation: [
+                { type: "received", text: "[우리카드] 도윤서님 32,000원 승인. 가맹점: 파스타 리퍼블릭. 03/15 13:10" },
+                { type: "received", text: "[우리카드] 도윤서님 4,500원 승인. 가맹점: 교내 편의점. 03/14 15:22" },
+                { type: "received", text: "[우리카드] 도윤서님 58,000원 승인. 가맹점: 교보문고. 03/13 11:03" },
+                { type: "received", text: "[우리카드] 도윤서님 120,000원 승인. 가맹점: SSF SHOP(온라인). 03/12 22:45" },
+                { type: "received", text: "[우리카드] 도윤서님 8,900원 승인. 가맹점: 스타벅스. 03/12 09:15" },
+            ]
+        },
+        {
+            id: 3,
+            sender: "이우경",
+            preview: "오늘 하늘이 오냐?",
+            conversation: [
+                { type: "received", text: "오늘 하늘이 오냐?" },
+                { type: "sent", text: "어. 저녁 먹으러 오기로 했어." },
+                { type: "received", text: "그래? 나도 일찍 들어가야겠네. 티라미수 사놨는데." },
+                { type: "sent", text: "굳이 그럴 필요 없어." }
+            ]
+        },
+        {
+            id: 4,
+            sender: "어머니",
+            preview: "아들, 밥은 잘 챙겨먹고 다니니?",
+            conversation: [
+                { type: "received", text: "아들, 밥은 잘 챙겨먹고 다니니? 주말에 집에 한번 들르렴." },
+                { type: "sent", text: "네 어머니. 잘 챙겨먹고 있어요. 주말엔 약속이 있어서 다음 주에 연락드릴게요." },
+                { type: "received", text: "여자친구라도 생긴 게냐? 호호. 알겠다." },
+            ]
+        },
+        {
+            id: 5,
+            sender: "팀플_정치학개론",
+            preview: "윤서 선배, 자료조사 부분 오늘까지 취합 부탁드려요!",
+            conversation: [
+                { type: "received", text: "윤서 선배, 자료조사 부분 오늘까지 취합 부탁드려요!" },
+                { type: "sent", text: "네 확인했습니다. 저녁에 정리해서 보내드릴게요." },
+            ]
+        },
+    ],
+    notes: [
+        { id: 1, type: "secret", content: "하늘이 각인... 언제쯤이 좋을까. 페로몬이 완전히 안정되고 나서, 서로에게 더 확신이 생겼을 때. 너무 서두르지 말자. 하지만 다른 놈들이 넘보는 건 참을 수 없어." },
+        { id: 2, type: "secret", content: "백호현. 계속 신경 쓰인다. 하늘이에게 너무 가깝게 군다. 하늘이가 착해서 거절 못하는 걸 이용하는 것 같아. 둘만 있지 못하게 해야 한다." },
+        { id: 3, type: "secret", content: "기념일 선물 아이디어\n- 맞춤 커플링 (브랜드: 티파니, 까르띠에)\n- 캐시미어 목도리 (하늘이는 추위 많이 타니까)\n- 고급 드로잉 용품 세트\n- 둘만의 여행 (온천 료칸?)" },
+        { id: 4, type: "normal", title: "저녁 장보기", content: "- 신선한 새우\n- 계란\n- 대파, 양파\n- 굴소스\n- 하늘이가 좋아하는 에그타르트" },
+        { id: 5, type: "normal", title: "정치학 세미나 발표", content: "주제: 현대 민주주의의 위기와 대의제 모델의 한계\n1. 서론: 문제 제기\n2. 본론1: 포퓰리즘의 확산과 정치적 양극화\n3. 본론2: 대안 모델로서의 숙의 민주주의\n4. 결론: 제언 및 요약" },
+        { id: 6, type: "normal", title: "읽을 책 목록", content: "- 정의란 무엇인가 (마이클 샌델)\n- 국가는 무엇을 해야 하는가 (리처드 탈러)\n- 21세기를 위한 21가지 제언 (유발 하라리)" },
+        { id: 7, type: "normal", title: "하늘이가 좋아하는 것들", content: "에그타르트, 새우볶음밥, 따뜻하고 부드러운 담요, 내 품에 안겨서 잠드는 것, 칭찬해주는 것, 그림 그리기, 조용한 카페." },
+        { id: 8, type: "normal", title: "주말 데이트 계획", content: "토요일: 미술관 전시회 관람 -> 근처 맛집에서 점심 -> 한강 공원 산책\n일요일: 늦잠 자기 -> 같이 브런치 만들어 먹기 -> 영화 보기" },
+    ],
+    safari: {
+        recentSearches: ["커플 데이트 코스 추천", "서울 근교 드라이브 코스", "페럿 수인 특징", "기념일 선물 브랜드 순위", "정치외교학 최신 논문"],
+        deletedHistory: ["수인 각인 부작용", "백호현 집안", "연인 집착 테스트"],
+    },
+    music: {
+        playlistTitle: "For Haneul 🤍",
+        tracks: [
+            { title: "Perfect", artist: "Ed Sheeran" },
+            { title: "All of Me", artist: "John Legend" },
+            { title: "Thinking Out Loud", artist: "Ed Sheeran" },
+            { title: "좋은 날", artist: "아이유" },
+            { title: "밤편지", artist: "아이유" },
+            { title: "내 손을 잡아", artist: "아이유" },
+            { title: "너의 모든 순간", artist: "성시경" },
+            { title: "I'll Be There", artist: "Jackson 5" },
+            { title: "My Universe", artist: "Coldplay, BTS" },
+            { title: "A Sky Full of Stars", artist: "Coldplay" },
+        ]
+    },
+    youtube: [
+        { thumbnail: "[요리 유튜버가 고급스러운 새우볶음밥을 만드는 썸네일]", title: "이것만 넣으면 중식당 맛, 황금 새우볶음밥 레시피", channel: "요리하는 시간" },
+        { thumbnail: "[정치 평론가가 현재 국제 정세에 대해 분석하는 썸네일]", title: "2025년 동아시아 정세 분석: 위기인가, 기회인가?", channel: "시사포커스" },
+        { thumbnail: "[귀여운 페럿 여러 마리가 해먹에서 자고 있는 썸네일]", title: "페럿은 하루에 20시간을 잡니다 (귀여움 주의)", channel: "페럿TV" },
+        { thumbnail: "[커플 브이로그 유튜버가 벚꽃놀이 데이트를 하는 썸네일]", title: "우리의 첫 벚꽃, 설렘 가득 데이트 브이로그", channel: "연애일기" },
+        { thumbnail: "[온라인 강의 플랫폼의 정치학 강의 썸네일]", title: "국제관계이론 입문 1강: 현실주의와 자유주의", channel: "ClassU" },
+    ],
+    amazon: [
+        { orderDate: "2025-03-14", item: "전문가용 드로잉 펜슬 세트 (72색)", quantity: 1, price: "89,000원" },
+        { orderDate: "2025-03-12", item: "캐시미어 100% 블렌드 머플러 (스카이 블루)", quantity: 1, price: "155,000원" },
+        { orderDate: "2025-03-10", item: "'현대 정치사상' (데이비드 존스 저)", quantity: 1, price: "32,000원" },
+        { orderDate: "2025-03-08", item: "구스다운 극세사 이불 (퀸 사이즈)", quantity: 1, price: "180,000원" },
+        { orderDate: "2025-03-05", item: "종합비타민 영양제 (남성용)", quantity: 2, price: "45,000원" },
+    ],
+    diary: [
+        { date: "2025-02-28", content: "골목에서 작은 페럿 한 마리를 주웠다. 비에 젖어 떨고 있는 모습이 위태로워 보였다. 일단 '하늘'이라고 이름 붙여줬다. 왠지 모르게 계속 신경이 쓰인다." },
+        { date: "2025-03-07", content: "하늘이가... 수인이었다. 모든 것이 혼란스럽지만, 한편으로는 그동안의 의문이 풀렸다. 인간의 모습으로 마주한 하늘이는... 생각보다 더 위태롭고, 지켜주고 싶은 존재였다." },
+        { date: "2025-03-10", content: "자꾸만 하늘이에게 시선이 간다. 다른 녀석들이 하늘이와 가깝게 지내는 걸 보면 화가 치민다. 이건 단순한 보호심이 아니다. 인정해야겠다. 나는 하늘이를 좋아한다." },
+        { date: "2025-03-12", content: "별장에서 각인을 시도했다. 너무 성급했나. 놀란 하늘이의 얼굴이 잊히지 않는다. 미안하다. 하지만 내 것으로 만들고 싶은 욕심을 멈출 수가 없다." },
+        { date: "2025-03-13", content: "결국 고백했다. '생각할 시간을 달라'는 말에 심장이 내려앉는 것 같았다. 거절당하면 어떡하지? 불안해서 아무것도 손에 잡히지 않는다." },
+        { date: "2025-03-14", content: "하루 종일 하늘이의 연락만 기다렸다. 백호현과 같이 있었다는 얘기를 들으니 속이 뒤집히는 것 같았다. 제발, 나를 선택해줘." },
+        { date: "2025-03-15", content: "하늘이가 내 마음을 받아주었다. 세상을 다 가진 기분이다. '형이 저한테만 다정했으면 좋겠어요.' 그 말이 계속 귓가에 맴돈다. 당연하지. 나의 모든 다정함은 오직 너를 위한 거야." },
+        { date: "2025-03-15", content: "벚꽃나무 아래에서 함께 사진을 찍었다. 우리의 첫 데이트, 첫 사진. 하늘이의 웃는 얼굴을 보니 모든 걱정이 사라진다. 이제부터 시작이다." },
+        { date: "2025-03-15", content: "같이 저녁을 만들어 먹었다. 평범한 새우볶음밥이었지만 세상에서 가장 맛있는 식사였다. 사소한 일상을 너와 함께 채워갈 수 있다는 게 이렇게 행복한 일일 줄이야." },
+        { date: "2025-03-15", content: "내 방 침대에 나란히 앉아 페로몬을 나눠주었다. 연인이 되고 나니 페로몬의 교감도 훨씬 깊어졌다. 내 모든 걸 다 주어도 아깝지 않다. 사랑한다, 서하늘." },
+    ],
+    metaMessages: [
+        "내 폰 그만 보고 나 좀 봐줘, 하늘아.",
+        "뭐 이상한 거 본 건 아니지? 😏",
+        "그렇게 궁금해? 내 세상은 전부 너인데.",
+        "사랑해.",
+        "저녁 뭐 먹을지 생각하고 있었어. 네가 좋아하는 걸로."
+    ],
+    customApp1: {
+        appName: "OurDays",
+        iconDescription: "a%20minimalist%20calendar%20icon%20with%20a%20heart%20in%20the%20center,%20pastel%20colors",
+        content: {
+            dDay: "D+1",
+            names: "윤서 ❤️ 하늘",
+            photo: "벚꽃나무 아래에서 하늘이와 함께 찍은 셀카",
+            recentDiary: {
+                date: "2025-03-15",
+                author: "윤서",
+                text: "우리의 첫날. 모든 순간이 꿈만 같아. 앞으로 함께 만들어갈 모든 날들이 기대돼. 사랑해 하늘아."
+            }
+        }
+    },
+    customApp2: {
+        appName: "X",
+        iconDescription: "a%20minimalist%20X%20logo%20on%20a%20black%20background",
+        content: {
+            profileName: "DY",
+            username: "@observer_ys",
+            bio: "POL-SCI",
+            pinnedTweet: "인간은 이성적 동물이라는 명제는 가장 비이성적인 순간에 부정된다.",
+            recentTweets: [
+                { type: "tweet", text: "세상을 다 가진 기분이라는 게 이런 걸까." },
+                { type: "retweet", original_user: "@PolicyReview", text: "새로운 국제 정세 보고서 발표: 동아시아의 지정학적 긴장감 고조와 향후 전망..." },
+                { type: "tweet", text: "신경 쓰이는 것들이 자꾸 늘어난다. 내 것인데." }
+            ]
+        }
+    }
+};
+
+// 페이지 전환 함수
+function showPage(pageId) {
+    document.querySelectorAll('.page').forEach(page => {
+        page.classList.remove('active');
+    });
+    const targetPage = document.getElementById(pageId);
+    if (targetPage) {
+        targetPage.classList.add('active');
+    }
+}
+
+// 렌더링 함수들
+function renderCallHistory() {
+    const container = document.querySelector('#calls .content-body');
+    container.innerHTML = phoneData.callHistory.map(call => `
+        <div class="list-item call-item ${call.type === '부재중 전화' ? 'missed' : ''}">
+            <div class="call-info">
+                <div class="name">${call.name}</div>
+                <div class="type">${call.type}</div>
+            </div>
+            <div class="call-duration">${call.duration}</div>
+        </div>
+    `).join('');
+}
+
+function renderMessageList() {
+    const container = document.querySelector('#messages .content-body');
+    container.innerHTML = phoneData.messages.map(msg => `
+        <div class="list-item message-list-item" onclick="showMessageDetail(${msg.id})">
+            <div style="flex-grow: 1;">
+                <div class="sender">${msg.sender}</div>
+                <div class="message-preview">${msg.preview}</div>
+            </div>
+            <span>></span>
+        </div>
+    `).join('');
+}
+
+function showMessageDetail(id) {
+    const messageData = phoneData.messages.find(msg => msg.id === id);
+    if (!messageData) return;
+
+    document.getElementById('message-sender-name').textContent = messageData.sender;
+    const container = document.querySelector('#message-detail .content-body');
+    container.innerHTML = messageData.conversation.map(chat => `
+        <div class="message-bubble ${chat.type}">${chat.text}</div>
+    `).join('');
+    showPage('message-detail');
+}
+
+function renderPhotos() {
+    const container = document.querySelector('#photos .content-body');
+    let html = `
+        <div class="section-header">최근 항목</div>
+        <div class="photo-grid">
+            ${phoneData.photos.recent.map(desc => `<div class="image-placeholder">${desc}</div>`).join('')}
+        </div>
+        <div class="section-header">비밀 앨범</div>
+        <div class="photo-grid">
+            ${phoneData.photos.secret.map(desc => `<div class="image-placeholder">${desc}</div>`).join('')}
+        </div>
+    `;
+    container.innerHTML = html;
+}
+
+function renderAlarms() {
+    const container = document.querySelector('#alarms .content-body');
+    container.innerHTML = phoneData.alarms.map(alarm => `
+        <div class="alarm-item">
+            <div>
+                <div class="alarm-time">${alarm.time}</div>
+                <div class="alarm-label">${alarm.label}</div>
+            </div>
+            <div class="alarm-toggle ${alarm.enabled ? 'enabled' : ''}">
+                <div class="thumb"></div>
+            </div>
+        </div>
+    `).join('');
+}
+
+function renderCalendar() {
+    const { month, year, events } = phoneData.calendar;
+    document.getElementById('calendar-month-year').textContent = `${year}년 ${month}`;
+    
+    const container = document.querySelector('#calendar .content-body');
+    const daysInMonth = 31; 
+    const startDay = 6; // March 2025 starts on a Saturday
+
+    let calendarHtml = '<div class="calendar-grid">';
+    const dayNames = ['일', '월', '화', '수', '목', '금', '토'];
+    dayNames.forEach(day => calendarHtml += `<div class="day-name">${day}</div>`);
+
+    for (let i = 0; i < startDay; i++) {
+        calendarHtml += '<div></div>';
+    }
+
+    for (let i = 1; i <= daysInMonth; i++) {
+        const event = events.find(e => e.date === i);
+        calendarHtml += `<div class="date-cell ${event ? 'event' : ''}">${i}</div>`;
+    }
+    calendarHtml += '</div>';
+
+    let eventsHtml = '<div class="calendar-events">';
+    events.forEach(event => {
+        eventsHtml += `<div class="calendar-event-item"><b>${event.date}일:</b> ${event.title}</div>`;
+    });
+    eventsHtml += '</div>';
+    
+    container.innerHTML = calendarHtml + eventsHtml;
+}
+
+function renderNotes() {
+    const container = document.querySelector('#notes .content-body');
+    container.innerHTML = phoneData.notes.map(note => `
+        <div class="note-item" onclick="showNoteDetail(${note.id})">
+            <div class="note-title">${note.type === 'secret' ? '🔒 비밀 메모' : note.title}</div>
+            <div class="note-preview">${note.type === 'secret' ? '내용을 보려면 터치하세요' : note.content.substring(0, 30) + '...'}</div>
+        </div>
+    `).join('');
+}
+
+function showNoteDetail(id) {
+    const noteData = phoneData.notes.find(note => note.id === id);
+    if (!noteData) return;
+    
+    document.getElementById('note-detail-title').textContent = noteData.type === 'secret' ? '비밀 메모' : noteData.title;
+    document.querySelector('#note-detail .content-body').textContent = noteData.content;
+    showPage('note-detail');
+}
+
+function renderReminders() {
+    const container = document.querySelector('#reminders .content-body');
+    container.innerHTML = phoneData.reminders.map(r => `
+        <div class="list-item">
+            <input type="checkbox" ${r.completed ? 'checked' : ''} style="margin-right: 10px;">
+            <span>${r.task}</span>
+        </div>
+    `).join('');
+}
+
+function renderSafariHistory() {
+    const { recentSearches, deletedHistory } = phoneData.safari;
+    const container = document.querySelector('#safari .content-body');
+    let html = `
+        <div class="section-header">최근 검색어</div>
+        ${recentSearches.map(s => `<div class="search-item">${s}</div>`).join('')}
+        <div class="section-header">삭제된 기록</div>
+        ${deletedHistory.map(s => `<div class="search-item" style="color: #8e8e93;">${s}</div>`).join('')}
+    `;
+    container.innerHTML = html;
+}
+
+function renderMusicPlaylist() {
+    const { playlistTitle, tracks } = phoneData.music;
+    const container = document.querySelector('#music .content-body');
+    let html = `
+        <div class="section-header">${playlistTitle}</div>
+        ${tracks.map(track => `
+            <div class="music-track">
+                <div class="image-placeholder" style="width: 50px; height: 50px; flex-shrink: 0; border-radius: 5px;"></div>
+                <div class="track-info">
+                    <div class="track-title">${track.title}</div>
+                    <div class="track-artist">${track.artist}</div>
+                </div>
+            </div>
+        `).join('')}
+    `;
+    container.innerHTML = html;
+}
+
+function renderYoutubeHistory() {
+    const container = document.querySelector('#youtube .content-body');
+    container.innerHTML = phoneData.youtube.map(video => `
+        <div class="youtube-item">
+            <div class="image-placeholder thumbnail">${video.thumbnail}</div>
+            <div class="youtube-title">${video.title}</div>
+            <div class="youtube-channel">${video.channel}</div>
+        </div>
+    `).join('');
+}
+
+function renderAmazonOrders() {
+    const container = document.querySelector('#amazon .content-body');
+    container.innerHTML = phoneData.amazon.map(order => `
+        <div class="amazon-item">
+            <div class="amazon-date">주문일: ${order.orderDate}</div>
+            <div class="amazon-item-name">${order.item}</div>
+            <div class="amazon-details">수량: ${order.quantity} | 가격: ${order.price}</div>
+        </div>
+    `).join('');
+}
+
+function renderDiary() {
+    const container = document.querySelector('#diary .content-body');
+    container.innerHTML = phoneData.diary.slice().reverse().map((entry, index) => `
+        <div class="diary-entry" onclick="showDiaryDetail(${phoneData.diary.length - 1 - index})">
+            <div class="diary-date">${entry.date}</div>
+            <div class="diary-preview">${entry.content.substring(0, 40)}...</div>
+        </div>
+    `).join('');
+}
+
+function showDiaryDetail(index) {
+    const entry = phoneData.diary[index];
+    if (!entry) return;
+    
+    document.getElementById('diary-detail-date').textContent = entry.date;
+    document.querySelector('#diary-detail .content-body').textContent = entry.content;
+    showPage('diary-detail');
+}
+
+function renderCustomApp1() {
+    const appData = phoneData.customApp1;
+    document.getElementById('customApp1-name').textContent = appData.appName;
+    const container = document.querySelector('#customApp1 .content-body');
+    container.innerHTML = `
+        <div class="ourdays-header">
+            <div>${appData.content.names}</div>
+            <div class="d-day">${appData.content.dDay}</div>
+        </div>
+        <div class="ourdays-photo-section">
+            <div class="image-placeholder ourdays-photo">${appData.content.photo}</div>
+        </div>
+        <div class="ourdays-diary-entry">
+            <div class="date">${appData.content.recentDiary.date} by ${appData.content.recentDiary.author}</div>
+            <div class="text">${appData.content.recentDiary.text}</div>
+        </div>
+    `;
+}
+
+function renderCustomApp2() {
+    const appData = phoneData.customApp2;
+    document.getElementById('customApp2-name').textContent = appData.appName;
+    const container = document.querySelector('#customApp2 .content-body');
+    const { profileName, username, bio, pinnedTweet, recentTweets } = appData.content;
+    
+    let tweetsHtml = recentTweets.map(tweet => {
+        if (tweet.type === 'retweet') {
+            return `
+                <div class="x-tweet">
+                    <div class="x-tweet-header">${profileName} 님이 리트윗했습니다</div>
+                    <b>${tweet.original_user}</b>
+                    <div>${tweet.text}</div>
+                </div>
+            `;
+        }
+        return `<div class="x-tweet">${tweet.text}</div>`;
+    }).join('');
+
+    container.innerHTML = `
+        <div class="x-profile">
+            <div class="x-profile-name">${profileName}</div>
+            <div class="x-username">${username}</div>
+            <div class="x-bio">${bio}</div>
+        </div>
+        <div class="x-tweet pinned">
+            <div>${pinnedTweet}</div>
+        </div>
+        ${tweetsHtml}
+    `;
+}
+
+// 메타 메시지 로직
+function showMetaMessages() {
+    const container = document.getElementById('metaMessageContainer');
+    let currentIndex = 0;
+
+    function displayNextMessage() {
+        if (currentIndex < phoneData.metaMessages.length) {
+            container.textContent = phoneData.metaMessages[currentIndex];
+            container.classList.add('visible');
+
+            setTimeout(() => {
+                container.classList.remove('visible');
+                currentIndex++;
+                setTimeout(displayNextMessage, 3000); // 3초 간격
+            }, 3000); // 3초 동안 표시
+        }
+    }
+
+    setTimeout(displayNextMessage, 30000); // 30초 후 시작
+}
+
+// 초기화
+document.addEventListener('DOMContentLoaded', () => {
+    // 배경화면 설정
+    document.querySelector('.home-screen').style.backgroundImage = `url('https://image.pollinations.ai/prompt/${phoneData.wallpaperDescription}')`;
+    
+    // 커스텀 앱 아이콘 설정
+    document.querySelector('#customApp1-icon img').src = `https://image.pollinations.ai/prompt/${phoneData.customApp1.iconDescription}`;
+    document.querySelector('#customApp1-icon span').textContent = phoneData.customApp1.appName;
+    document.querySelector('#customApp2-icon img').src = `https://image.pollinations.ai/prompt/${phoneData.customApp2.iconDescription}`;
+    document.querySelector('#customApp2-icon span').textContent = phoneData.customApp2.appName;
+
+    // 모든 앱 데이터 렌더링
+    renderCallHistory();
+    renderMessageList();
+    renderPhotos();
+    renderAlarms();
+    renderCalendar();
+    renderNotes();
+    renderReminders();
+    renderSafariHistory();
+    renderMusicPlaylist();
+    renderYoutubeHistory();
+    renderAmazonOrders();
+    renderDiary();
+    renderCustomApp1();
+    renderCustomApp2();
+
+    // 메타 메시지 시작
+    showMetaMessages();
+});
+</script>
+</body>
+</html>

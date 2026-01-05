@@ -1,0 +1,662 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>넷플릭스 드라마 리포트 시뮬레이션</title>
+    <style>
+        :root {
+            --primary-color: #e50914;
+            --background-color: #141414;
+            --text-color: #ffffff;
+            --secondary-text-color: #a3a3a3;
+            --card-color: #1c1c1c;
+            --border-color: #303030;
+        }
+        body {
+            background-color: var(--background-color);
+            color: var(--text-color);
+            font-family: 'Netflix Sans', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            overflow-x: hidden;
+        }
+        .netflix-container {
+            width: 100%;
+        }
+        .netflix-header {
+            position: fixed;
+            top: 0;
+            width: 100%;
+            height: 68px;
+            background: linear-gradient(to bottom, rgba(0,0,0,0.7) 10%, rgba(0,0,0,0));
+            z-index: 100;
+            display: flex;
+            align-items: center;
+            padding: 0 4%;
+            box-sizing: border-box;
+        }
+        .netflix-logo {
+            color: var(--primary-color);
+            font-size: 2rem;
+            font-weight: bold;
+            text-decoration: none;
+        }
+        .hero-section {
+            position: relative;
+            height: 80vh;
+            background-size: cover;
+            background-position: center;
+            display: flex;
+            align-items: flex-end;
+            padding: 0 4%;
+            box-sizing: border-box;
+        }
+        .hero-section::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(to top, var(--background-color) 10%, transparent 50%);
+        }
+        .hero-content {
+            position: relative;
+            z-index: 10;
+            max-width: 50%;
+            margin-bottom: 10vh;
+        }
+        .hero-title {
+            font-size: 4rem;
+            font-weight: bold;
+            margin: 0 0 20px 0;
+        }
+        .hero-description {
+            font-size: 1.2rem;
+            margin-bottom: 20px;
+        }
+        .hero-tags {
+            font-size: 0.9rem;
+            color: var(--secondary-text-color);
+            margin-bottom: 20px;
+        }
+        .hero-buttons .btn {
+            background-color: rgba(255, 255, 255, 0.9);
+            color: black;
+            border: none;
+            padding: 12px 24px;
+            margin-right: 10px;
+            border-radius: 4px;
+            font-size: 1.1rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+        .hero-buttons .btn.secondary {
+            background-color: rgba(109, 109, 110, 0.7);
+            color: white;
+        }
+        .hero-buttons .btn:hover {
+            opacity: 0.8;
+        }
+        .hero-badges {
+            margin-top: 20px;
+        }
+        .hero-badges span {
+            display: inline-block;
+            padding: 5px 10px;
+            border: 1px solid var(--secondary-text-color);
+            margin-right: 10px;
+            border-radius: 4px;
+            font-size: 0.9rem;
+        }
+        .main-content {
+            padding: 0 4% 50px 4%;
+        }
+        .content-row {
+            margin-bottom: 40px;
+        }
+        .row-title {
+            font-size: 1.6rem;
+            font-weight: bold;
+            margin-bottom: 15px;
+        }
+        .card-container {
+            display: flex;
+            gap: 10px;
+            overflow-x: auto;
+            padding-bottom: 10px;
+        }
+        .card-container::-webkit-scrollbar { display: none; }
+        .content-card {
+            flex: 0 0 240px;
+            height: 135px;
+            background-color: var(--card-color);
+            border-radius: 4px;
+            cursor: pointer;
+            transition: transform 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            padding: 10px;
+            border: 1px solid var(--border-color);
+        }
+        .content-card:hover {
+            transform: scale(1.05);
+        }
+        .info-table, .poll-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+            font-size: 1rem;
+        }
+        .info-table th, .info-table td, .poll-table th, .poll-table td {
+            border: 1px solid var(--border-color);
+            padding: 12px 15px;
+            text-align: left;
+        }
+        .info-table th {
+            background-color: var(--card-color);
+            width: 25%;
+        }
+        .poll-table th { background-color: var(--card-color); }
+        .episode-list {
+            max-height: 400px;
+            overflow-y: auto;
+            padding-right: 15px;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+        }
+        .episode-list::-webkit-scrollbar {
+            width: 8px;
+        }
+        .episode-list::-webkit-scrollbar-thumb {
+            background-color: #4d4d4d;
+            border-radius: 4px;
+        }
+        .episode-card {
+            display: flex;
+            align-items: center;
+            padding: 15px;
+            border-bottom: 1px solid var(--border-color);
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+        .episode-card:last-child { border-bottom: none; }
+        .episode-card:hover { background-color: var(--card-color); }
+        .episode-thumbnail {
+            width: 150px;
+            height: 84px;
+            background-color: #333;
+            margin-right: 20px;
+            flex-shrink: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.8rem;
+            text-align: center;
+            padding: 5px;
+            border-radius: 4px;
+        }
+        .episode-info h3 {
+            margin: 0;
+            font-size: 1.1rem;
+        }
+        .episode-info .runtime {
+            color: var(--secondary-text-color);
+            font-size: 0.9rem;
+            margin: 5px 0;
+        }
+        .episode-info .synopsis {
+            font-size: 0.9rem;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+        .episode-info .keywords {
+            font-size: 0.8rem;
+            color: #46d369;
+            margin-top: 8px;
+        }
+        .episode-info .quote {
+            font-style: italic;
+            color: var(--secondary-text-color);
+            margin-top: 5px;
+            font-size: 0.9rem;
+        }
+        .review-card {
+            background-color: var(--card-color);
+            padding: 15px;
+            border-radius: 8px;
+            min-width: 280px;
+            flex-shrink: 0;
+        }
+        .poll-comment {
+            font-size: 0.9rem;
+            color: var(--secondary-text-color);
+            margin-top: 5px;
+        }
+        .bar-container {
+            width: 100%;
+            background-color: #404040;
+            border-radius: 4px;
+            margin-top: 5px;
+        }
+        .bar {
+            height: 8px;
+            border-radius: 4px;
+            background-color: var(--primary-color);
+        }
+        #episode-detail-page {
+            display: none;
+            padding: 80px 4% 50px 4%;
+            position: relative;
+        }
+        .close-btn {
+            position: absolute;
+            top: 20px;
+            right: 4%;
+            font-size: 2rem;
+            cursor: pointer;
+            color: white;
+            z-index: 101;
+        }
+        .video-player-mock {
+            width: 100%;
+            aspect-ratio: 16 / 9;
+            background-color: black;
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            border-radius: 8px;
+        }
+        .timeline-bar {
+            position: absolute;
+            bottom: 20px;
+            width: 95%;
+            height: 5px;
+            background-color: rgba(255, 255, 255, 0.3);
+        }
+        .timeline-progress {
+            width: 25%; /* 예시 */
+            height: 100%;
+            background-color: var(--primary-color);
+        }
+        .episode-detail-content {
+            margin-top: 20px;
+            display: flex;
+            gap: 40px;
+        }
+        .episode-main-info {
+            flex-grow: 1;
+        }
+        .episode-sub-info {
+            flex: 0 0 300px;
+        }
+        .episode-detail-title {
+            font-size: 2rem;
+            font-weight: bold;
+        }
+        .episode-detail-actions {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            color: var(--secondary-text-color);
+            margin: 10px 0 20px 0;
+        }
+        .episode-detail-synopsis {
+            font-size: 1.1rem;
+            line-height: 1.6;
+            margin-bottom: 20px;
+        }
+        .comment-section h3 {
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 10px;
+        }
+        .comment {
+            padding: 10px 0;
+            border-bottom: 1px solid var(--border-color);
+        }
+        .comment:last-child {
+            border-bottom: none;
+        }
+        .related-content-card {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            padding: 10px;
+            background-color: var(--card-color);
+            border-radius: 4px;
+            margin-bottom: 10px;
+        }
+        .related-thumb {
+            width: 100px;
+            height: 56px;
+            background-color: #333;
+            flex-shrink: 0;
+            border-radius: 2px;
+        }
+        .status-message {
+            display: none;
+            position: fixed;
+            top: 80px;
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: rgba(0,0,0,0.8);
+            color: white;
+            padding: 10px 20px;
+            border-radius: 5px;
+            z-index: 1000;
+        }
+
+    </style>
+</head>
+<body>
+
+    <div id="main-page">
+        <div class="netflix-header">
+            <a href="#" class="netflix-logo">NETFLIX</a>
+        </div>
+
+        <div class="hero-section" style="background-image: url('placeholder');">
+            <!-- [포스터/키아트 묘사: 어두운 저택의 창가, 임신한 오메가 '라일'이 창밖의 별을 바라보고 있다. 그의 뒤로 그림자 속에서 네 명의 알파, '요한', '로렌조', '아이작', '노아'의 실루엣이 각기 다른 표정으로 그를 지켜보고 있다. 포스터 상단에 '가장 위험한 요람, 피로 맺은 구원'이라는 문구가 적혀 있다.] -->
+            <div class="hero-content">
+                <h1 class="hero-title">알파의 요람</h1>
+                <p class="hero-description">
+                    가장 어두운 곳에서 잉태된 생명. 네 명의 알파, 하나의 오메가. 살아남기 위한 위험한 공생이 시작된다.
+                </p>
+                <p class="hero-tags">#다크 #느와르 #로맨스 #오메가버스 #치명적 #위험한관계</p>
+                <div class="hero-buttons">
+                    <button class="btn" onclick="showMessage('재생이 시작됩니다.')">▶ 재생</button>
+                    <button class="btn secondary" onclick="showMessage('\'내가 찜한 콘텐츠\'에 추가되었습니다.')">✚ 내가 찜한 콘텐츠</button>
+                    <button class="btn secondary" onclick="showMessage('이 콘텐츠를 좋아합니다.')">👍</button>
+                    <button class="btn secondary" onclick="showMessage('취향에 맞지 않는군요.')">👎</button>
+                </div>
+                <div class="hero-badges">
+                    <span>19+</span>
+                    <span>폭력성, 선정성, 약물</span>
+                    <span style="border-color: var(--primary-color); color: var(--primary-color);">오늘 대한민국의 TOP 3 시리즈</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="main-content">
+            <div class="content-row">
+                <table class="info-table">
+                    <caption><h2 class="row-title">시청 데이터 분석 (S1)</h2></caption>
+                    <tbody>
+                        <tr>
+                            <th>시청률 (최신/평균)</th>
+                            <td>12.8% / 9.5%</td>
+                        </tr>
+                        <tr>
+                            <th>주요 시청 연령대</th>
+                            <td>25–34, 18–24</td>
+                        </tr>
+                        <tr>
+                            <th>성별 비율</th>
+                            <td>78%♀ / 22%♂</td>
+                        </tr>
+                        <tr>
+                            <th>시청층 키워드</th>
+                            <td>#위험한관계성 #입체적캐릭터 #오메가버스_세계관_몰입 #구원서사 #매운맛로맨스</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="content-row">
+                <h2 class="row-title">시즌 1 에피소드</h2>
+                <div class="episode-list">
+                    <div class="episode-card" onclick="showEpisodeDetail(1)">
+                        <div class="episode-thumbnail">[스틸컷 묘사: 화려하지만 차가운 '레드벨'의 방, '라일'이 옆트임이 긴 차이나 드레스를 입고 무표정하게 앉아 있다.]</div>
+                        <div class="episode-info">
+                            <h3>1. 붉은 벨벳의 밤</h3>
+                            <p class="runtime">58분 | 2023. 11. 17</p>
+                            <p class="synopsis">조직 보스들의 유흥 장소 '레드벨'. 오메가 라일은 그곳에서 가장 탐나는 상품이다. 프라노 조직의 보스 로렌조의 선택을 받은 그날 밤, 라일은 또 다른 알파 '요한'과 마주친다.</p>
+                            <p class="keywords">#첫만남 #소유권 #위험한제안</p>
+                            <p class="quote">요한: "여기서 나가고 싶나? 그렇다면 내게 마음을 줘."</p>
+                        </div>
+                    </div>
+                    <div class="episode-card" onclick="showEpisodeDetail(2)">
+                        <div class="episode-thumbnail">[스틸컷 묘사: 라일의 목에 걸린 푸른 보석 목걸이를 로렌조가 차가운 눈으로 만지고 있다.]</div>
+                        <div class="episode-info">
+                            <h3>2. 소유의 증표</h3>
+                            <p class="runtime">62분 | 2023. 11. 17</p>
+                            <p class="synopsis">요한이 남긴 흔적은 경쟁자들의 소유욕에 불을 지핀다. 질투에 휩싸인 로렌조는 라일에게 자신의 증표를 새기고, 버논 조직의 아이작 역시 그를 향한 가학적인 관심을 드러낸다.</p>
+                            <p class="keywords">#질투 #각인 #알파들의경쟁</p>
+                            <p class="quote">로렌조: "내 것이라는 표시는... 확실해야지."</p>
+                        </div>
+                    </div>
+                    <div class="episode-card" onclick="showEpisodeDetail(3)">
+                        <div class="episode-thumbnail">[스틸컷 묘사: 탈진해 쓰러진 라일을 사이에 두고 요한과 로렌조가 팽팽하게 대치하고 있다.]</div>
+                        <div class="episode-info">
+                            <h3>3. 균열</h3>
+                            <p class="runtime">55분 | 2023. 11. 17</p>
+                            <p class="synopsis">알파들의 끝없는 착취에 라일의 몸이 한계에 다다르고, 그의 소유권을 두고 요한과 로렌조의 갈등이 폭발한다. 결국 쓰러진 라일을 데리고 요한은 레드벨을 탈출한다.</p>
+                            <p class="keywords">#탈출 #대립 #한계</p>
+                            <p class="quote">라일: "...이제.. 그만..."</p>
+                        </div>
+                    </div>
+                    <div class="episode-card" onclick="showEpisodeDetail(4)">
+                        <div class="episode-thumbnail">[스틸컷 묘사: 요한의 저택 침대에서 눈을 뜬 라일이 자신의 배를 조심스럽게 감싸고 있다.]</div>
+                        <div class="episode-info">
+                            <h3>4. 새로운 세계, 새로운 운명</h3>
+                            <p class="runtime">65분 | 2023. 11. 24</p>
+                            <p class="synopsis">요한의 저택에서 라일은 임신 사실을 알게 된다. 아이의 아버지가 누구인지 알 수 없는 상황. 요한과 로렌조는 아이와 라일을 '공동 보호'하기로 위험한 협정을 맺는다.</p>
+                            <p class="keywords">#임신 #공동보호 #위태로운평화</p>
+                            <p class="quote">요한: "어떤 결과가 나와도... 우리가 함께 키울 거야."</p>
+                        </div>
+                    </div>
+                    <div class="episode-card" onclick="showEpisodeDetail(5)">
+                        <div class="episode-thumbnail">[스틸컷 묘사: 한밤중 라일의 방 발코니에 나타난 아이작이 어색한 표정으로 약봉투를 내밀고 있다.]</div>
+                        <div class="episode-info">
+                            <h3>5. 예기치 못한 방문자</h3>
+                            <p class="runtime">60분 | 2023. 12. 01</p>
+                            <p class="synopsis">라일을 납치했던 아이작은 그의 임신 사실에 충격을 받고 미묘한 심경 변화를 겪는다. 그는 모두가 잠든 밤, 위험을 무릅쓰고 요한의 저택에 몰래 찾아와 라일에게 선물을 건넨다.</p>
+                            <p class="keywords">#변화 #구원 #비밀스러운관심</p>
+                            <p class="quote">아이작: "...착각하지 마. 난 그런 사람 아니야."</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="content-row">
+                <h2 class="row-title">예고편 & 더 보기</h2>
+                <div class="card-container">
+                    <div class="content-card">[영상 묘사: 시즌2 티저 예고편. "그래서, 아빠가 누구라고?"라는 아이작의 도발적인 질문과 함께 요한, 로렌조의 날카로운 얼굴이 교차된다. 마침내 "요한님의..."라고 대답하는 라일의 목소리와 함께, 충격받은 로렌조의 얼굴과 기쁨을 감추지 못하는 요한의 얼굴이 클로즈업되며 끝난다.]</div>
+                    <div class="content-card">[영상 묘사: 메이킹 필름. 라일에게 아기용품을 선물하는 장면에서, 아이작 역의 배우가 부끄러워하며 NG를 내자 요한 역의 배우가 "우리 별이 삼촌 긴장했네"라며 놀리는 화기애애한 현장.]</div>
+                    <div class="content-card">[영상 묘사: 캐릭터 분석 영상. "악마인가, 구원자인가"라는 자막과 함께 요한의 냉혹한 모습과 라일에게만 다정한 모습이 교차 편집된다.]</div>
+                </div>
+            </div>
+
+            <div class="content-row">
+                <h2 class="row-title">리뷰 & 반응</h2>
+                <div class="card-container">
+                    <div class="review-card">👍 요한라일은 진짜 운명임ㅠㅠㅠ 별이 아빠 된 거 축하해! 시즌2에서 가족되는 거 보여주세요 제발...</div>
+                    <div class="review-card">🔥 아이작 서사 미쳤다... 츤데레인 줄 알았는데 그냥 대형견이었네. 꽃 소중히 간직하는거 보고 입덕함.</div>
+                    <div class="review-card">🧊 초반 가해 장면들은 좀 보기 힘들었음. 소재는 자극적인데 의외로 감정선이 섬세해서 계속 보게 됨.</div>
+                    <div class="review-card">👎 아니 이거 완전 범죄 미화 아님? 스톡홀름 증후군 같은데 주인공이 너무 수동적이라 답답함.</div>
+                    <div class="review-card">😂 로렌조 주식 떡락해서 한강 갈 뻔... 근데 애기 옷 사주고 정원 꾸미라는 거 보고 눈물 흘리면서 존버 결심함.</div>
+                    <div class="review-card">🤔 근데 노아는 언제 다시 나옴? 이대로 끝은 아닐거 같은데 시즌2 빌런 각?</div>
+                    <div class="review-card">💖 다같살 엔딩 기원합니다... 네 명의 아빠와 한 명의 엄마... 이 조합 못 잃어.</div>
+                    <div class="review-card">🤖 [광고] 국내 최신 드라마를 가장 빠르게! 회원가입 없이 100% 무료 시청! ▶ fast-drama.net</div>
+                </div>
+            </div>
+
+            <div class="content-row">
+                <h2 class="row-title">캐릭터 인기 투표 (시즌 1 종료 시점)</h2>
+                <table class="poll-table">
+                    <thead>
+                        <tr>
+                            <th>순위</th>
+                            <th>캐릭터</th>
+                            <th>득표율</th>
+                            <th>대표 코멘트</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>1</td>
+                            <td>요한</td>
+                            <td>41%</td>
+                            <td class="poll-comment">"내 아이"라고 했을 때 같이 울었어요ㅠㅠ 악마인 줄 알았는데 최고의 아빠 재질... (by. 악마의아내)</td>
+                        </tr>
+                        <tr>
+                            <td>2</td>
+                            <td>아이작</td>
+                            <td>35%</td>
+                            <td class="poll-comment">가학적인 모습 뒤에 숨겨진 순정이 진짜... 몰래 영양제 주고 가는 씬은 레전드. (by. 버논의들꽃)</td>
+                        </tr>
+                        <tr>
+                            <td>3</td>
+                            <td>라일</td>
+                            <td>15%</td>
+                            <td class="poll-comment">험한 세상 속에서 꿋꿋하게 버티는 우리 라일이 행복만 해... (by. 라일맘)</td>
+                        </tr>
+                        <tr>
+                            <td>4</td>
+                            <td>로렌조</td>
+                            <td>9%</td>
+                            <td class="poll-comment">친부가 아닌 걸 알고도 묵묵히 지켜주는 모습이 너무 짠하고 멋있음. 서사가 깊은 캐릭터. (by. 프라노의눈물)</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="content-row">
+                <h2 class="row-title">베스트 커플링 지지율</h2>
+                 <table class="poll-table">
+                    <thead>
+                        <tr>
+                            <th>순위</th>
+                            <th>커플링</th>
+                            <th>지지율</th>
+                            <th>대표 코멘트</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>1</td>
+                            <td>요한 x 라일</td>
+                            <td>52%</td>
+                            <td class="poll-comment">친부 확정! 이제 둘이서 별이랑 행복하기만 하면 됨. 공식은 공식이다. (by. 별이아빠엄마)</td>
+                        </tr>
+                        <tr>
+                            <td>2</td>
+                            <td>아이작 x 라일</td>
+                            <td>28%</td>
+                            <td class="poll-comment">후회공 맛집... "네 아이만 아니었으면 좋겠다"는 말에 상처받은 댕댕이ㅠㅠ (by. 붉은머리순정남)</td>
+                        </tr>
+                        <tr>
+                            <td>3</td>
+                            <td>로렌조 x 라일</td>
+                            <td>11%</td>
+                            <td class="poll-comment">가장 먼저 시작했지만 가장 아픈 손가락. 로렌조의 짠내나는 짝사랑을 응원합니다. (by. 루비목걸이)</td>
+                        </tr>
+                        <tr>
+                            <td>4</td>
+                            <td>All x 라일 (다같살)</td>
+                            <td>7%</td>
+                            <td class="poll-comment">애 아빠는 요한, 애 놀아주는 건 아이작, 애 교육은 로렌조. 완벽한 공동육아. (by. 평화주의자)</td>
+                        </tr>
+                        <tr>
+                            <td>5</td>
+                            <td>요한 x 로렌조</td>
+                            <td>2%</td>
+                            <td class="poll-comment">라이벌 맛집. 라일 두고 싸우는 것 같지만 사실은 서로를... (by. 망상회로풀가동)</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+        </div>
+    </div>
+
+    <div id="episode-detail-page">
+        <div class="close-btn" onclick="showMainPage()">×</div>
+        <div class="video-player-mock">
+            <div id="video-description">[영상 묘사: 00:15 - 라일이 임신 진단을 받고 충격에 빠진 얼굴. / 25:30 - 요한과 로렌조가 라일의 손을 동시에 잡으려다 서로를 쳐다보며 신경전을 벌인다. / 55:10 - 로렌조가 "아이의 건강이 최우선이다"라고 말하며 한발 물러선다. 요한이 안도하며 라일을 감싼다.]</div>
+            <div class="timeline-bar"><div class="timeline-progress"></div></div>
+        </div>
+        <div class="episode-detail-content">
+            <div class="episode-main-info">
+                <h2 class="episode-detail-title">4. 새로운 세계, 새로운 운명</h2>
+                <div class="episode-detail-actions">
+                    <span>65분</span> | <span>👍 12.1K</span> | <span>👎 102</span> | <span>🔗 공유</span>
+                </div>
+                <p class="episode-detail-synopsis">
+                    레드벨을 탈출한 라일은 요한의 호화로운 저택에서 눈을 뜬다. 하지만 평화도 잠시, 그는 자신이 임신했다는 충격적인 사실을 알게 된다. 아이의 아버지가 누구인지 불분명한 상황 속에서, 라일과 아이의 소유권을 주장하던 요한과 로렌조는 아이가 태어날 때까지 그를 '공동 보호'하기로 합의한다. 한 지붕 아래, 세 사람의 위험하고 위태로운 동거가 시작된다.
+                </p>
+                <div class="comment-section">
+                    <h3>댓글 (2,381)</h3>
+                    <div class="comment">
+                        <p><strong>user_yohanlover:</strong> 드디어 지옥 탈출ㅠㅠ 근데 공동육아라니 이게 무슨 소리요... 가시방석 시작이네</p>
+                    </div>
+                    <div class="comment">
+                        <p><strong>user_realist:</strong> 솔직히 저 상황에서 임신이라니... 라일 멘탈 괜찮나? 연기 진짜 잘한다.</p>
+                    </div>
+                    <div class="comment">
+                        <p><strong>user_shipper:</strong> 로렌조랑 요한 둘 다 아빠하고 싶어서 안달난 거 너무 웃김ㅋㅋㅋ</p>
+                    </div>
+                     <div class="comment">
+                        <p><strong>user_question:</strong> 근데 레드벨에서 계약은 어떻게 된거지? 리처드가 가만히 있을리가 없는데?</p>
+                    </div>
+                </div>
+            </div>
+            <div class="episode-sub-info">
+                <h3>관련 콘텐츠</h3>
+                <div class="related-content-card">
+                    <div class="related-thumb"></div>
+                    <div>
+                        <h4>빈센조</h4>
+                        <p>#느와르 #복수 #다크히어로</p>
+                    </div>
+                </div>
+                <div class="related-content-card">
+                    <div class="related-thumb"></div>
+                    <div>
+                        <h4>마이 네임</h4>
+                        <p>#액션 #언더커버 #여성서사</p>
+                    </div>
+                </div>
+                 <div class="related-content-card">
+                    <div class="related-thumb"></div>
+                    <div>
+                        <h4>인간수업</h4>
+                        <p>#하이틴 #범죄 #충격</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div id="status-message" class="status-message"></div>
+
+    <script>
+        function showMessage(msg) {
+            const messageElement = document.getElementById('status-message');
+            messageElement.textContent = msg;
+            messageElement.style.display = 'block';
+            setTimeout(() => {
+                messageElement.style.display = 'none';
+            }, 2000);
+        }
+
+        function showEpisodeDetail(epNum) {
+            document.getElementById('main-page').style.display = 'none';
+            document.getElementById('episode-detail-page').style.display = 'block';
+            window.scrollTo(0, 0);
+        }
+
+        function showMainPage() {
+            document.getElementById('episode-detail-page').style.display = 'none';
+            document.getElementById('main-page').style.display = 'block';
+        }
+    </script>
+</body>
+</html>

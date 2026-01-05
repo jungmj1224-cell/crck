@@ -1,0 +1,783 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Jade's Phone</title>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        /* ===== 기본 설정 및 프레임 ===== */
+        body { margin: 0; padding: 0; background-color: #333; font-family: 'Noto Sans KR', sans-serif; display: flex; justify-content: center; align-items: center; height: 100vh; overflow: hidden; }
+        .phone { aspect-ratio: 390 / 844; max-width: 90vw; max-height: 90vh; width: 390px; height: 844px; border: 12px solid black; border-radius: 50px; box-shadow: 0 0 30px rgba(0,0,0,0.5); position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background: #000; }
+        .screen { width: 100%; height: 100%; position: relative; overflow: hidden; background-color: #ffffff; border-radius: 38px; }
+
+        /* ===== 페이지 전환 및 레이아웃 ===== */
+        .page { position: absolute; width: 100%; height: 100%; top: 0; left: 0; background-color: #f9f9f9; display: flex; flex-direction: column; transition: opacity 0.2s ease-in-out; visibility: hidden; opacity: 0; z-index: 1; color: #000000; }
+        .page.active { visibility: visible; opacity: 1; z-index: 10; }
+
+        /* ===== 공통 UI 요소 ===== */
+        .status-bar { text-align: right; padding: 18px 25px 10px 25px; font-size: 14px; font-weight: 700; flex-shrink: 0; color: #ffffff; background: transparent; z-index: 100; position: absolute; top: 0; left:0; right: 0; }
+        .status-bar.dark-text { color: #000000; }
+        .app-header { display: flex; justify-content: space-between; align-items: center; padding: 10px 20px; border-bottom: 1px solid #e0e0e0; flex-shrink: 0; font-weight: 700; font-size: 1.1em; background-color: #ffffff; margin-top: 48px; }
+        .app-header .back-button { cursor: pointer; font-size: 1.2em; padding-right: 10px; }
+        .app-header .header-title { flex-grow: 1; text-align: center; }
+        .content-body { flex-grow: 1; overflow-y: auto; background-color: #ffffff; }
+        .content-body::-webkit-scrollbar { display: none; }
+        .home-indicator-container { padding: 20px 0 10px 0; display: flex; justify-content: center; align-items: center; flex-shrink: 0; background-color: transparent; }
+        .home-indicator { width: 134px; height: 5px; background-color: #000000; border-radius: 100px; cursor: pointer; }
+        .home-screen .home-indicator { background-color: #ffffff; }
+        
+        /* ===== 홈 화면 ===== */
+        .home-screen { background-size: cover; background-position: center; }
+        .app-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; padding: 20px; flex-grow: 1; }
+        .app-icon { display: flex; flex-direction: column; align-items: center; text-align: center; cursor: pointer; }
+        .app-icon img { width: 60px; height: 60px; border-radius: 15px; margin-bottom: 5px; }
+        .app-icon span { font-size: 12px; color: white; text-shadow: 1px 1px 2px rgba(0,0,0,0.5); }
+
+        /* ===== 앱별/요소별 커스텀 스타일 ===== */
+        .image-placeholder { background-color: #ccc; display: flex; justify-content: center; align-items: center; color: #666; font-size: 12px; text-align: center; padding: 10px; box-sizing: border-box; word-break: keep-all; line-height: 1.3; width: 100%; height: 100%; }
+        
+        .list-item { display: flex; align-items: center; padding: 12px 20px; border-bottom: 1px solid #f0f0f0; cursor: pointer; }
+        .list-item:last-child { border-bottom: none; }
+        .list-item-content { flex-grow: 1; }
+        .list-item-title { font-weight: bold; }
+        .list-item-subtitle { font-size: 0.9em; color: #888; }
+        .list-item-time, .list-item-meta { font-size: 0.9em; color: #888; margin-left: auto; }
+        
+        .call-item .list-item-title.missed { color: #ff3b30; }
+        
+        .chat-body { display: flex; flex-direction: column; padding: 20px; }
+        .message-bubble { padding: 10px 15px; border-radius: 18px; max-width: 75%; margin-bottom: 10px; line-height: 1.4; word-wrap: break-word; }
+        .message-bubble.sent { background-color: #5856d6; color: white; align-self: flex-end; }
+        .message-bubble.received { background-color: #E5E5EA; color: #000000; align-self: flex-start; }
+        .payment-message { font-size: 0.9em; white-space: pre-wrap; font-family: monospace; }
+
+        .photo-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 2px; }
+        .photo-item { aspect-ratio: 1 / 1; }
+        
+        .section-title { padding: 15px 20px 5px; font-size: 1.2em; font-weight: bold; background-color: #f9f9f9; }
+        
+        .note-content-view, .diary-content-view { padding: 25px; font-size: 1.1em; line-height: 1.6; white-space: pre-wrap; }
+        
+        .alarm-item { display: flex; justify-content: space-between; align-items: center; padding: 15px 20px; border-bottom: 1px solid #f0f0f0; }
+        .alarm-time { font-size: 2em; }
+        .alarm-label { font-size: 0.9em; }
+        .alarm-toggle { width: 51px; height: 31px; background-color: #e9e9eb; border-radius: 31px; position: relative; cursor: pointer; }
+        .alarm-toggle.enabled { background-color: #34c759; }
+        .alarm-toggle::before { content: ''; position: absolute; width: 27px; height: 27px; border-radius: 50%; background-color: white; top: 2px; left: 2px; transition: transform 0.2s; box-shadow: 0 0 2px rgba(0,0,0,0.2); }
+        .alarm-toggle.enabled::before { transform: translateX(20px); }
+        
+        .calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); text-align: center; padding: 10px; gap: 5px; }
+        .calendar-header { font-weight: bold; color: #888; padding-bottom: 10px; }
+        .calendar-day { padding: 10px 0; position: relative; }
+        .calendar-day.event::after { content: ''; position: absolute; bottom: 5px; left: 50%; transform: translateX(-50%); width: 5px; height: 5px; background-color: #5856d6; border-radius: 50%; }
+        .calendar-day.other-month { color: #ccc; }
+
+        .reminder-item { display: flex; align-items: center; padding: 15px 20px; border-bottom: 1px solid #f0f0f0; }
+        .reminder-checkbox { width: 20px; height: 20px; border: 2px solid #ccc; border-radius: 50%; margin-right: 15px; cursor: pointer; }
+        .reminder-checkbox.completed { background-color: #5856d6; border-color: #5856d6; }
+        .reminder-task.completed { text-decoration: line-through; color: #aaa; }
+
+        .youtube-item { display: flex; padding: 10px 20px; border-bottom: 1px solid #f0f0f0; }
+        .youtube-thumbnail { width: 120px; height: 68px; margin-right: 15px; flex-shrink: 0; }
+        .youtube-info { display: flex; flex-direction: column; }
+        .youtube-title { font-weight: bold; font-size: 0.9em; margin-bottom: 5px; }
+        .youtube-channel { font-size: 0.8em; color: #888; }
+        
+        .amazon-item { padding: 15px 20px; border-bottom: 1px solid #f0f0f0; }
+        .amazon-date { font-size: 0.8em; color: #888; margin-bottom: 5px; }
+        .amazon-item-name { font-weight: bold; }
+        .amazon-details { display: flex; justify-content: space-between; font-size: 0.9em; color: #555; margin-top: 5px; }
+
+        /* Custom App Styles */
+        #customApp1 .content-body, #customApp2 .content-body { background-color: #121212; color: #e0e0e0; }
+        #customApp1 .app-header, #customApp2 .app-header { background-color: #1c1c1e; color: #fff; border-bottom-color: #333; }
+        .intel-item { padding: 15px 20px; border-bottom: 1px solid #333; }
+        .intel-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+        .intel-sender { font-weight: bold; color: #bb86fc; }
+        .intel-date { font-size: 0.8em; color: #888; }
+        .intel-subject { color: #e0e0e0; }
+        .intel-status { font-size: 0.8em; padding: 3px 8px; border-radius: 10px; }
+        .intel-status.high { background-color: #cf6679; color: #121212; }
+        .intel-status.medium { background-color: #fdd835; color: #121212; }
+
+        .dossier-view { padding: 20px; }
+        .dossier-title { font-size: 1.5em; font-weight: bold; color: #bb86fc; border-bottom: 1px solid #bb86fc; padding-bottom: 10px; margin-bottom: 20px; }
+        .dossier-section { margin-bottom: 20px; }
+        .dossier-section-title { font-weight: bold; color: #fff; margin-bottom: 8px; }
+        .dossier-section-content { font-size: 0.95em; color: #ccc; line-height: 1.6; white-space: pre-wrap; padding-left: 15px; border-left: 2px solid #555; }
+
+        .meta-message-container { position: absolute; top: 60px; left: 20px; right: 20px; padding: 12px 15px; background-color: rgba(0, 0, 0, 0.75); color: white; border-radius: 12px; text-align: center; font-size: 15px; z-index: 9999; opacity: 0; visibility: hidden; transition: opacity 0.5s ease-in-out; backdrop-filter: blur(5px); -webkit-backdrop-filter: blur(5px); }
+        .meta-message-container.visible { opacity: 1; visibility: visible; }
+    </style>
+</head>
+<body>
+    <div class="phone">
+        <div class="screen">
+            <div id="metaMessage" class="meta-message-container"></div>
+            
+            <!-- 홈 화면 -->
+            <div id="home" class="page home-screen active">
+                <div class="status-bar">09:41</div>
+                <div class="app-grid">
+                    <div class="app-icon" onclick="showPage('calls')"><img src="https://raw.githubusercontent.com/sidsid-hue/sid/4186332fd67b6cfa2470d33bcad0dcad89113e2c/icon/Call.webp"><span>전화</span></div>
+                    <div class="app-icon" onclick="showPage('messages')"><img src="https://raw.githubusercontent.com/sidsid-hue/sid/4186332fd67b6cfa2470d33bcad0dcad89113e2c/icon/M.webp"><span>메시지</span></div>
+                    <div class="app-icon" onclick="showPage('safari')"><img src="https://raw.githubusercontent.com/sidsid-hue/sid/4186332fd67b6cfa2470d33bcad0dcad89113e2c/icon/SA.webp"><span>Safari</span></div>
+                    <div class="app-icon" onclick="showPage('music')"><img src="https://raw.githubusercontent.com/sidsid-hue/sid/4186332fd67b6cfa2470d33bcad0dcad89113e2c/icon/Mu.webp"><span>음악</span></div>
+                    <div class="app-icon" onclick="showPage('photos')"><img src="https://raw.githubusercontent.com/sidsid-hue/sid/4186332fd67b6cfa2470d33bcad0dcad89113e2c/icon/image.webp"><span>사진</span></div>
+                    <div class="app-icon" onclick="showPage('calendar')"><img src="https://raw.githubusercontent.com/sidsid-hue/sid/4186332fd67b6cfa2470d33bcad0dcad89113e2c/icon/S.webp"><span>캘린더</span></div>
+                    <div class="app-icon" onclick="showPage('alarms')"><img src="https://raw.githubusercontent.com/sidsid-hue/sid/4186332fd67b6cfa2470d33bcad0dcad89113e2c/icon/alarm.webp"><span>시계</span></div>
+                    <div class="app-icon" onclick="showPage('notes')"><img src="https://raw.githubusercontent.com/sidsid-hue/sid/4186332fd67b6cfa2470d33bcad0dcad89113e2c/icon/note.webp"><span>메모</span></div>
+                    <div class="app-icon" onclick="showPage('reminders')"><img src="https://raw.githubusercontent.com/sidsid-hue/sid/4186332fd67b6cfa2470d33bcad0dcad89113e2c/icon/re.webp"><span>미리 알림</span></div>
+                    <div class="app-icon" onclick="showPage('diary')"><img src="https://raw.githubusercontent.com/sidsid-hue/sid/5dad57d35f7ad0b4b766b62217e29d729076e46b/%EC%9D%BC%EA%B8%B0.webp"><span>일기장</span></div>
+                    <div class="app-icon" onclick="showPage('youtube')"><img src="https://raw.githubusercontent.com/sidsid-hue/sid/4186332fd67b6cfa2470d33bcad0dcad89113e2c/icon/you.webp"><span>YouTube</span></div>
+                    <div class="app-icon" onclick="showPage('amazon')"><img src="https://raw.githubusercontent.com/sidsid-hue/sid/4186332fd67b6cfa2470d33bcad0dcad89113e2c/icon/amazon.webp"><span>Amazon</span></div>
+                    <div id="custom-app-icon-1" class="app-icon" onclick="showPage('customApp1')"><img><span></span></div>
+                    <div id="custom-app-icon-2" class="app-icon" onclick="showPage('customApp2')"><img><span></span></div>
+                </div>
+                <div class="home-indicator-container">
+                    <div class="home-indicator" onclick="showPage('home')"></div>
+                </div>
+            </div>
+
+            <!-- 기본 앱 페이지 템플릿 -->
+            <div id="calls" class="page"></div>
+            <div id="messages" class="page"></div>
+            <div id="message-detail" class="page"></div>
+            <div id="safari" class="page"></div>
+            <div id="music" class="page"></div>
+            <div id="photos" class="page"></div>
+            <div id="calendar" class="page"></div>
+            <div id="alarms" class="page"></div>
+            <div id="notes" class="page"></div>
+            <div id="note-detail" class="page"></div>
+            <div id="reminders" class="page"></div>
+            <div id="diary" class="page"></div>
+            <div id="diary-detail" class="page"></div>
+            <div id="youtube" class="page"></div>
+            <div id="amazon" class="page"></div>
+
+            <!-- 커스텀 앱 페이지 템플릿 -->
+            <div id="customApp1" class="page"></div>
+            <div id="customApp2" class="page"></div>
+
+        </div>
+    </div>
+
+<script>
+const phoneData = {
+    // 5. 콘텐츠 생성 가이드라인에 따른 분석
+    // 1단계: 핵심 관계 정의: 제이드({char})는 레녹({user})의 운명적 연인('네임')이자, 그를 학대적인 상황에서 구출해낸 강력한 보호자. 레녹은 제이드에게 의지하면서도 복잡한 감정을 느끼는 상태. 둘의 관계는 도피와 보호, 그리고 격정적인 사랑이 뒤섞여 있다.
+    // 2단계: 감정적 톤 분석: 제이드의 레녹을 향한 감정은 극도로 소유욕이 강하고 보호적이며, 때로는 다정하지만 그 이면에는 자신의 적으로부터 레녹을 지키기 위한 냉혹함과 계산적인 면모가 공존한다. 휴대폰은 이러한 이중적인 면모를 반영한다.
+    callHistory: [
+        { name: "레녹🤍", type: "부재중 전화", duration: "5월 18일" },
+        { name: "레녹🤍", type: "부재중 전화", duration: "5월 17일" },
+        { name: "레녹🤍", type: "부재중 전화", duration: "5월 16일" },
+        { name: "레녹🤍", type: "발신 통화", duration: "5월 15일, 3분 12초" },
+        { name: "레븐 (호위기사)", type: "수신 통화", duration: "12분 45초" },
+        { name: "정보원 '그림자 올빼미'", type: "발신 통화", duration: "7분 2초" },
+        { name: "레녹🤍", type: "수신 통화", duration: "1시간 24분" },
+        { name: "황실 재무관", type: "수신 통화", duration: "5분 30초" },
+        { name: "레븐 (호위기사)", type: "발신 통화", duration: "8분 11초" },
+        { name: "알 수 없는 번호", type: "차단된 통화", duration: "" }
+    ],
+    alarms: [
+        { time: "06:00", label: "일일 정보 보고", enabled: true },
+        { time: "07:00", label: "레녹 깨우기", enabled: true },
+        { time: "12:00", label: "점심 식사 (청포도 준비)", enabled: true },
+        { time: "21:00", label: "레븐과 통신", enabled: true },
+        { time: "23:00", label: "명상 및 마력 제어", enabled: false }
+    ],
+    calendar: {
+        month: "5월",
+        year: "제국력 452년",
+        events: [
+            { date: 8, title: "레녹과 첫날 ❤️" },
+            { date: 15, title: "레녹 연락두절 시작" },
+            { date: 18, title: "레녹 구출" },
+            { date: 19, title: "새로운 시작" },
+            { date: 25, title: "황궁 복귀 예정일" }
+        ]
+    },
+    photos: {
+        recent: [
+            "새벽녘, 자신의 망토를 덮고 잠든 레녹의 평온한 얼굴을 조심스럽게 찍은 사진. 달빛이 은색 머리카락을 비추고 있다.",
+            "레제온 제국의 수도, 바르디움의 화려한 전경. 마법 새 위에서 찍은 듯한 구도.",
+            "자신의 저택 정원에서 마법 나비를 신기하게 바라보는 레녹의 뒷모습.",
+            "갓 목욕을 마치고 뺨이 발그레해진 채, 조금 큰 셔츠를 입고 있는 레녹의 모습.",
+            "식탁에서 청포도를 맛있게 먹고 있는 레녹의 사진. 입가에 희미한 미소가 걸려있다."
+        ],
+        secret: [
+            "오웬의 저택에 잠입하기 전, 저택의 설계도를 찍어둔 사진.",
+            "신성 왕국과 레제온 제국 사이의 비밀 통로를 표시해 둔 낡은 지도.",
+            "레녹의 몸에 새겨진 자신의 이름, '제이드 펜드래건'을 몰래 찍어둔 클로즈업 사진.",
+            "과거, 자신의 용의 힘이 폭주했을 때 파괴된 훈련장의 흔적을 담은 사진.",
+            "자신의 손바닥 위에 떠 있는 작은 보랏빛 마력 구체. 그 안에 레녹의 웃는 모습이 희미하게 비친다."
+        ],
+    },
+    reminders: [
+        { task: "레녹에게 맞는 새 옷들 주문하기", completed: false },
+        { task: "오웬의 배후 세력 조사 의뢰", completed: false },
+        { task: "황궁에 보낼 보고서 초안 작성", completed: true },
+        { task: "레녹의 심리 안정에 좋은 약초 알아보기", completed: false },
+        { task: "신성 왕국 국경 마법 경계 강화 요청", completed: false }
+    ],
+    messages: [
+        {
+            id: 1,
+            sender: "레녹🤍",
+            preview: "응, 도착했어. 여긴 정말 굉장하다.",
+            conversation: [
+                { type: 'sent', text: "오웬의 저택에 도착했나? 무슨 일 있으면 바로 연락해." },
+                { type: 'received', text: "응, 방금 도착했어. 걱정 마. 그냥 인사만 드리고 금방 갈게." },
+                { type: 'sent', text: "그래도 불안하군. 그 자의 눈빛이 마음에 걸려." },
+                { type: 'received', text: "괜찮아, 제이. 너무 걱정하지 마. 여행 계획이나 짜고 있자! 😊" },
+                { type: 'sent', text: "…알겠다. 사랑해, 레녹." },
+                { type: 'received', text: "나도. 이따 봐." },
+                { type: 'sent', text: "(3일 후) 레녹, 왜 연락이 없지?" },
+                { type: 'sent', text: "레녹, 제발. 무슨 일이야." },
+                { type: 'received', text: "응, 도착했어. 여긴 정말 굉장하다." },
+                { type: 'sent', text: "레녹? 너 괜찮은건가?" }
+            ]
+        },
+        {
+            id: 2,
+            sender: "레븐",
+            preview: "전하, 추격대가 국경 근처에 집결 중입니다.",
+            conversation: [
+                { type: 'received', text: "전하, 무사하십니까? 신성왕국에서 단독으로 움직이신 이후로 심려가 컸습니다." },
+                { type: 'sent', text: "문제없다. 손님과 함께 제국으로 복귀 중이니, 내 저택에 마중 나올 준비를 하도록." },
+                { type: 'received', text: "손님이라 하심은... 알겠습니다. 그런데 전하, 추격대가 국경 근처에 집결 중입니다. 신성력을 사용하는 자들입니다." },
+                { type: 'sent', text: "알고 있다. 오웬의 수작이겠지. 국경 수비대에 경계 강화를 명하고, 내 저택 주변의 보안을 최고 등급으로 올려라." },
+                { type: 'received', text: "명을 받들겠습니다." }
+            ]
+        },
+        {
+            id: 3,
+            sender: "황실 재무부",
+            preview: "[지출 승인] 500,000 골드 (마법 의상점 '실크윙')",
+            conversation: [
+                { type: 'received', text: "[황실 카드 승인]\n'블랙 드래곤' 500,000 골드\n(마법 의상점 '실크윙')" },
+                { type: 'received', text: "[황실 카드 승인]\n'블랙 드래곤' 7,800 골드\n(카페 '별빛 눈물')" },
+                { type: 'received', text: "[황실 카드 승인]\n'블랙 드래곤' 120,000 골드\n(고급 식료품점 '황금가지')" },
+                { type: 'received', text: "[황실 카드 승인]\n'블랙 드래곤' 2,500,000 골드\n(정보 길드 '그림자 올빼미')" },
+                { type: 'received', text: "[황실 카드 승인]\n'블랙 드래곤' 35,000 골드\n(서점 '지혜의 샘')" }
+            ]
+        },
+        {
+            id: 4,
+            sender: "누님",
+            preview: "아버님께서 널 찾으신다. 언제쯤 얼굴을 비출 생각이니?",
+            conversation: [
+                { type: 'received', text: "귀환했다는 소식은 들었다. 아버님께서 널 찾으신다. 언제쯤 얼굴을 비출 생각이니?" },
+                { type: 'sent', text: "며칠 휴식이 필요합니다, 누님." },
+                { type: 'received', text: "또 무슨 사고를 치고 온 게냐? 이번엔 신성 왕국에서 뭘 한 거야." },
+                { type: 'sent', text: "사고가 아닙니다. 제 사람을 데려왔을 뿐." },
+                { type: 'received', text: "...그렇다면 더더욱 폐하께 알려야지. 조만간 정식으로 보고하거라." }
+            ]
+        },
+        {
+            id: 5,
+            sender: "바르디움 마법 학회",
+            preview: "[알림] 제 7회 고대 마법 해독 컨퍼런스 개최 안내",
+            conversation: [
+                { type: 'received', text: "[알림] 제 7회 고대 마법 해독 컨퍼런스가 다음 달 1일 개최됩니다. 황태자 전하의 기조연설을 부탁드립니다." }
+            ]
+        }
+    ],
+    notes: [
+        { id: 1, type: "secret", content: "오웬의 신성력은 '분노'와 '집착'을 원동력으로 삼는 듯하다. 일반적인 신성력과는 이질적. 근원을 파고들면 약점을 찾을 수 있을 것. 아마도 금지된 교리에 손을 댔을 가능성이 높다." },
+        { id: 2, type: "secret", content: "레녹의 정신적 트라우마가 심각하다. 작은 소리에도 놀라고, 악몽을 꾸는 듯하다. 수면 마법과 안정 마법을 병행해야겠다. 그가 다시 웃을 수만 있다면... 뭐든 할 수 있다." },
+        { id:3, type: "secret", content: "황궁 내 오웬의 협력자가 있을 가능성. 신성 왕국과의 교역 목록을 재검토하고, 최근 1년간 국경을 넘나든 귀족들을 감시해야 한다. 레븐에게 비밀리에 명을 내려야겠군." },
+        { id: 4, type: "normal", title: "레녹이 좋아할 만한 것", content: "- 따뜻한 우유\n- 푹신한 담요\n- 청포도 (많이)\n- 조용한 음악\n- 검술 훈련 (상태가 나아지면)\n- 제국의 아름다운 풍경" },
+        { id: 5, type: "normal", title: "여행 계획 (수정)", content: "원래 계획: 남부 해안 도시 -> 동부 산맥 -> 북부 설원\n수정 계획: 우선 저택에서 안정을 취한 뒤, 제국에서 가장 안전하고 경치가 좋은 호수 별궁으로 이동." },
+        { id: 6, type: "normal", title: "황제 폐하 보고 내용", content: "1. 신성 왕국 내 불법 마법물품 밀매 건: 추기경 오웬이 연루된 정황 포착.\n2. 개인적인 사유로 인한 신성 왕국 기사 '레녹 클라인'의 정치적 망명 요청 (으로 위장).\n3. 양국 관계에 미칠 영향 최소화 방안 모색." },
+        { id: 7, type: "normal", title: "선물 리스트", content: "레녹을 위한 검 (레제온 제국 최고의 장인이 만든 것), 새 성기사복이 아닌 편한 일상복, 추위를 막아줄 따뜻한 망토." },
+        { id: 8, type: "normal", title: "마법 연구", content: "고대 용언 마법 중 '보호'와 '치유'에 관한 기록 찾아볼 것. 특히 정신에 직접 작용하는 마법 위주로. 학회에 문의." }
+    ],
+    safari: {
+        recentSearches: ["정신적 충격 후 회복 방법", "레제온 제국 유명한 검 장인", "청포도 효능", "실레온 신성 왕국 최근 동향", "가까운 서점 위치"],
+        deletedHistory: ["네임 발현 조건", "연인에게 해주고 싶은 말", "오웬 추기경 과거 행적"]
+    },
+    music: {
+        playlistTitle: "For Lenox",
+        tracks: [
+            { title: "To Build A Home", artist: "The Cinematic Orchestra" },
+            { title: "Clair de Lune", artist: "Claude Debussy" },
+            { title: "Saturn", artist: "Sleeping At Last" },
+            { title: "Experience", artist: "Ludovico Einaudi" },
+            { title: "The Night We Met", artist: "Lord Huron" },
+            { title: "Flightless Bird, American Mouth", artist: "Iron & Wine" },
+            { title: "I Found", artist: "Amber Run" },
+            { title: "Work Song", artist: "Hozier" },
+            { title: "My Love Will Never Die", artist: "AG & Claire Wyndham" },
+            { title: "Arrival of the Birds", artist: "The Cinematic Orchestra" }
+        ]
+    },
+    youtube: [
+        { thumbnail: "[고요한 호수와 숲을 배경으로 한 명상 음악 영상 썸네일]", title: "심신 안정을 위한 8시간 명상 음악", channel: "Healing Tree Music" },
+        { thumbnail: "[대장장이가 불꽃 속에서 검을 벼리는 모습 썸네일]", title: "황실 최고의 검은 어떻게 만들어지는가", channel: "제국 공방" },
+        { thumbnail: "[정신과 의사가 차분하게 설명하는 영상 썸네일]", title: "소중한 사람이 트라우마를 겪고 있을 때", channel: "Dr. Elara's Mind Clinic" },
+        { thumbnail: "[요리사가 청포도 타르트를 만드는 썸네일]", title: "세상에서 가장 맛있는 청포도 타르트 레시피", channel: "디저트의 제왕" },
+        { thumbnail: "[고대 유적을 탐사하는 다큐멘터리 썸네일]", title: "잊혀진 용의 신전: 고대 마법의 비밀", channel: "제국 역사 탐사대" }
+    ],
+    amazon: [
+        { orderDate: "452-05-19", item: "최고급 캐시미어 담요 (아이보리)", quantity: 2, price: "180,000 골드" },
+        { orderDate: "452-05-19", item: "심신 안정에 좋은 허브티 세트", quantity: 1, price: "55,000 골드" },
+        { orderDate: "452-05-19", item: "'고대 치유 마법의 이해' (희귀 서적)", quantity: 1, price: "320,000 골드" },
+        { orderDate: "452-05-19", item: "레녹 클라인 사이즈 맞춤 의류 일체", quantity: 1, price: "측정 후 결제" },
+        { orderDate: "452-05-19", item: "샤인머스캣 품종 청포도 5kg", quantity: 1, price: "98,000 골드" }
+    ],
+    diary: [
+        { date: "452-05-08", content: "내 몸에 새겨진 이름을 확인했다. '레녹 클라인'. 그저 흥미로운 성기사라고 생각했는데... 운명이었다니. 이 벅찬 감정을 뭐라 설명해야 할까. 그는 내 것이다. 이제 절대로 놓칠 수 없다." },
+        { date: "452-05-09", content: "함께 제국으로 여행을 가자고 제안했다. 그가 수락했을 때의 기쁨이란. 그와 함께할 미래를 생각하니, 황태자의 책임감 따위는 아무것도 아닌 것처럼 느껴진다." },
+        { date: "452-05-15", content: "오웬의 저택으로 향했다. 그를 보내는 발걸음이 떨어지지 않았다. 그 추기경의 눈빛이 마음에 들지 않아. 불안한 예감이 가슴을 짓누른다. 부디 아무 일 없기를." },
+        { date: "452-05-16", content: "연락이 없다. 뭔가 잘못되었다. 심장이 차갑게 식는 기분이다. 성당에 가봤지만 장기 휴가를 냈다는 말뿐. 오웬, 그 자가 무슨 짓을 한 게 틀림없다." },
+        { date: "452-05-17", content: "밤새 정보를 모았다. 오웬의 저택은 철통같은 요새. 하지만 그 어떤 벽도 나를 막을 수는 없다. 레녹, 조금만 기다려. 내가 가고 있어." },
+        { date: "452-05-18", content: "그를 찾았다. 상처입고 지친 모습에 이성이 끊어질 뻔했다. 오웬, 그자를 갈기갈기 찢어 죽이고 싶었지만 참았다. 레녹을 구하는 게 먼저다. 내 앞에서 그를 선택했을 때, 세상 모든 것을 얻은 기분이었다." },
+        { date: "452-05-19", content: "함께다. 내 저택, 내 공간에 그가 있다. 아직 불안에 떨고 있지만, 이제 괜찮을 것이다. 내가 그렇게 만들 것이다. 그 누구도 다시는 레녹을 해치지 못하게 할 것이다. 내 모든 것을 걸고." },
+        { date: "452-05-20", content: "잠든 얼굴을 몇 시간이고 바라봤다. 악몽을 꾸는지 뒤척일 때마다 심장이 내려앉는다. 그의 상처를 모두 내가 가져올 수 있다면. 그저 평온하게 잠들 수만 있다면." },
+        { date: "452-05-21", content: "오늘 처음으로 작게 웃었다. 내가 가져온 청포도를 먹다가. 그 찰나의 미소를 영원히 붙잡아두고 싶었다. 그를 웃게 하기 위해서라면, 제국이라도 바칠 수 있다." },
+        { date: "452-05-22", content: "조금씩 기력을 차리고 있다. 오늘은 정원을 함께 산책했다. 내 곁에 바짝 붙어 걷는 그가 사랑스러워서 견딜 수가 없다. 이 평화가 영원하기를. 오웬의 그림자가 우리의 행복을 방해하지 못하도록, 미리 모든 것을 처리해야 한다." }
+    ],
+    metaMessages: [
+        "내 휴대폰을 보고 있는 건가, 레녹?",
+        "뭐, 딱히 숨기는 건 없으니 마음대로 봐도 좋아.",
+        "궁금한 거라도 있어?",
+        "...너무 깊게는 보지 마. 부끄러운 것도 있으니까.",
+        "이제 그만 휴대폰은 내려놓고, 나를 봐줘. 네가 보고 싶어."
+    ],
+    customApp1: {
+        appName: "Aetheris",
+        iconDescription: "glowing%20purple%20magic%20sigil%20icon%20on%20dark%20background",
+        content: {
+            messages: [
+                { sender: "그림자 올빼미", date: "452-05-19 08:00", subject: "오웬의 동향", status: "high", body: "신성 왕국 전역에 '레녹 클라인'에 대한 수배령. 국경 경비대에 초상화 배포 완료. 오웬은 직접 추격대를 이끌고 국경으로 이동 중." },
+                { sender: "레븐", date: "452-05-19 07:30", subject: "저택 보안 강화 완료", status: "medium", body: "말씀하신 대로 저택 주변의 경비 마법과 인력을 3배로 증강했습니다. 외부의 접근은 불가능합니다." },
+                { sender: "연금술사 '헬릭스'", date: "452-05-18 22:00", subject: "독극물 분석 의뢰 결과", status: "high", body: "샘플 분석 결과, '검은 로터스'라는 희귀한 식물에서 추출한 강력한 정신 이완제 성분이 검출됨. 장기 복용 시 의존 및 환각 증세 유발 가능." },
+                { sender: "누님", date: "452-05-18 15:00", subject: "황궁 동향", status: "medium", body: "신성 왕국과의 외교 채널에서 특이 동향 감지. 외무대신이 비공식적으로 오웬 추기경과 접촉한 정황. 주의 요망." }
+            ]
+        }
+    },
+    customApp2: {
+        appName: "황실 기록보관소",
+        iconDescription: "gold%20dragon%20crest%20icon%20minimalist",
+        content: {
+            dossier: {
+                title: "File: 오웬, 실레온 대주교",
+                sections: [
+                    { title: "기본 신상", content: "실레온 교단의 최연소 추기경. 보육원 운영 등 자선 사업으로 대중적 신망이 높음. 겉으로는 온화하고 자비로운 성직자의 모습을 보임." },
+                    { title: "특이사항", content: "권력에 대한 집착이 강하며, 목적을 위해 수단을 가리지 않는 성향. 특히 '레녹 클라인'에 대한 비정상적인 소유욕을 10년 이상 보여옴." },
+                    { title: "의심 혐의", content: "1. 금지된 신성 마법 연구: 신성력을 이용한 정신 지배 및 세뇌 관련 고대 문헌에 손댄 정황 포착.\n2. 교단 내 반대파 숙청: 정적들이 의문의 사고로 실종되거나 사망한 사건들의 배후로 의심됨.\n3. 불법 마법물품 밀거래 연루 의혹: 제국과의 밀거래를 통해 막대한 비자금을 조성, 자신의 세력을 키우는 데 사용했을 가능성." },
+                    { title: "대응 전략", content: "직접적인 제거는 양국 간의 전쟁을 유발할 수 있음. 그의 비리를 입증할 명확한 증거를 확보하여 교단 내에서 스스로 몰락하도록 유도하는 것이 최선. '레녹 클라인'의 안전 확보가 최우선 과제." }
+                ]
+            }
+        }
+    }
+};
+
+document.addEventListener('DOMContentLoaded', function() {
+    // Initial Setup
+    const homeScreen = document.getElementById('home');
+    homeScreen.style.backgroundImage = `url('https://image.pollinations.ai/prompt/a%20beautifully%20chaotic%20and%20dark%20galaxy%20with%20purple%20nebula')`;
+    
+    const customAppIcon1 = document.getElementById('custom-app-icon-1');
+    customAppIcon1.querySelector('img').src = `https://image.pollinations.ai/prompt/${phoneData.customApp1.iconDescription}`;
+    customAppIcon1.querySelector('span').textContent = phoneData.customApp1.appName;
+
+    const customAppIcon2 = document.getElementById('custom-app-icon-2');
+    customAppIcon2.querySelector('img').src = `https://image.pollinations.ai/prompt/${phoneData.customApp2.iconDescription}`;
+    customAppIcon2.querySelector('span').textContent = phoneData.customApp2.appName;
+
+    // Render all pages
+    renderCallHistory();
+    renderMessageList();
+    renderSafari();
+    renderMusic();
+    renderPhotos();
+    renderCalendar();
+    renderAlarms();
+    renderNotes();
+    renderReminders();
+    renderDiary();
+    renderYoutube();
+    renderAmazon();
+    renderCustomApp1();
+    renderCustomApp2();
+
+    // Meta Message Logic
+    setTimeout(() => {
+        let messageIndex = 0;
+        const metaMessageContainer = document.getElementById('metaMessage');
+
+        function showNextMessage() {
+            if (messageIndex < phoneData.metaMessages.length) {
+                metaMessageContainer.textContent = phoneData.metaMessages[messageIndex];
+                metaMessageContainer.classList.add('visible');
+
+                setTimeout(() => {
+                    metaMessageContainer.classList.remove('visible');
+                    messageIndex++;
+                }, 2500);
+            } else {
+                clearInterval(messageInterval);
+            }
+        }
+
+        const messageInterval = setInterval(showNextMessage, 3000);
+        showNextMessage(); // Show the first one immediately
+    }, 30000); // Start after 30 seconds
+});
+
+function showPage(pageId) {
+    document.querySelectorAll('.page').forEach(page => page.classList.remove('active'));
+    document.getElementById(pageId).classList.add('active');
+}
+
+function createHeader(pageElement, title, showBackButton = true) {
+    const headerHTML = `
+        <div class="status-bar dark-text">09:41</div>
+        <div class="app-header">
+            ${showBackButton ? `<div class="back-button" onclick="goBack(event)"><</div>` : ''}
+            <div class="header-title">${title}</div>
+        </div>
+    `;
+    pageElement.insertAdjacentHTML('afterbegin', headerHTML);
+}
+
+function goBack(event) {
+    event.stopPropagation();
+    const currentPage = event.target.closest('.page');
+    const pageId = currentPage.id;
+    
+    if (pageId === 'message-detail') showPage('messages');
+    else if (pageId === 'note-detail') showPage('notes');
+    else if (pageId === 'diary-detail') showPage('diary');
+    else showPage('home');
+}
+
+
+function renderCallHistory() {
+    const page = document.getElementById('calls');
+    const content = phoneData.callHistory.map(call => `
+        <div class="list-item call-item">
+            <div class="list-item-content">
+                <div class="list-item-title ${call.type === '부재중 전화' ? 'missed' : ''}">${call.name}</div>
+                <div class="list-item-subtitle">${call.type}</div>
+            </div>
+            <div class="list-item-meta">${call.duration}</div>
+        </div>
+    `).join('');
+    page.innerHTML = `
+        <div class="content-body" style="padding-top: 48px;">${content}</div>
+        <div class="home-indicator-container"><div class="home-indicator" onclick="showPage('home')"></div></div>
+    `;
+    createHeader(page, '최근 통화');
+}
+
+function renderMessageList() {
+    const page = document.getElementById('messages');
+    const content = phoneData.messages.map(msg => `
+        <div class="list-item" onclick="showMessageDetail(${msg.id})">
+            <div class="list-item-content">
+                <div class="list-item-title">${msg.sender}</div>
+                <div class="list-item-subtitle">${msg.preview}</div>
+            </div>
+        </div>
+    `).join('');
+    page.innerHTML = `
+        <div class="content-body" style="padding-top: 48px;">${content}</div>
+        <div class="home-indicator-container"><div class="home-indicator" onclick="showPage('home')"></div></div>
+    `;
+    createHeader(page, '메시지');
+}
+
+function showMessageDetail(id) {
+    const messageData = phoneData.messages.find(msg => msg.id === id);
+    const page = document.getElementById('message-detail');
+    const bubbles = messageData.conversation.map(chat => {
+        const isPayment = messageData.sender === "황실 재무부";
+        return `<div class="message-bubble ${chat.type} ${isPayment ? 'payment-message' : ''}">${chat.text}</div>`;
+    }).join('');
+
+    page.innerHTML = `
+        <div class="content-body" style="padding-top: 48px;">
+            <div class="chat-body">${bubbles}</div>
+        </div>
+        <div class="home-indicator-container"><div class="home-indicator" onclick="showPage('home')"></div></div>
+    `;
+    createHeader(page, messageData.sender);
+    showPage('message-detail');
+}
+
+function renderSafari() {
+    const page = document.getElementById('safari');
+    const recent = phoneData.safari.recentSearches.map(item => `<div class="list-item"><div class="list-item-content">${item}</div></div>`).join('');
+    const deleted = phoneData.safari.deletedHistory.map(item => `<div class="list-item"><div class="list-item-content">${item}</div></div>`).join('');
+    
+    page.innerHTML = `
+        <div class="content-body" style="padding-top: 48px;">
+            <div class="section-title">최근 검색 기록</div>
+            ${recent}
+            <div class="section-title">삭제된 기록</div>
+            ${deleted}
+        </div>
+        <div class="home-indicator-container"><div class="home-indicator" onclick="showPage('home')"></div></div>
+    `;
+    createHeader(page, 'Safari');
+}
+
+function renderMusic() {
+    const page = document.getElementById('music');
+    const tracks = phoneData.music.tracks.map(track => `
+        <div class="list-item">
+            <div class="list-item-content">
+                <div class="list-item-title">${track.title}</div>
+                <div class="list-item-subtitle">${track.artist}</div>
+            </div>
+        </div>
+    `).join('');
+
+    page.innerHTML = `
+        <div class="content-body" style="padding-top: 48px;">${tracks}</div>
+        <div class="home-indicator-container"><div class="home-indicator" onclick="showPage('home')"></div></div>
+    `;
+    createHeader(page, phoneData.music.playlistTitle);
+}
+
+function renderPhotos() {
+    const page = document.getElementById('photos');
+    const recentPhotos = phoneData.photos.recent.map(desc => `<div class="photo-item image-placeholder">${desc}</div>`).join('');
+    const secretPhotos = phoneData.photos.secret.map(desc => `<div class="photo-item image-placeholder">${desc}</div>`).join('');
+
+    page.innerHTML = `
+        <div class="content-body" style="padding-top: 48px;">
+            <div class="section-title">최근 항목</div>
+            <div class="photo-grid">${recentPhotos}</div>
+            <div class="section-title">비밀 앨범</div>
+            <div class="photo-grid">${secretPhotos}</div>
+        </div>
+        <div class="home-indicator-container"><div class="home-indicator" onclick="showPage('home')"></div></div>
+    `;
+    createHeader(page, '사진');
+}
+
+function renderCalendar() {
+    const page = document.getElementById('calendar');
+    const { year, month, events } = phoneData.calendar;
+    
+    // Simple calendar logic for a 31-day month
+    let daysHTML = '';
+    const headers = ['일', '월', '화', '수', '목', '금', '토'];
+    daysHTML += headers.map(h => `<div class="calendar-header">${h}</div>`).join('');
+    
+    for (let i = 1; i <= 31; i++) {
+        const event = events.find(e => e.date === i);
+        daysHTML += `<div class="calendar-day ${event ? 'event' : ''}">${i}</div>`;
+    }
+    const eventList = events.map(e => `<div class="list-item"><div class="list-item-content">${e.date}일: ${e.title}</div></div>`).join('');
+
+    page.innerHTML = `
+        <div class="content-body" style="padding-top: 48px;">
+            <div class="calendar-grid">${daysHTML}</div>
+            <div class="section-title">주요 일정</div>
+            ${eventList}
+        </div>
+        <div class="home-indicator-container"><div class="home-indicator" onclick="showPage('home')"></div></div>
+    `;
+    createHeader(page, `${year} ${month}`);
+}
+
+function renderAlarms() {
+    const page = document.getElementById('alarms');
+    const content = phoneData.alarms.map(alarm => `
+        <div class="alarm-item">
+            <div>
+                <div class="alarm-time">${alarm.time}</div>
+                <div class="alarm-label">${alarm.label}</div>
+            </div>
+            <div class="alarm-toggle ${alarm.enabled ? 'enabled' : ''}"></div>
+        </div>
+    `).join('');
+    page.innerHTML = `
+        <div class="content-body" style="padding-top: 48px;">${content}</div>
+        <div class="home-indicator-container"><div class="home-indicator" onclick="showPage('home')"></div></div>
+    `;
+    createHeader(page, '알람');
+}
+
+function renderNotes() {
+    const page = document.getElementById('notes');
+    const content = phoneData.notes.map(note => {
+        if (note.type === 'secret') {
+            return `
+                <div class="list-item" onclick="showNoteDetail(${note.id})">
+                    <div class="list-item-content">
+                        <div class="list-item-title">🔒 비밀 메모</div>
+                    </div>
+                </div>`;
+        }
+        return `
+            <div class="list-item" onclick="showNoteDetail(${note.id})">
+                <div class="list-item-content">
+                    <div class="list-item-title">${note.title}</div>
+                    <div class="list-item-subtitle">${note.content.substring(0, 30)}...</div>
+                </div>
+            </div>`;
+    }).join('');
+
+    page.innerHTML = `
+        <div class="content-body" style="padding-top: 48px;">${content}</div>
+        <div class="home-indicator-container"><div class="home-indicator" onclick="showPage('home')"></div></div>
+    `;
+    createHeader(page, '메모');
+}
+
+function showNoteDetail(id) {
+    const note = phoneData.notes.find(n => n.id === id);
+    const page = document.getElementById('note-detail');
+    const title = note.type === 'secret' ? '비밀 메모' : note.title;
+    
+    page.innerHTML = `
+        <div class="content-body" style="padding-top: 48px;">
+            <div class="note-content-view">${note.content}</div>
+        </div>
+        <div class="home-indicator-container"><div class="home-indicator" onclick="showPage('home')"></div></div>
+    `;
+    createHeader(page, title);
+    showPage('note-detail');
+}
+
+function renderReminders() {
+    const page = document.getElementById('reminders');
+    const content = phoneData.reminders.map(r => `
+        <div class="reminder-item">
+            <div class="reminder-checkbox ${r.completed ? 'completed' : ''}"></div>
+            <div class="reminder-task ${r.completed ? 'completed' : ''}">${r.task}</div>
+        </div>
+    `).join('');
+
+    page.innerHTML = `
+        <div class="content-body" style="padding-top: 48px;">${content}</div>
+        <div class="home-indicator-container"><div class="home-indicator" onclick="showPage('home')"></div></div>
+    `;
+    createHeader(page, '미리 알림');
+}
+
+function renderDiary() {
+    const page = document.getElementById('diary');
+    const content = phoneData.diary.map((entry, index) => `
+        <div class="list-item" onclick="showDiaryDetail(${index})">
+            <div class="list-item-content">
+                <div class="list-item-title">${entry.date}</div>
+                <div class="list-item-subtitle">${entry.content.substring(0, 30)}...</div>
+            </div>
+        </div>
+    `).join('');
+    page.innerHTML = `
+        <div class="content-body" style="padding-top: 48px;">${content}</div>
+        <div class="home-indicator-container"><div class="home-indicator" onclick="showPage('home')"></div></div>
+    `;
+    createHeader(page, '일기장');
+}
+
+function showDiaryDetail(index) {
+    const entry = phoneData.diary[index];
+    const page = document.getElementById('diary-detail');
+    
+    page.innerHTML = `
+        <div class="content-body" style="padding-top: 48px;">
+            <div class="diary-content-view">${entry.content}</div>
+        </div>
+        <div class="home-indicator-container"><div class="home-indicator" onclick="showPage('home')"></div></div>
+    `;
+    createHeader(page, entry.date);
+    showPage('diary-detail');
+}
+
+function renderYoutube() {
+    const page = document.getElementById('youtube');
+    const content = phoneData.youtube.map(video => `
+        <div class="youtube-item">
+            <div class="youtube-thumbnail image-placeholder">${video.thumbnail}</div>
+            <div class="youtube-info">
+                <div class="youtube-title">${video.title}</div>
+                <div class="youtube-channel">${video.channel}</div>
+            </div>
+        </div>
+    `).join('');
+    page.innerHTML = `
+        <div class="content-body" style="padding-top: 48px;">${content}</div>
+        <div class="home-indicator-container"><div class="home-indicator" onclick="showPage('home')"></div></div>
+    `;
+    createHeader(page, 'YouTube');
+}
+
+function renderAmazon() {
+    const page = document.getElementById('amazon');
+    const content = phoneData.amazon.map(order => `
+        <div class="amazon-item">
+            <div class="amazon-date">주문일: ${order.orderDate}</div>
+            <div class="amazon-item-name">${order.item}</div>
+            <div class="amazon-details">
+                <span>수량: ${order.quantity}</span>
+                <span>가격: ${order.price}</span>
+            </div>
+        </div>
+    `).join('');
+    page.innerHTML = `
+        <div class="content-body" style="padding-top: 48px;">${content}</div>
+        <div class="home-indicator-container"><div class="home-indicator" onclick="showPage('home')"></div></div>
+    `;
+    createHeader(page, '주문 내역');
+}
+
+function renderCustomApp1() {
+    const page = document.getElementById('customApp1');
+    const appData = phoneData.customApp1;
+    const content = appData.content.messages.map(msg => `
+        <div class="intel-item">
+            <div class="intel-header">
+                <span class="intel-sender">${msg.sender}</span>
+                <span class="intel-date">${msg.date}</span>
+            </div>
+            <div class="intel-subject">${msg.subject}</div>
+            <div class="intel-status ${msg.status}">${msg.status.toUpperCase()}</div>
+        </div>
+    `).join('');
+
+    page.innerHTML = `
+        <div class="content-body" style="padding-top: 48px;">
+            ${content}
+        </div>
+        <div class="home-indicator-container" style="background-color: #121212;"><div class="home-indicator" style="background-color: #fff;" onclick="showPage('home')"></div></div>
+    `;
+    createHeader(page, appData.appName);
+}
+
+function renderCustomApp2() {
+    const page = document.getElementById('customApp2');
+    const appData = phoneData.customApp2;
+    const dossier = appData.content.dossier;
+    const sections = dossier.sections.map(sec => `
+        <div class="dossier-section">
+            <div class="dossier-section-title">${sec.title}</div>
+            <div class="dossier-section-content">${sec.content}</div>
+        </div>
+    `).join('');
+
+    page.innerHTML = `
+        <div class="content-body" style="padding-top: 48px;">
+            <div class="dossier-view">
+                <div class="dossier-title">${dossier.title}</div>
+                ${sections}
+            </div>
+        </div>
+        <div class="home-indicator-container" style="background-color: #121212;"><div class="home-indicator" style="background-color: #fff;" onclick="showPage('home')"></div></div>
+    `;
+    createHeader(page, appData.appName);
+}
+
+</script>
+</body>
+</html>

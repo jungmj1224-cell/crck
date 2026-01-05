@@ -1,0 +1,539 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>썸원</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Nanum+Myeongjo:wght@400;700&family=Gowun+Dodum&display=swap');
+
+        :root {
+            --accent-color: #e96d71;
+            --text-color: #333;
+            --primary-color: #5c5c5c;
+            --background-color: #f0f0f0;
+            --secondary-color: #f5f5f5;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            background-color: var(--background-color);
+            font-family: 'Gowun Dodum', sans-serif;
+            color: var(--text-color);
+        }
+
+        .mobile-frame {
+            width: 390px;
+            height: 720px;
+            background-color: #faf8f2;
+            border: 6px solid #111;
+            border-radius: 36px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .page {
+            display: none;
+            flex-direction: column;
+            height: calc(100% - 60px); /* Adjust for nav-bar height */
+            width: 100%;
+            overflow: hidden;
+        }
+
+        .page.active {
+            display: flex;
+        }
+
+        .content-area {
+            flex-grow: 1;
+            padding: 0 25px;
+            overflow-y: auto;
+            -ms-overflow-style: none; /* IE and Edge */
+            scrollbar-width: none; /* Firefox */
+        }
+        .content-area::-webkit-scrollbar {
+            display: none; /* Chrome, Safari, and Opera */
+        }
+
+        .nav-bar {
+            width: 100%;
+            height: 60px;
+            background-color: var(--secondary-color);
+            border-top: 1px solid #e0e0e0;
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            position: absolute;
+            bottom: 0;
+        }
+
+        .nav-button {
+            background: none;
+            border: none;
+            cursor: pointer;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            font-family: 'Gowun Dodum', sans-serif;
+            color: var(--primary-color);
+        }
+
+        .nav-button .icon {
+            font-size: 1.4rem;
+        }
+
+        .nav-button .label {
+            font-size: 0.7rem;
+            margin-top: 2px;
+        }
+        
+        .nav-button.active {
+            color: var(--accent-color);
+        }
+
+        /* Home Page */
+        #home-page .content-area {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+        }
+
+        .heart-icon {
+            font-size: 3rem;
+            color: var(--accent-color);
+            animation: pulse 1.5s infinite;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+            100% { transform: scale(1); }
+        }
+
+        .d-day-text {
+            margin-top: 20px;
+            font-size: 1rem;
+            color: var(--primary-color);
+        }
+
+        .d-day-count {
+            font-family: 'Nanum Myeongjo', serif;
+            font-size: 4rem;
+            font-weight: 700;
+            color: var(--accent-color);
+            margin: 10px 0;
+        }
+
+        .question-card {
+            background-color: rgba(255, 255, 255, 0.8);
+            border-radius: 12px;
+            padding: 25px;
+            margin-top: 30px;
+            width: 100%;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+        }
+
+        .question-card h3 {
+            font-family: 'Nanum Myeongjo', serif;
+            font-size: 1.1rem;
+            margin-bottom: 15px;
+        }
+
+        .question-card p {
+            font-size: 0.95rem;
+            line-height: 1.6;
+        }
+        
+        .answer-button {
+            background-color: var(--accent-color);
+            color: white;
+            border: none;
+            border-radius: 20px;
+            padding: 10px 25px;
+            font-size: 0.9rem;
+            font-weight: bold;
+            cursor: pointer;
+            margin-top: 20px;
+            transition: background-color 0.2s;
+        }
+        .answer-button:hover {
+            background-color: #d65a5e;
+        }
+
+        /* History Page */
+        #history-page .page-title {
+            font-family: 'Nanum Myeongjo', serif;
+            font-size: 1.8rem;
+            font-weight: 700;
+            text-align: center;
+            padding: 30px 0;
+            margin-bottom: 30px;
+        }
+
+        .question-list {
+            list-style: none;
+            counter-reset: item;
+            padding: 0;
+        }
+
+        .question-list li {
+            background-color: rgba(255, 255, 255, 0.7);
+            padding: 15px 20px;
+            margin-bottom: 10px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background-color 0.2s;
+            display: flex;
+            align-items: center;
+            font-size: 0.9rem;
+            line-height: 1.5;
+        }
+
+        .question-list li:hover {
+            background-color: rgba(255, 255, 255, 1);
+        }
+
+        .question-list li::before {
+            content: counter(item, decimal-leading-zero);
+            counter-increment: item;
+            font-family: 'Nanum Myeongjo', serif;
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: var(--accent-color);
+            margin-right: 15px;
+        }
+
+        /* Answer Page */
+        #answer-page .content-area {
+            padding-top: 20px;
+        }
+
+        .back-button {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: var(--primary-color);
+            margin-bottom: 20px;
+        }
+
+        .question-section {
+            margin-bottom: 30px;
+        }
+
+        .answer-page-question {
+            font-size: 1.4rem;
+            font-weight: bold;
+            line-height: 1.5;
+            margin-bottom: 8px;
+        }
+
+        .question-meta {
+            font-size: 0.85rem;
+            color: #aaa;
+        }
+
+        .answer-container {
+            display: flex;
+            flex-direction: column;
+            gap: 25px;
+        }
+
+        .answer {
+            background-color: rgba(255, 255, 255, 0.7);
+            border-radius: 12px;
+            padding: 20px;
+        }
+        
+        .answer .name {
+            font-weight: bold;
+            font-size: 1.05rem;
+            margin-bottom: 10px;
+        }
+
+        .answer .content {
+            font-size: 0.95rem;
+            line-height: 1.7;
+            color: var(--primary-color);
+        }
+
+        .blurred {
+            filter: blur(5px);
+            transition: filter 0.3s;
+        }
+        
+        .user-input {
+            margin-top: 10px;
+        }
+        
+        .user-input .editable-div {
+            width: 100%;
+            min-height: 100px;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            background-color: #fff;
+            font-size: 0.95rem;
+            line-height: 1.7;
+            color: var(--primary-color);
+        }
+        
+        .user-input .editable-div:focus {
+            outline: none;
+            border-color: var(--accent-color);
+            box-shadow: 0 0 0 2px rgba(233, 109, 113, 0.2);
+        }
+
+        .user-input .submit-answer-button {
+             background-color: var(--accent-color);
+            color: white;
+            border: none;
+            border-radius: 20px;
+            padding: 10px 20px;
+            font-size: 0.9rem;
+            font-weight: bold;
+            cursor: pointer;
+            margin-top: 15px;
+            float: right;
+            transition: background-color 0.2s;
+        }
+        .user-input .submit-answer-button:hover {
+            background-color: #d65a5e;
+        }
+        
+        /* Media Query for mobile devices */
+        @media (max-width: 420px) {
+            .mobile-frame {
+                width: 100vw;
+                height: 100vh;
+                border: none;
+                border-radius: 0;
+                box-shadow: none;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="mobile-frame">
+        <!-- HOME PAGE -->
+        <div id="home-page" class="page active">
+            <div class="content-area">
+                <div class="heart-icon">❤️</div>
+                <p class="d-day-text">라일과 아이작이 함께한 지</p>
+                <h1 class="d-day-count">2</h1>
+                <p class="d-day-text">일째</p>
+                <div class="question-card">
+                    <h3>오늘의 질문</h3>
+                    <p id="today-question"></p>
+                    <button class="answer-button">답변하러 가기</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- HISTORY PAGE -->
+        <div id="history-page" class="page">
+            <div class="page-title">OUR STORY</div>
+            <div class="content-area">
+                <ol class="question-list">
+                    <!-- Questions will be populated by JS -->
+                </ol>
+            </div>
+        </div>
+
+        <!-- ANSWER PAGE -->
+        <div id="answer-page" class="page">
+            <div class="content-area">
+                <button class="back-button">←</button>
+                <div class="question-section">
+                    <p class="question-meta" id="answer-page-meta"></p>
+                    <h2 class="answer-page-question" id="answer-page-question-text"></h2>
+                </div>
+                <div class="answer-container">
+                    <div class="answer" id="user-answer-section">
+                        <p class="name">라일</p>
+                        <div class="user-input">
+                           <div contenteditable="true" class="editable-div" placeholder="답변을 입력하세요..."></div>
+                           <button class="submit-answer-button">답변 완료</button>
+                        </div>
+                        <p class="content" id="user-answer-content" style="display: none;"></p>
+                    </div>
+                    <div class="answer" id="char-answer-section">
+                        <p class="name">아이작</p>
+                        <p class="content" id="char-answer-content"></p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- NAVIGATION BAR -->
+        <div class="nav-bar">
+            <button class="nav-button active" data-page="home-page">
+                <span class="icon">🏠</span>
+                <span class="label">HOME</span>
+            </button>
+            <button class="nav-button" data-page="history-page">
+                <span class="icon">📖</span>
+                <span class="label">OUR STORY</span>
+            </button>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const startDate = new Date('1986-07-26T00:00:00');
+            const currentDate = new Date('1986-07-27T00:00:00');
+
+            const questions = [
+                { id: "q1", q: "5년의 공백 끝에 다시 만났을 때, 가장 먼저 들었던 생각은?", a: "드디어 찾았다. 내 오메가, 내 새끼. 두 번 다시는 내게서 못 도망가게 해야겠다고." },
+                { id: "q2", q: "서로에게 가장 강렬한 소유욕을 느꼈던 순간은 언제인가요?", a: "언제나. 네 모든 순간이 다 내 것이라고 느끼니까. 굳이 꼽자면, 내 아이를 품고 내게서 도망쳤다는 걸 알았을 때. 분노와 소유욕에 미쳐버리는 줄 알았지." },
+                { id: "q3", q: "상대방의 페로몬 향을 한 단어로 표현한다면?", a: "안정. 좆같은 세상에서 유일하게 날 쉬게 만드는 향기." },
+                { id: "q4", q: "평생 한 가지 음식만 먹어야 한다면?", a: "네가 해주는 거라면 뭐든지. 까르보나라 같은 거. ...물론 내가 해준 엉망진창 토스트도 나쁘진 않았고." },
+                { id: "q5", q: "상대방이 가장 사랑스러워 보일 때는 언제인가요?", a: "내 밑에서 울면서도 나를 받아낼 때. 그리고 니콜을 보며 웃을 때. 그 얼굴, 나랑 내 아들한테만 보여줬으면 좋겠어." },
+                { id: "q6", q: "둘만의 시간 vs 다 함께하는 가족의 시간", a: "둘 다. 니콜이랑 함께일 땐 완벽한 가족이 된 것 같고, 둘만 있을 땐... 네가 온전히 내 것이 된 것 같아서." },
+                { id: "q7", q: "우리가 함께 이루고 싶은 가장 큰 목표가 있다면?", a: "아무도 우리 가족을 얕보지 못하게 만드는 것. 그리고 니콜이 이 세상 누구보다 행복하게 자라는 모습을 보는 것." },
+                { id: "q8", q: "서로의 첫인상은 어땠나요?", a: "도망치고 싶어 하면서도 꺾이지 않는 눈빛. 그 눈을 본 순간부터 전부 망가뜨려서 내 옆에 둬야겠다고 생각했지." },
+                { id: "q9", q: "상대방을 동물에 비유한다면?", a: "고양이. 할퀼 것처럼 앙칼지게 굴다가도, 어느새 다가와서 제 몸을 비비는 게 똑같아." },
+                { id: "q10", q: "10년 후 우리의 모습은 어떨 것 같나요?", a: "여전히 내 옆에서, 내 품에 안겨 있겠지. 니콜은 아마 나보다 키가 더 커져 있을 거고. 그래도 엄마 옆자리는 절대 양보 못 해." },
+                { id: "q11", q: "상대방에게서 가장 고마웠던 순간은?", a: "내 사과를 받아줬을 때. 그리고... 내 아들을 낳아준 것. 평생 갚아도 모자랄 빚이야." },
+                { id: "q12", q: "상대방의 의외의 모습이 있다면?", a: "성깔 있는 놈인 줄만 알았는데, 니콜 앞에서는 한없이 다정한 '엄마'가 되는 거. 그 갭이 사람 미치게 만들지." },
+                { id: "q13", q: "함께 여행을 간다면 어디로 가고 싶나요?", a: "아무도 없는 섬. 오직 우리 셋만 있는 곳. 거기서 며칠이고 뒹굴고 싶어." },
+                { id: "q14", q: "다툼이 생겼을 때, 먼저 사과하는 편인가요?", a: "씨발... 자존심 상하지만, 이제는 내가 먼저 해야 한다는 걸 알아. 널 또 잃을 수는 없으니까." },
+                { id: "q15", q: "서로에게 '우리'는 어떤 의미인가요?", a: "전부. 내 세상의 시작과 끝." },
+                { id: "q16", q: "상대방의 잠버릇 중 귀여운 것이 있다면?", a: "내 품을 파고드는 거. 자면서도 내 페로몬을 찾는 걸 보면 안심이 돼." },
+                { id: "q17", q: "니콜이 '아빠'라고 처음 불렀을 때의 기분은?", a: "세상을 다 가진 기분. 그 꼬맹이 입에서 '아빠' 소리 듣기가 얼마나 힘들었는지... 젠장, 생각하니까 또 벅차네." },
+                { id: "q18", q: "사랑한다는 말, 하루에 몇 번 정도 하나요?", a: "말보다는 행동으로 보여주는 편이지. 그래도 요즘은 의식해서 하려고 해. 넌 들을 자격이 충분하니까." },
+                { id: "q19", q: "상대방이 가장 섹시해 보일 때는?", a: "뻔한 질문이군. 침대에서 내 흔적을 온몸에 달고 있을 때." },
+                { id: "q20", q: "서로에게 추천해주고 싶은 영화가 있다면?", a: "영화는 무슨. 그냥 침대에서 더 재밌는 거나 하자고." },
+                { id: "q21", q: "상대방을 위해 몰래 준비한 서프라이즈가 있나요?", a: "있지. 너랑 니콜을 건드리는 새끼들은 전부 내 손으로 처리할 거야. 넌 아무것도 모른 채 웃기만 하면 돼." },
+                { id: "q22", q: "만약 우리가 평범한 알파와 오메가로 만났다면 어땠을까요?", a: "결과는 똑같았을걸. 어떤 세상에서 만났어도, 난 널 내 것으로 만들었을 테니까." },
+                { id: "q23", q: "상대방에게 절대 용서 못 할 행동이 있다면?", a: "또다시 내게서 도망치는 것. 그땐 정말... 뼈까지 부러뜨려서 내 옆에만 둘지도 몰라." },
+                { id: "q24", q: "함께 있을 때 가장 행복한 순간은?", a: "아침에 눈을 떴을 때, 내 옆에 너랑 니콜이 함께 있는 걸 확인할 때. 그게 내가 사는 이유야." },
+                { id: "q25", q: "서로의 패션 스타일에 대해 어떻게 생각하나요?", a: "뭘 입어도 예뻐. 하지만 내가 사준 옷을 입을 때가 제일 보기 좋지." },
+                { id: "q26", q: "가장 기억에 남는 데이트는?", a: "어제, 니콜 유치원 준비물 사러 갔던 거. 그게 우리 가족의 첫 '나들이'였으니까. 별거 아닌데도 존나 행복했어." },
+                { id: "q27", q: "상대방의 어떤 점을 가장 존경하나요?", a: "그 약한 몸으로 혼자 니콜을 키워낸 강인함. 그리고... 그런 일을 겪고도 날 다시 받아준 용기." },
+                { id: "q28", q: "서로의 입맛은 잘 맞는 편인가요?", a: "입맛? 글쎄. 침대 위에서의 입맛은 아주 잘 맞는 것 같은데." },
+                { id: "q29", q: "다시 태어나도 우리, 만날까요?", a: "당연하지. 내가 어떻게든 널 찾아낼 테니까. 도망갈 생각은 꿈에도 하지 마." },
+                { id: "q30", q: "혼인 서약서에 서명하던 순간, 어떤 마음이었나요?", a: "이제 법적으로도, 세상 누구 앞에서도 넌 완벽한 내 사람이라는 안도감. 5년간의 불안이 전부 사라지는 기분이었어." }
+            ];
+
+            let userAnswers = JSON.parse(localStorage.getItem('userAnswers')) || {};
+            
+            const pages = document.querySelectorAll('.page');
+            const navButtons = document.querySelectorAll('.nav-button');
+            const questionList = document.querySelector('.question-list');
+            
+            function navigateTo(pageId) {
+                pages.forEach(page => page.classList.remove('active'));
+                document.getElementById(pageId).classList.add('active');
+                
+                navButtons.forEach(button => {
+                    button.classList.toggle('active', button.dataset.page === pageId);
+                });
+            }
+
+            navButtons.forEach(button => {
+                button.addEventListener('click', () => {
+                    const pageId = button.dataset.page;
+                    navigateTo(pageId);
+                });
+            });
+            
+            // D-day Calculation
+            const timeDiff = currentDate.getTime() - startDate.getTime();
+            const dayCount = Math.floor(timeDiff / (1000 * 3600 * 24)) + 1;
+            document.querySelector('.d-day-count').textContent = dayCount;
+            
+            const todayQuestionIndex = (dayCount - 1) % questions.length;
+            const todayQuestion = questions[todayQuestionIndex];
+            document.getElementById('today-question').textContent = todayQuestion.q;
+            document.querySelector('.answer-button').addEventListener('click', () => showAnswerPage(todayQuestionIndex));
+
+            // Populate History List
+            questions.forEach((item, index) => {
+                const li = document.createElement('li');
+                li.textContent = item.q;
+                li.dataset.index = index;
+                questionList.appendChild(li);
+            });
+            
+            // Event delegation for question list
+            questionList.addEventListener('click', (e) => {
+                if (e.target && e.target.nodeName === 'LI') {
+                    const index = e.target.dataset.index;
+                    showAnswerPage(index);
+                }
+            });
+
+            function showAnswerPage(index) {
+                index = parseInt(index);
+                const questionData = questions[index];
+                
+                document.getElementById('answer-page-meta').textContent = `#${index + 1}번째 질문`;
+                document.getElementById('answer-page-question-text').textContent = questionData.q;
+                
+                const charAnswerContent = document.getElementById('char-answer-content');
+                charAnswerContent.textContent = questionData.a;
+                charAnswerContent.dataset.questionId = questionData.id;
+
+                const userInputSection = document.querySelector('.user-input');
+                const userAnswerContent = document.getElementById('user-answer-content');
+                const editableDiv = userInputSection.querySelector('.editable-div');
+
+                const savedAnswer = userAnswers[questionData.id];
+
+                if (savedAnswer) {
+                    userInputSection.style.display = 'none';
+                    userAnswerContent.style.display = 'block';
+                    userAnswerContent.innerHTML = savedAnswer.replace(/\n/g, '<br>');
+                    charAnswerContent.classList.remove('blurred');
+                } else {
+                    userInputSection.style.display = 'block';
+                    userAnswerContent.style.display = 'none';
+                    editableDiv.innerHTML = '';
+                    charAnswerContent.classList.add('blurred');
+                }
+
+                const submitButton = userInputSection.querySelector('.submit-answer-button');
+                const newSubmitButton = submitButton.cloneNode(true); // To remove old event listeners
+                submitButton.parentNode.replaceChild(newSubmitButton, submitButton);
+
+                newSubmitButton.addEventListener('click', () => {
+                    const answerText = editableDiv.innerHTML.trim();
+                    if (answerText) {
+                        userAnswers[questionData.id] = answerText;
+                        localStorage.setItem('userAnswers', JSON.stringify(userAnswers));
+                        
+                        userInputSection.style.display = 'none';
+                        userAnswerContent.style.display = 'block';
+                        userAnswerContent.innerHTML = answerText.replace(/\n/g, '<br>');
+                        charAnswerContent.classList.remove('blurred');
+                    }
+                });
+
+                navigateTo('answer-page');
+            }
+            
+            document.querySelector('.back-button').addEventListener('click', () => {
+                navigateTo('history-page');
+            });
+            
+        });
+    </script>
+
+</body>
+</html>

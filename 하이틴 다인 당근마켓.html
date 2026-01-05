@@ -1,0 +1,1107 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>당근마켓</title>
+    <style>
+        :root {
+            --carrot-orange: #ff6f0f;
+            --dark-bg: #121212;
+            --dark-surface: #1e1e1e;
+            --dark-text-primary: #e0e0e0;
+            --dark-text-secondary: #a0a0a0;
+            --dark-border: #333333;
+            --user-bubble-bg: #f9762a;
+            --npc-bubble-bg: #333333;
+            --white-text: #ffffff;
+            --green-temp: #00c73c;
+        }
+
+        body {
+            background-color: var(--dark-bg);
+            color: var(--dark-text-primary);
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        #app-container {
+            width: 100%;
+            max-width: 420px;
+            height: 100%;
+            max-height: 900px;
+            background-color: var(--dark-bg);
+            border: 1px solid var(--dark-border);
+            border-radius: 10px;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+        }
+
+        .page {
+            display: none;
+            flex-direction: column;
+            height: 100%;
+            width: 100%;
+            position: absolute;
+            top: 0;
+            left: 0;
+            background-color: var(--dark-bg);
+        }
+
+        .page.active {
+            display: flex;
+        }
+
+        /* Common Header */
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px;
+            background-color: var(--dark-surface);
+            border-bottom: 1px solid var(--dark-border);
+            flex-shrink: 0;
+            color: var(--dark-text-primary);
+        }
+
+        .header-left, .header-right {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .header-center {
+            font-weight: bold;
+            font-size: 1.1em;
+        }
+
+        .icon {
+            font-size: 1.5em;
+            cursor: pointer;
+        }
+
+        /* Main Sales List Page */
+        #main-page-content {
+            padding: 15px;
+            overflow-y: auto;
+            flex-grow: 1;
+        }
+
+        .main-buttons {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .write-btn {
+            background-color: rgba(255, 111, 15, 0.2);
+            color: var(--carrot-orange);
+            border: none;
+            border-radius: 5px;
+            padding: 10px 15px;
+            font-weight: bold;
+            cursor: pointer;
+            flex-grow: 1;
+        }
+        
+        .find-price-btn {
+            background-color: var(--dark-surface);
+            color: var(--dark-text-primary);
+            border: 1px solid var(--dark-border);
+            border-radius: 5px;
+            padding: 10px 15px;
+            font-weight: bold;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .tabs {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 15px;
+            border-bottom: 1px solid var(--dark-border);
+            padding-bottom: 10px;
+        }
+
+        .tab {
+            cursor: pointer;
+            color: var(--dark-text-secondary);
+        }
+
+        .tab.active {
+            color: var(--dark-text-primary);
+            font-weight: bold;
+            border-bottom: 2px solid var(--carrot-orange);
+            padding-bottom: 8px;
+        }
+        
+        .filter-option {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            margin-bottom: 20px;
+            font-size: 0.9em;
+        }
+
+        .product-item {
+            display: flex;
+            padding: 15px 0;
+            border-bottom: 1px solid var(--dark-border);
+            cursor: pointer;
+        }
+
+        .product-img {
+            width: 80px;
+            height: 80px;
+            background-color: #555;
+            border-radius: 8px;
+            margin-right: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            font-size: 0.8em;
+            color: #ccc;
+            flex-shrink: 0;
+        }
+
+        .product-info {
+            flex-grow: 1;
+        }
+
+        .product-info h3 {
+            margin: 0 0 5px 0;
+            font-size: 1em;
+            color: var(--dark-text-primary);
+        }
+
+        .product-info .meta {
+            font-size: 0.8em;
+            color: var(--dark-text-secondary);
+            margin-bottom: 8px;
+        }
+
+        .product-info .price {
+            font-weight: bold;
+            font-size: 1.1em;
+        }
+
+        .product-interest {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+            justify-content: space-between;
+        }
+        
+        .product-interest .heart {
+            font-size: 0.9em;
+            color: var(--dark-text-secondary);
+        }
+        
+        .product-actions {
+            display: flex;
+            gap: 5px;
+        }
+
+        .action-btn {
+            background-color: var(--dark-surface);
+            border: 1px solid var(--dark-border);
+            border-radius: 5px;
+            padding: 5px 10px;
+            cursor: pointer;
+            font-size: 0.8em;
+        }
+        
+        .more-btn {
+             padding: 5px;
+        }
+
+        /* Product Detail Page */
+        .product-detail-content {
+            flex-grow: 1;
+            overflow-y: auto;
+        }
+
+        .product-image-area {
+            width: 100%;
+            height: 350px;
+            background-color: #000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+        }
+        
+        .image-text {
+            color: white;
+            padding: 10px;
+            background-color: rgba(0,0,0,0.5);
+            border-radius: 10px;
+        }
+        
+        .image-nav {
+            position: absolute;
+            bottom: 10px;
+            right: 10px;
+            background-color: rgba(0, 0, 0, 0.7);
+            color: white;
+            padding: 5px 10px;
+            border-radius: 15px;
+            font-size: 0.8em;
+        }
+        
+        .seller-profile {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px;
+            border-bottom: 1px solid var(--dark-border);
+        }
+
+        .seller-info {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .profile-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background-image: url('https://i.postimg.cc/T3j6K8qn/Screenshot-20250831-234611-Karrot.jpg');
+            background-size: cover;
+        }
+
+        .seller-name-location .name {
+            font-weight: bold;
+        }
+
+        .seller-name-location .location {
+            font-size: 0.8em;
+            color: var(--dark-text-secondary);
+        }
+
+        .manner-temp {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .manner-temp .temp {
+            color: var(--green-temp);
+            font-weight: bold;
+        }
+        
+        .manner-temp .emoji {
+            font-size: 1.5em;
+        }
+
+        .product-main-info {
+            padding: 20px 15px;
+            border-bottom: 1px solid var(--dark-border);
+        }
+
+        .product-main-info .status {
+            font-size: 0.9em;
+            margin-bottom: 10px;
+            border: 1px solid var(--dark-border);
+            padding: 5px 10px;
+            display: inline-block;
+            border-radius: 5px;
+        }
+        
+        .product-main-info .title {
+            font-size: 1.2em;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+        
+        .product-main-info .category-time {
+            font-size: 0.8em;
+            color: var(--dark-text-secondary);
+            margin-bottom: 20px;
+        }
+        
+        .product-main-info .description {
+            line-height: 1.6;
+            white-space: pre-wrap;
+        }
+        
+        .trade-location {
+            padding: 20px 15px;
+        }
+
+        .trade-location h4 {
+            margin: 0 0 10px 0;
+            font-size: 1em;
+        }
+        
+        .trade-location .map-placeholder {
+            height: 150px;
+            background-color: var(--dark-surface);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--dark-text-secondary);
+        }
+
+        .bottom-bar {
+            display: flex;
+            align-items: center;
+            padding: 10px 15px;
+            border-top: 1px solid var(--dark-border);
+            background-color: var(--dark-surface);
+            flex-shrink: 0;
+        }
+
+        .bottom-bar .heart-icon {
+            font-size: 1.8em;
+            cursor: pointer;
+            margin-right: 15px;
+        }
+        
+        .price-info {
+            flex-grow: 1;
+            border-left: 1px solid var(--dark-border);
+            padding-left: 15px;
+        }
+
+        .price-info .price {
+            font-weight: bold;
+            font-size: 1.1em;
+        }
+
+        .price-info .proposal-btn {
+            background: none;
+            border: none;
+            color: var(--carrot-orange);
+            font-weight: bold;
+            cursor: pointer;
+            padding: 0;
+        }
+
+        .chat-btn {
+            background-color: var(--carrot-orange);
+            color: var(--white-text);
+            border: none;
+            border-radius: 5px;
+            padding: 10px 20px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        /* Chat Room */
+        .chat-header .header-center {
+            font-size: 1em;
+        }
+        .chat-header .temp {
+            font-size: 0.8em;
+            color: var(--green-temp);
+        }
+
+        .chat-product-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 15px;
+            border-bottom: 1px solid var(--dark-border);
+            background-color: var(--dark-surface);
+            flex-shrink: 0;
+        }
+        
+        .chat-product-info {
+             display: flex;
+             align-items: center;
+             gap: 10px;
+        }
+
+        .chat-product-bar .product-img-small {
+            width: 40px;
+            height: 40px;
+            background-color: #555;
+            border-radius: 5px;
+            font-size: 0.6em;
+            text-align: center;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .chat-product-bar .product-details .status {
+            font-size: 0.8em;
+            color: var(--dark-text-secondary);
+        }
+        
+        .chat-product-bar .product-details .price {
+            font-weight: bold;
+        }
+
+        .chat-actions {
+            display: flex;
+            gap: 10px;
+        }
+
+        .chat-action-btn {
+            background-color: var(--dark-surface);
+            color: var(--dark-text-primary);
+            border: 1px solid var(--dark-border);
+            border-radius: 15px;
+            padding: 5px 12px;
+            font-size: 0.8em;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .chat-action-btn img {
+            width: 16px;
+            height: 16px;
+        }
+
+        .chat-content {
+            flex-grow: 1;
+            overflow-y: auto;
+            padding: 15px;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+        
+        .date-divider {
+            text-align: center;
+            font-size: 0.8em;
+            color: var(--dark-text-secondary);
+            margin: 10px 0;
+        }
+
+        .chat-bubble {
+            max-width: 70%;
+            padding: 10px 15px;
+            border-radius: 15px;
+            line-height: 1.5;
+            display: flex;
+            align-items: flex-end;
+            gap: 5px;
+        }
+
+        .chat-bubble .timestamp {
+            font-size: 0.7em;
+            color: var(--dark-text-secondary);
+            flex-shrink: 0;
+        }
+
+        .npc-message {
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+        }
+
+        .npc-message .profile-icon {
+            width: 35px;
+            height: 35px;
+            flex-shrink: 0;
+        }
+
+        .npc-message .chat-bubble {
+            background-color: var(--npc-bubble-bg);
+            border-top-left-radius: 0;
+            align-self: flex-start;
+        }
+
+        .user-message {
+            display: flex;
+            justify-content: flex-end;
+        }
+
+        .user-message .chat-bubble {
+            background-color: var(--user-bubble-bg);
+            color: var(--white-text);
+            border-top-right-radius: 0;
+            align-self: flex-end;
+            flex-direction: row-reverse;
+        }
+
+        .chat-input-bar {
+            display: flex;
+            align-items: center;
+            padding: 10px 15px;
+            background-color: var(--dark-surface);
+            border-top: 1px solid var(--dark-border);
+            flex-shrink: 0;
+        }
+
+        .chat-input-bar .icon {
+            font-size: 1.6em;
+            color: var(--dark-text-secondary);
+        }
+
+        .chat-input {
+            flex-grow: 1;
+            background-color: var(--dark-bg);
+            border: 1px solid var(--dark-border);
+            border-radius: 20px;
+            padding: 10px 15px;
+            margin: 0 10px;
+            color: var(--dark-text-primary);
+        }
+    </style>
+</head>
+<body>
+    <div id="app-container">
+
+        <!-- 판매 내역창 (메인 페이지) -->
+        <div id="main-page" class="page active">
+            <div class="header">
+                <div class="header-left">
+                    <span class="icon" onclick="alert('이전 페이지가 없습니다.');"><</span>
+                </div>
+                <div class="header-center">나의 판매내역</div>
+                <div class="header-right">
+                    <span class="icon">👤</span>
+                </div>
+            </div>
+            <div id="main-page-content">
+                <div class="main-buttons">
+                    <button class="write-btn">+ 글쓰기</button>
+                    <button class="find-price-btn">🔍 🏷️ 내 물건 가격 찾기</button>
+                </div>
+                <div class="tabs">
+                    <span class="tab active" onclick="switchTab(event, 'selling')">판매중 4</span>
+                    <span class="tab" onclick="switchTab(event, 'completed')">거래완료 1</span>
+                    <span class="tab" onclick="switchTab(event, 'hidden')">숨김 0</span>
+                </div>
+                <div class="filter-option">
+                    <input type="checkbox" id="promo-only">
+                    <label for="promo-only">홍보가능만 보기</label>
+                </div>
+                <div id="product-list">
+                    <!-- 판매중 상품 -->
+                    <div class="product-item" onclick="showPage('product1-page')">
+                        <div class="product-img">[상태 좋아보이는 공학용 계산기 사진]</div>
+                        <div class="product-info">
+                            <h3>상태 최상 공학용 계산기</h3>
+                            <div class="meta">애즈베리 • 1일 전</div>
+                            <div class="price">15,000원</div>
+                        </div>
+                        <div class="product-interest">
+                            <span class="heart" id="heart-count-product1">♡ 1</span>
+                            <div class="product-actions">
+                                <button class="action-btn">끌어올리기</button>
+                                <button class="action-btn more-btn">...</button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="product-item" onclick="showPage('product2-page')">
+                        <div class="product-img">[흙이 살짝 묻은 미식축구공 사진]</div>
+                        <div class="product-info">
+                            <h3>주인 안 찾아가는 미식축구공</h3>
+                            <div class="meta">애즈베리 • 3일 전 • 끌올 1회</div>
+                            <div class="price">5,000원</div>
+                        </div>
+                        <div class="product-interest">
+                            <span class="heart" id="heart-count-product2">♡ 5</span>
+                             <div class="product-actions">
+                                <button class="action-btn">끌어올리기</button>
+                                <button class="action-btn more-btn">...</button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="product-item" onclick="showPage('product3-page')">
+                        <div class="product-img">[검은색 선글라스가 흰 배경에 놓여있는 사진]</div>
+                        <div class="product-info">
+                            <h3>연예인병 걸린 친구가 두고 간 선글라스</h3>
+                            <div class="meta">애즈베리 • 5일 전</div>
+                            <div class="price">10,000원</div>
+                        </div>
+                        <div class="product-interest">
+                           <span class="heart" id="heart-count-product3">♡ 3</span>
+                            <div class="product-actions">
+                                <button class="action-btn">끌어올리기</button>
+                                <button class="action-btn more-btn">...</button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="product-item" onclick="showPage('product4-page')">
+                        <div class="product-img">[깨끗한 수학경시대회 대비 문제집 표지]</div>
+                        <div class="product-info">
+                            <h3>거의 새 수학경시대회 대비 문제집</h3>
+                            <div class="meta">애즈베리 • 2주 전</div>
+                            <div class="price">8,000원</div>
+                        </div>
+                        <div class="product-interest">
+                            <span class="heart" id="heart-count-product4">♡ 2</span>
+                            <div class="product-actions">
+                                <button class="action-btn">끌어올리기</button>
+                                <button class="action-btn more-btn">...</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 판매창 1: 공학용 계산기 -->
+        <div id="product1-page" class="page">
+            <div class="header">
+                <div class="header-left">
+                    <span class="icon" onclick="goBack()"><</span>
+                    <span class="icon">🏠</span>
+                </div>
+                <div class="header-right">
+                    <span class="icon">🔗</span>
+                    <span class="icon">...</span>
+                </div>
+            </div>
+            <div class="product-detail-content">
+                <div class="product-image-area">
+                    <p class="image-text">[깨끗하고 기능이 많아보이는 공학용 계산기 사진]</p>
+                </div>
+                <div class="seller-profile">
+                    <div class="seller-info">
+                        <div class="profile-icon"></div>
+                        <div class="seller-name-location">
+                            <div class="name">니콜하트</div>
+                            <div class="location">애즈베리</div>
+                        </div>
+                    </div>
+                    <div class="manner-temp">
+                        <span class="temp">36.7℃</span>
+                        <span class="emoji">😊</span>
+                    </div>
+                </div>
+                <div class="product-main-info">
+                    <div class="status">판매중 ▾</div>
+                    <h2 class="title">상태 최상 공학용 계산기</h2>
+                    <div class="category-time">디지털기기 • 1일 전</div>
+                    <p class="description">
+새 모델로 바꾸게 돼서 팔아요.
+수학경시대회 준비할 때 잘 썼습니다.
+공식 저장 기능도 있고, 웬만한 함수 계산은 다 돼요.
+거의 새것처럼 깨끗합니다. 케이스도 같이 드려요.
+                    </p>
+                </div>
+                <div class="trade-location">
+                    <h4>거래 희망 장소 ></h4>
+                    <div class="map-placeholder">[애즈베리 고등학교 근처 지도]</div>
+                </div>
+            </div>
+            <div class="bottom-bar">
+                <span class="heart-icon" id="heart-product1" onclick="toggleHeart('product1')">♡</span>
+                <div class="price-info">
+                    <div class="price">15,000원</div>
+                    <button class="proposal-btn">가격 제안 불가</button>
+                </div>
+                <button class="chat-btn" onclick="showPage('chat1-room')">대화중인 채팅 1</button>
+            </div>
+        </div>
+
+        <!-- 판매창 2: 미식축구공 -->
+        <div id="product2-page" class="page">
+             <div class="header">
+                <div class="header-left">
+                    <span class="icon" onclick="goBack()"><</span>
+                    <span class="icon">🏠</span>
+                </div>
+                <div class="header-right">
+                    <span class="icon">🔗</span>
+                    <span class="icon">...</span>
+                </div>
+            </div>
+            <div class="product-detail-content">
+                <div class="product-image-area">
+                    <p class="image-text">[흙이 살짝 묻어있지만 튼튼해보이는 미식축구공 사진]</p>
+                </div>
+                <div class="seller-profile">
+                    <div class="seller-info">
+                        <div class="profile-icon"></div>
+                        <div class="seller-name-location">
+                            <div class="name">니콜하트</div>
+                            <div class="location">애즈베리</div>
+                        </div>
+                    </div>
+                    <div class="manner-temp">
+                        <span class="temp">36.7℃</span>
+                        <span class="emoji">😊</span>
+                    </div>
+                </div>
+                <div class="product-main-info">
+                    <div class="status">판매중 ▾</div>
+                    <h2 class="title">주인 안 찾아가는 미식축구공</h2>
+                    <div class="category-time">스포츠/레저 • 끌올 1회</div>
+                    <p class="description">
+왠지 모르겠지만 저희 집에 굴러다니는 미식축구공입니다.
+친구가 두고 간 것 같은데 연락이 없네요.
+그래서 그냥 팝니다.
+흙 좀 묻어있는데 닦으면 깨끗해요. 튼튼합니다.
+쿼터백의 기운을 받아가세요. 아마도.
+                    </p>
+                </div>
+                <div class="trade-location">
+                    <h4>거래 희망 장소 ></h4>
+                    <div class="map-placeholder">[애즈베리 고등학교 근처 지도]</div>
+                </div>
+            </div>
+            <div class="bottom-bar">
+                <span class="heart-icon" id="heart-product2" onclick="toggleHeart('product2')">♡</span>
+                <div class="price-info">
+                    <div class="price">5,000원</div>
+                    <button class="proposal-btn">가격 제안 2</button>
+                </div>
+                <button class="chat-btn" onclick="showPage('chat2-room')">대화중인 채팅 1</button>
+            </div>
+        </div>
+        
+        <!-- 판매창 3: 선글라스 -->
+        <div id="product3-page" class="page">
+             <div class="header">
+                <div class="header-left">
+                    <span class="icon" onclick="goBack()"><</span>
+                    <span class="icon">🏠</span>
+                </div>
+                <div class="header-right">
+                    <span class="icon">🔗</span>
+                    <span class="icon">...</span>
+                </div>
+            </div>
+            <div class="product-detail-content">
+                <div class="product-image-area">
+                    <p class="image-text">[테이블 위에 시크하게 놓인 검은 선글라스]</p>
+                </div>
+                <div class="seller-profile">
+                    <div class="seller-info">
+                        <div class="profile-icon"></div>
+                        <div class="seller-name-location">
+                            <div class="name">니콜하트</div>
+                            <div class="location">애즈베리</div>
+                        </div>
+                    </div>
+                    <div class="manner-temp">
+                        <span class="temp">36.7℃</span>
+                        <span class="emoji">😊</span>
+                    </div>
+                </div>
+                <div class="product-main-info">
+                    <div class="status">판매중 ▾</div>
+                    <h2 class="title">연예인병 걸린 친구가 두고 간 선글라스</h2>
+                    <div class="category-time">패션/잡화 • 5일 전</div>
+                    <p class="description">
+친구가 두고 갔는데 이것도 안 찾아가네요.
+어둠의 자식이 쓰던 선글라스입니다.
+밤에 껴도 잘 보인다고 주장하는데 안 믿습니다.
+자외선 차단은 잘 되는 것 같네요.
+쓰면 좀 멋있어 보이는 효과가 있습니다.
+                    </p>
+                </div>
+                <div class="trade-location">
+                    <h4>거래 희망 장소 ></h4>
+                    <div class="map-placeholder">[애즈베리 고등학교 근처 지도]</div>
+                </div>
+            </div>
+            <div class="bottom-bar">
+                <span class="heart-icon" id="heart-product3" onclick="toggleHeart('product3')">♡</span>
+                <div class="price-info">
+                    <div class="price">10,000원</div>
+                    <button class="proposal-btn">가격 제안 1</button>
+                </div>
+                <button class="chat-btn" onclick="showPage('chat3-room')">대화중인 채팅 1</button>
+            </div>
+        </div>
+
+        <!-- 판매창 4: 문제집 -->
+        <div id="product4-page" class="page">
+             <div class="header">
+                <div class="header-left">
+                    <span class="icon" onclick="goBack()"><</span>
+                    <span class="icon">🏠</span>
+                </div>
+                <div class="header-right">
+                    <span class="icon">🔗</span>
+                    <span class="icon">...</span>
+                </div>
+            </div>
+            <div class="product-detail-content">
+                <div class="product-image-area">
+                    <p class="image-text">[거의 새것처럼 보이는 수학경시대회 대비 문제집]</p>
+                </div>
+                <div class="seller-profile">
+                    <div class="seller-info">
+                        <div class="profile-icon"></div>
+                        <div class="seller-name-location">
+                            <div class="name">니콜하트</div>
+                            <div class="location">애즈베리</div>
+                        </div>
+                    </div>
+                    <div class="manner-temp">
+                        <span class="temp">36.7℃</span>
+                        <span class="emoji">😊</span>
+                    </div>
+                </div>
+                <div class="product-main-info">
+                    <div class="status">판매중 ▾</div>
+                    <h2 class="title">거의 새 수학경시대회 대비 문제집</h2>
+                    <div class="category-time">도서 • 2주 전</div>
+                    <p class="description">
+작년에 풀었던 문제집입니다.
+앞부분 몇 장만 풀고 거의 안 건드려서 깨끗해요.
+필기 자국 없습니다.
+기하 파트가 특히 정리가 잘 되어 있어요.
+하버드를 목표로 하는 분께 추천.
+                    </p>
+                </div>
+                <div class="trade-location">
+                    <h4>거래 희망 장소 ></h4>
+                    <div class="map-placeholder">[애즈베리 고등학교 근처 지도]</div>
+                </div>
+            </div>
+            <div class="bottom-bar">
+                <span class="heart-icon" id="heart-product4" onclick="toggleHeart('product4')">♡</span>
+                <div class="price-info">
+                    <div class="price">8,000원</div>
+                    <button class="proposal-btn">가격 제안 불가</button>
+                </div>
+                <button class="chat-btn">채팅하기</button>
+            </div>
+        </div>
+
+        <!-- 채팅방 1: 저스틴 -->
+        <div id="chat1-room" class="page">
+            <div class="header chat-header">
+                <div class="header-left">
+                    <span class="icon" onclick="goBack()"><</span>
+                </div>
+                <div class="header-center">저스틴 <span class="temp">(36.5℃)</span></div>
+                <div class="header-right">
+                    <span class="icon">📞</span>
+                    <span class="icon">🔍</span>
+                    <span class="icon">...</span>
+                </div>
+            </div>
+             <div class="chat-product-bar">
+                <div class="chat-product-info">
+                    <div class="chat-product-img-small">[공학용 계산기]</div>
+                    <div class="product-details">
+                        <div class="status">판매중</div>
+                        <div class="price">15,000원</div>
+                    </div>
+                </div>
+                <div class="chat-actions">
+                     <button class="chat-action-btn"><img src="https://i.postimg.cc/yx6JbX1b/Screenshot-20250831-234611-Karrot-1.jpg" alt="약속잡기"> 약속 잡기</button>
+                    <button class="chat-action-btn"><img src="https://i.postimg.cc/nrLzkFT8/Screenshot-20250831-234611-Karrot.jpg" alt="송금요청"> 송금 요청</button>
+                </div>
+            </div>
+            <div class="chat-content">
+                 <div class="date-divider">2025년 4월 18일</div>
+                <div class="npc-message">
+                    <div class="profile-icon"></div>
+                    <div class="chat-bubble">저... 니콜. 혹시 그 공학용 계산기... 아직 안 팔렸어? <span class="timestamp">오후 4:30</span></div>
+                </div>
+                 <div class="user-message">
+                    <div class="chat-bubble">응 저스틴. 아직 있어. 왜, 필요해?<span class="timestamp">오후 4:31</span></div>
+                </div>
+                <div class="npc-message">
+                    <div class="profile-icon"></div>
+                    <div class="chat-bubble">어... 응! 내 거가 좀 오래돼서... 니콜이 쓰던 거면... 왠지 더 좋을 것 같아서...<span class="timestamp">오후 4:31</span></div>
+                </div>
+                <div class="user-message">
+                    <div class="chat-bubble">그래? 그럼 너한테 팔게. 내일 학교에서 줄까?<span class="timestamp">오후 4:32</span></div>
+                </div>
+                <div class="npc-message">
+                    <div class="profile-icon"></div>
+                    <div class="chat-bubble">정말?!! 고마워 니콜! 그럼 내일 수학 클럽실에서... 돈 가져갈게! 정말 고마워! 🤩<span class="timestamp">오후 4:32</span></div>
+                </div>
+            </div>
+            <div class="chat-input-bar">
+                <span class="icon">+</span>
+                <input type="text" class="chat-input" placeholder="메시지 보내기">
+                <span class="icon">😊</span>
+            </div>
+        </div>
+
+        <!-- 채팅방 2: 레이먼 -->
+        <div id="chat2-room" class="page">
+            <div class="header chat-header">
+                <div class="header-left">
+                    <span class="icon" onclick="goBack()"><</span>
+                </div>
+                <div class="header-center">레이먼 <span class="temp">(37.2℃)</span></div>
+                <div class="header-right">
+                    <span class="icon">📞</span>
+                    <span class="icon">🔍</span>
+                    <span class="icon">...</span>
+                </div>
+            </div>
+             <div class="chat-product-bar">
+                 <div class="chat-product-info">
+                    <div class="chat-product-img-small">[미식축구공]</div>
+                    <div class="product-details">
+                        <div class="status">판매중</div>
+                        <div class="price">5,000원</div>
+                    </div>
+                </div>
+                <div class="chat-actions">
+                     <button class="chat-action-btn"><img src="https://i.postimg.cc/yx6JbX1b/Screenshot-20250831-234611-Karrot-1.jpg" alt="약속잡기"> 약속 잡기</button>
+                    <button class="chat-action-btn"><img src="https://i.postimg.cc/nrLzkFT8/Screenshot-20250831-234611-Karrot.jpg" alt="송금요청"> 송금 요청</button>
+                </div>
+            </div>
+            <div class="chat-content">
+                <div class="date-divider">2025년 4월 20일</div>
+                <div class="npc-message">
+                    <div class="profile-icon"></div>
+                    <div class="chat-bubble">니키? 이거 아무리 봐도 내 미식축구공 같은데? ㅋㅋㅋㅋㅋ<span class="timestamp">오후 7:15</span></div>
+                </div>
+                <div class="user-message">
+                    <div class="chat-bubble">...어떻게 알았어?<span class="timestamp">오후 7:16</span></div>
+                </div>
+                <div class="npc-message">
+                    <div class="profile-icon"></div>
+                    <div class="chat-bubble">설명에 쿼터백의 기운 어쩌고 써있잖아 ㅋㅋㅋ 딱 봐도 나지! 😏 우리 집에 있던 게 왜 니키네 집에 있어?<span class="timestamp">오후 7:16</span></div>
+                </div>
+                <div class="user-message">
+                    <div class="chat-bubble">나참. 네가 저번에 파티 끝나고 우리 집에 던져놓고 갔잖아.<span class="timestamp">오후 7:17</span></div>
+                </div>
+                <div class="npc-message">
+                    <div class="profile-icon"></div>
+                    <div class="chat-bubble">아 그랬나? ㅋㅋㅋ 미안. 근데 그걸 진짜 당근에 팔 생각을 하다니, 우리 니키 대단한데? 🤣<span class="timestamp">오후 7:18</span></div>
+                </div>
+                <div class="user-message">
+                    <div class="chat-bubble">필요 없으면 5천원에 사가든가.<span class="timestamp">오후 7:18</span></div>
+                </div>
+            </div>
+            <div class="chat-input-bar">
+                <span class="icon">+</span>
+                <input type="text" class="chat-input" placeholder="메시지 보내기">
+                <span class="icon">😊</span>
+            </div>
+        </div>
+
+        <!-- 채팅방 3: 앤디 -->
+        <div id="chat3-room" class="page">
+            <div class="header chat-header">
+                <div class="header-left">
+                    <span class="icon" onclick="goBack()"><</span>
+                </div>
+                <div class="header-center">앤디 <span class="temp">(36.2℃)</span></div>
+                <div class="header-right">
+                    <span class="icon">📞</span>
+                    <span class="icon">🔍</span>
+                    <span class="icon">...</span>
+                </div>
+            </div>
+             <div class="chat-product-bar">
+                 <div class="chat-product-info">
+                    <div class="chat-product-img-small">[검은 선글라스]</div>
+                    <div class="product-details">
+                        <div class="status">판매중</div>
+                        <div class="price">10,000원</div>
+                    </div>
+                </div>
+                <div class="chat-actions">
+                     <button class="chat-action-btn"><img src="https://i.postimg.cc/yx6JbX1b/Screenshot-20250831-234611-Karrot-1.jpg" alt="약속잡기"> 약속 잡기</button>
+                    <button class="chat-action-btn"><img src="https://i.postimg.cc/nrLzkFT8/Screenshot-20250831-234611-Karrot.jpg" alt="송금요청"> 송금 요청</button>
+                </div>
+            </div>
+            <div class="chat-content">
+                <div class="date-divider">2025년 4월 22일</div>
+                 <div class="npc-message">
+                    <div class="profile-icon"></div>
+                    <div class="chat-bubble">이거 내 선글라스인데. 설명 좀 해줄래.<span class="timestamp">오후 9:02</span></div>
+                </div>
+                <div class="user-message">
+                    <div class="chat-bubble">아, 들켰네.<span class="timestamp">오후 9:03</span></div>
+                </div>
+                 <div class="npc-message">
+                    <div class="profile-icon"></div>
+                    <div class="chat-bubble">연예인병? 어둠의 자식? 장난해?<span class="timestamp">오후 9:03</span></div>
+                </div>
+                <div class="user-message">
+                    <div class="chat-bubble">뭐, 틀린 말은 아니잖아.<span class="timestamp">오후 9:04</span></div>
+                </div>
+                 <div class="npc-message">
+                    <div class="profile-icon"></div>
+                    <div class="chat-bubble">...하. 너 진짜. 레이먼한테 옮았어?<span class="timestamp">오후 9:05</span></div>
+                </div>
+                <div class="user-message">
+                    <div class="chat-bubble">갖고 싶으면 만 원. 아니면 다른 사람한테 팔게. 찜도 3개나 눌렸어.<span class="timestamp">오후 9:05</span></div>
+                </div>
+                 <div class="npc-message">
+                    <div class="profile-icon"></div>
+                    <div class="chat-bubble">내일 학교 끝나고 너희 집 앞으로 갈게. 돈은 됐으니까 그냥 줘.<span class="timestamp">오후 9:06</span></div>
+                </div>
+            </div>
+            <div class="chat-input-bar">
+                <span class="icon">+</span>
+                <input type="text" class="chat-input" placeholder="메시지 보내기">
+                <span class="icon">😊</span>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        const pageHistory = ['main-page'];
+
+        function showPage(pageId) {
+            document.querySelectorAll('.page').forEach(page => {
+                page.classList.remove('active');
+            });
+            const newPage = document.getElementById(pageId);
+            if (newPage) {
+                newPage.classList.add('active');
+                if (pageHistory[pageHistory.length - 1] !== pageId) {
+                    pageHistory.push(pageId);
+                }
+            }
+        }
+
+        function goBack() {
+            if (pageHistory.length > 1) {
+                pageHistory.pop();
+                const prevPageId = pageHistory[pageHistory.length - 1];
+                showPage(prevPageId);
+            }
+        }
+        
+        function switchTab(event, tabName) {
+            document.querySelectorAll('.tab').forEach(tab => tab.classList.remove('active'));
+            event.target.classList.add('active');
+            // 실제 앱에서는 여기서 목록을 새로 불러옵니다.
+            alert(tabName + ' 탭으로 전환합니다. (UI 데모)');
+        }
+        
+        function toggleHeart(productId) {
+            const heartIcon = document.getElementById(`heart-${productId}`);
+            const heartCount = document.getElementById(`heart-count-${productId}`);
+            
+            if (heartIcon.innerText === '♡') {
+                heartIcon.innerText = '♥︎';
+                heartIcon.style.color = 'red';
+                if(heartCount) {
+                   let currentCount = parseInt(heartCount.innerText.replace('♡ ', ''));
+                   heartCount.innerText = '♡ ' + (currentCount + 1);
+                }
+            } else {
+                heartIcon.innerText = '♡';
+                heartIcon.style.color = '';
+                 if(heartCount) {
+                   let currentCount = parseInt(heartCount.innerText.replace('♡ ', ''));
+                   heartCount.innerText = '♡ ' + (currentCount - 1);
+                }
+            }
+        }
+
+        // 초기 페이지 설정
+        showPage('main-page');
+    </script>
+</body>
+</html>

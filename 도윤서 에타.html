@@ -1,0 +1,1256 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>에브리타임</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&display=swap');
+        :root {
+            --et-red: #C62917;
+            --et-background: #f8f8f8;
+            --et-text: #292929;
+            --et-text-light: #a6a6a6;
+            --et-border: #e3e3e3;
+            --et-blue: #0085FF;
+        }
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        html, body {
+            width: 100%;
+            height: 100%;
+            font-family: 'Noto Sans KR', sans-serif;
+            background-color: #e0e0e0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+        }
+        #app-container {
+            width: 100%;
+            height: 100%;
+            max-width: 420px;
+            max-height: 850px;
+            background-color: white;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            border-radius: 10px;
+            box-shadow: 0 0 20px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+
+        /* --- Login Page --- */
+        #login-page {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            width: 100%;
+            height: 100%;
+            padding: 20px;
+            background-color: white;
+        }
+        #login-page h1 {
+            color: var(--et-red);
+            font-size: 2.5em;
+            font-weight: 700;
+            margin-bottom: 40px;
+        }
+        #login-page input {
+            width: 80%;
+            padding: 12px;
+            margin-bottom: 10px;
+            border: 1px solid var(--et-border);
+            border-radius: 5px;
+            font-size: 1em;
+        }
+        #login-page button {
+            width: 80%;
+            padding: 12px;
+            background-color: var(--et-red);
+            color: white;
+            border: none;
+            border-radius: 5px;
+            font-size: 1.1em;
+            font-weight: 500;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+
+        /* --- Main App Structure --- */
+        #main-app {
+            display: none;
+            flex-direction: column;
+            width: 100%;
+            height: 100%;
+        }
+        .app-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px;
+            border-bottom: 1px solid var(--et-border);
+            font-size: 1.1em;
+            font-weight: 500;
+        }
+        .app-header .icons i {
+            margin-left: 15px;
+            cursor: pointer;
+        }
+        .content-area {
+            flex: 1;
+            overflow-y: auto;
+            background-color: var(--et-background);
+        }
+        .bottom-nav {
+            display: flex;
+            justify-content: space-around;
+            padding: 10px 0;
+            border-top: 1px solid var(--et-border);
+            background-color: white;
+        }
+        .nav-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            font-size: 0.7em;
+            color: var(--et-text-light);
+            cursor: pointer;
+        }
+        .nav-item i {
+            font-size: 1.5em;
+            margin-bottom: 3px;
+        }
+        .nav-item.active {
+            color: var(--et-red);
+        }
+
+        /* --- Pages --- */
+        .page {
+            display: none;
+            height: 100%;
+        }
+        .page.active {
+            display: block;
+        }
+
+        /* Board Page */
+        #board-page {
+            position: relative;
+        }
+        .post-item {
+            background-color: white;
+            padding: 15px;
+            border-bottom: 1px solid var(--et-border);
+            cursor: pointer;
+        }
+        .post-item h3 {
+            font-size: 1em;
+            font-weight: 500;
+            margin-bottom: 5px;
+        }
+        .post-item p {
+            font-size: 0.9em;
+            color: #666;
+            margin-bottom: 10px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .post-meta {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.8em;
+            color: var(--et-text-light);
+        }
+        .post-meta-left span {
+            margin-right: 10px;
+        }
+        .post-meta-right {
+            display: flex;
+            gap: 10px;
+        }
+        .post-meta-right span i {
+            margin-right: 3px;
+        }
+        .post-meta-right .likes { color: var(--et-red); }
+        .post-meta-right .comments { color: var(--et-blue); }
+
+        .fab {
+            position: absolute;
+            bottom: 20px;
+            right: 20px;
+            width: 50px;
+            height: 50px;
+            background-color: var(--et-red);
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 1.5em;
+            cursor: pointer;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        }
+
+        /* Post Detail Panel */
+        #post-detail-panel {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: white;
+            z-index: 100;
+            transform: translateX(100%);
+            transition: transform 0.3s ease-in-out;
+            display: flex;
+            flex-direction: column;
+        }
+        #post-detail-panel.show {
+            transform: translateX(0);
+        }
+        .detail-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px;
+            border-bottom: 1px solid var(--et-border);
+        }
+        .detail-header .back-btn {
+            font-size: 1.2em;
+            cursor: pointer;
+        }
+        .detail-header h2 {
+            font-size: 1.1em;
+            font-weight: 500;
+        }
+        .detail-header .menu-btn {
+            font-size: 1.2em;
+            cursor: pointer;
+        }
+        .detail-content {
+            flex: 1;
+            overflow-y: auto;
+            padding: 15px;
+        }
+        .author-info {
+            display: flex;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+        .author-info img {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            margin-right: 10px;
+        }
+        .author-details {
+            display: flex;
+            flex-direction: column;
+        }
+        .author-details .author-name {
+            font-family: 'Malgun Gothic', '맑은 고딕', sans-serif;
+            font-weight: bold;
+        }
+        .author-details .post-date {
+            font-size: 0.8em;
+            color: var(--et-text-light);
+        }
+        .post-top-actions {
+            position: absolute;
+            top: 17px;
+            right: 50px;
+            display: flex;
+            gap: 15px;
+            color: var(--et-text-light);
+            font-size: 1.2em;
+        }
+        .post-top-actions i.active {
+            color: var(--et-red);
+        }
+        .post-top-actions .scrap-icon.active {
+            color: #FFD700;
+        }
+        .post-body .post-title {
+            font-size: 1.2em;
+            font-weight: 700;
+            margin-bottom: 10px;
+        }
+        .post-body .post-content {
+            line-height: 1.6;
+            margin-bottom: 20px;
+            white-space: pre-wrap;
+        }
+        .post-image-desc {
+            background: #f0f0f0;
+            padding: 10px;
+            border-radius: 5px;
+            font-style: italic;
+            color: #555;
+            margin-bottom: 20px;
+        }
+
+        .post-bottom-actions {
+            display: flex;
+            gap: 20px;
+            padding: 10px 0;
+            border-top: 1px solid var(--et-border);
+            border-bottom: 1px solid var(--et-border);
+            color: var(--et-text-light);
+        }
+
+        .comments-section {
+            padding-top: 15px;
+        }
+        .comment-item {
+            display: flex;
+            margin-bottom: 15px;
+        }
+        .comment-item img {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            margin-right: 10px;
+        }
+        .comment-content { flex: 1; }
+        .comment-author {
+            font-weight: bold;
+            font-size: 0.9em;
+        }
+        .comment-author .op-tag {
+            color: var(--et-blue);
+            font-weight: 500;
+        }
+        .comment-text {
+            font-size: 0.95em;
+            margin: 4px 0;
+            line-height: 1.5;
+        }
+        .comment-actions {
+            font-size: 0.8em;
+            color: var(--et-text-light);
+        }
+        .comment-actions span {
+            cursor: pointer;
+            margin-right: 10px;
+        }
+        .comment-reply {
+            margin-left: 40px;
+            background-color: var(--et-background);
+            padding: 10px;
+            border-radius: 5px;
+        }
+        
+        .comment-input-area {
+            display: flex;
+            padding: 10px;
+            border-top: 1px solid var(--et-border);
+            background: #fff;
+        }
+        .comment-input-area input {
+            flex: 1;
+            border: 1px solid var(--et-border);
+            border-radius: 20px;
+            padding: 8px 12px;
+            margin-right: 10px;
+        }
+        .comment-input-area button {
+            background: var(--et-red);
+            color: white;
+            border: none;
+            border-radius: 20px;
+            padding: 8px 15px;
+            cursor: pointer;
+            font-weight: 500;
+        }
+        
+        /* Timetable Page */
+        #timetable-page { padding: 10px; background-color: #fff; }
+        #timetable-page table {
+            width: 100%;
+            border-collapse: collapse;
+            table-layout: fixed;
+        }
+        #timetable-page th, #timetable-page td {
+            border: 1px solid var(--et-border);
+            text-align: center;
+            font-size: 0.7em;
+            height: 40px;
+        }
+        #timetable-page th {
+            background-color: var(--et-background);
+            font-weight: 500;
+        }
+        #timetable-page .time-col {
+            width: 12%;
+            font-size: 0.6em;
+            font-weight: bold;
+        }
+        #timetable-page .class-cell {
+            position: relative;
+            background-color: #f0f8ff;
+            border-left: 3px solid #6495ed;
+            padding: 2px;
+            line-height: 1.2;
+        }
+        .class-cell-inner {
+            font-size: 0.8em;
+            font-weight: bold;
+        }
+        .class-cell-inner .room {
+            font-size: 0.9em;
+            font-weight: normal;
+        }
+
+        /* Notifications Page */
+        #notifications-page { background: #fff; }
+        .tabs {
+            display: flex;
+            border-bottom: 1px solid var(--et-border);
+        }
+        .tab-item {
+            flex: 1;
+            text-align: center;
+            padding: 12px 0;
+            cursor: pointer;
+            font-weight: 500;
+            color: var(--et-text-light);
+            border-bottom: 2px solid transparent;
+        }
+        .tab-item.active {
+            color: var(--et-text);
+            border-bottom: 2px solid var(--et-red);
+        }
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+        .message-list-item {
+            display: flex;
+            align-items: center;
+            padding: 15px;
+            border-bottom: 1px solid var(--et-border);
+            cursor: pointer;
+        }
+        .message-list-item i {
+            font-size: 1.8em;
+            color: #ccc;
+            margin-right: 15px;
+        }
+        .message-info {
+            flex: 1;
+        }
+        .message-sender { font-weight: bold; }
+        .message-preview {
+            font-size: 0.9em;
+            color: #666;
+            margin-top: 4px;
+        }
+        .message-meta {
+            text-align: right;
+        }
+        .message-time {
+            font-size: 0.8em;
+            color: var(--et-text-light);
+        }
+        .unread-badge {
+            background: var(--et-red);
+            color: white;
+            font-size: 0.8em;
+            padding: 3px 7px;
+            border-radius: 10px;
+            margin-top: 5px;
+            display: inline-block;
+        }
+
+        /* Message Detail Panel */
+        #message-detail-panel {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: var(--et-background);
+            z-index: 100;
+            transform: translateX(100%);
+            transition: transform 0.3s ease-in-out;
+            display: flex;
+            flex-direction: column;
+        }
+        #message-detail-panel.show {
+            transform: translateX(0);
+        }
+        .message-detail-content {
+            flex: 1;
+            padding: 15px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+        }
+        .chat-bubble {
+            max-width: 70%;
+            padding: 10px 15px;
+            border-radius: 18px;
+            line-height: 1.5;
+            margin-bottom: 2px;
+            position: relative;
+        }
+        .chat-row {
+            display: flex;
+            margin-bottom: 10px;
+        }
+        .chat-row.sender {
+            justify-content: flex-start;
+        }
+        .chat-row.me {
+            justify-content: flex-end;
+        }
+        .chat-row.sender .chat-bubble {
+            background-color: #fff;
+            border: 1px solid var(--et-border);
+            border-top-left-radius: 5px;
+        }
+        .chat-row.me .chat-bubble {
+            background-color: var(--et-red);
+            color: white;
+            border-bottom-right-radius: 5px;
+        }
+        .chat-time {
+            font-size: 0.7em;
+            color: var(--et-text-light);
+            align-self: flex-end;
+            margin: 0 5px;
+        }
+        .chat-image-desc {
+            font-style: italic;
+            color: #666;
+            background: #e0e0e0;
+            padding: 8px;
+            border-radius: 10px;
+        }
+        .chat-row.me .chat-image-desc {
+            color: #f0f0f0;
+            background: #a1200e;
+        }
+        .message-input-bar {
+            padding: 10px;
+            border-top: 1px solid var(--et-border);
+            background: #fff;
+            display: flex;
+        }
+        .message-input-bar input {
+            flex: 1;
+            border-radius: 20px;
+            padding: 8px 12px;
+            border: 1px solid var(--et-border);
+        }
+
+
+        /* My Info Page */
+        #myinfo-page { background: #fff; }
+        .profile-section {
+            display: flex;
+            align-items: center;
+            padding: 20px 15px;
+            border-bottom: 5px solid var(--et-background);
+        }
+        .profile-section img {
+            width: 60px;
+            height: 60px;
+            border-radius: 20px;
+            margin-right: 15px;
+        }
+        .profile-details h3 { font-size: 1.1em; }
+        .profile-details p { font-size: 0.9em; color: var(--et-text-light); }
+        .info-menu-list .menu-item {
+            padding: 15px;
+            border-bottom: 1px solid var(--et-border);
+            cursor: pointer;
+        }
+    </style>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/css/all.min.css">
+</head>
+<body>
+
+<div id="app-container">
+    <!-- 로그인 페이지 -->
+    <div id="login-page">
+        <h1>Everytime</h1>
+        <input type="text" placeholder="아이디" value="OO대 에타">
+        <input type="password" placeholder="비밀번호" value="********">
+        <button id="login-btn">에브리타임 시작하기</button>
+    </div>
+
+    <!-- 메인 앱 -->
+    <div id="main-app">
+        <header class="app-header">
+            <span id="header-title">자유게시판</span>
+            <div class="icons">
+                <i class="fa-solid fa-magnifying-glass"></i>
+                <i class="fa-solid fa-gear"></i>
+            </div>
+        </header>
+
+        <main class="content-area">
+            <!-- 게시판 페이지 -->
+            <div id="board-page" class="page active">
+                <div class="post-list">
+                    <!-- JS로 게시글 목록 생성 -->
+                </div>
+                <div class="fab"><i class="fa-solid fa-pencil"></i></div>
+            </div>
+
+            <!-- 시간표 페이지 -->
+            <div id="timetable-page" class="page">
+                <table>
+                    <thead>
+                        <tr>
+                            <th class="time-col"></th>
+                            <th>월</th>
+                            <th>화</th>
+                            <th>수</th>
+                            <th>목</th>
+                            <th>금</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr><th class="time-col">9</th><td></td><td></td><td></td><td></td><td></td></tr>
+                        <tr><th class="time-col">10</th>
+                            <td rowspan="2" class="class-cell" style="background-color: #FFF0F5; border-left-color: #FF69B4;"><div class="class-cell-inner">디자인 기초<br><span class="room">미술관 301호</span></div></td>
+                            <td></td>
+                            <td rowspan="2" class="class-cell" style="background-color: #F0FFF0; border-left-color: #90EE90;"><div class="class-cell-inner">수인의 이해<br><span class="room">인문관 205호</span></div></td>
+                            <td></td>
+                            <td></td>
+                        </tr>
+                        <tr><th class="time-col">11</th>
+                            
+                            <td rowspan="2" class="class-cell" style="background-color: #F0F8FF; border-left-color: #87CEFA;"><div class="class-cell-inner">타이포그래피<br><span class="room">미술관 402호</span></div></td>
+                            
+                            <td></td>
+                            <td></td>
+                        </tr>
+                        <tr><th class="time-col">12</th><td></td><td></td><td></td><td></td></tr>
+                        <tr><th class="time-col">13</th><td></td>
+                            <td></td>
+                            <td></td>
+                            <td rowspan="2" class="class-cell" style="background-color: #FAFAD2; border-left-color: #FFD700;"><div class="class-cell-inner">영상디자인<br><span class="room">미술관 501호</span></div></td>
+                            <td></td>
+                        </tr>
+                        <tr><th class="time-col">14</th>
+                            <td rowspan="2" class="class-cell" style="background-color: #E6E6FA; border-left-color: #9370DB;"><div class="class-cell-inner">교양영어<br><span class="room">교양관 110호</span></div></td>
+                            <td></td>
+                            <td rowspan="2" class="class-cell" style="background-color: #F0FFF0; border-left-color: #90EE90;"><div class="class-cell-inner">수인의 이해<br><span class="room">인문관 205호</span></div></td>
+                            
+                            <td></td>
+                        </tr>
+                        <tr><th class="time-col">15</th>
+                            <td></td>
+                            
+                            <td></td>
+                            <td></td>
+                        </tr>
+                        <tr><th class="time-col">16</th><td></td><td></td><td></td><td></td><td></td></tr>
+                        <tr><th class="time-col">17</th><td></td><td></td><td></td><td></td><td></td></tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- 알림 페이지 -->
+            <div id="notifications-page" class="page">
+                <div class="tabs">
+                    <div class="tab-item" data-tab="alerts">알림</div>
+                    <div class="tab-item active" data-tab="messages">쪽지함</div>
+                </div>
+                <div id="alerts" class="tab-content">
+                    <!-- 알림 내용 -->
+                </div>
+                <div id="messages" class="tab-content active">
+                    <div class="message-list">
+                        <!-- JS로 쪽지 목록 생성 -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- 내 정보 페이지 -->
+            <div id="myinfo-page" class="page">
+                <div class="profile-section">
+                    <img src="https://i.ibb.co/S7w6j0Ts/IMG-1131.jpg" alt="profile">
+                    <div class="profile-details">
+                        <h3>OO대 에타</h3>
+                        <p>OO대학교 / 23학번</p>
+                    </div>
+                </div>
+                <div class="info-menu-list">
+                    <div class="menu-item">내가 쓴 글</div>
+                    <div class="menu-item">댓글 단 글</div>
+                    <div class="menu-item">스크랩</div>
+                    <div class="menu-item">내 정보 관리</div>
+                    <div class="menu-item">앱 설정</div>
+                    <div class="menu-item" id="logout-menu-btn">로그아웃</div>
+                </div>
+            </div>
+        </main>
+
+        <nav class="bottom-nav">
+            <div class="nav-item active" data-page="board-page">
+                <i class="fa-solid fa-table-list"></i>
+                <span>게시판</span>
+            </div>
+            <div class="nav-item" data-page="timetable-page">
+                <i class="fa-solid fa-table-cells-large"></i>
+                <span>시간표</span>
+            </div>
+            <div class="nav-item" data-page="notifications-page">
+                <i class="fa-solid fa-bell"></i>
+                <span>알림</span>
+            </div>
+            <div class="nav-item" data-page="myinfo-page">
+                <i class="fa-solid fa-user"></i>
+                <span>내 정보</span>
+            </div>
+        </nav>
+    </div>
+
+    <!-- 게시글 상세 패널 -->
+    <div id="post-detail-panel">
+        <header class="detail-header">
+            <i class="fa-solid fa-chevron-left back-btn"></i>
+            <h2 id="detail-board-name">자유게시판</h2>
+            <div class="post-top-actions">
+                <i class="fa-solid fa-thumbs-up like-icon"></i>
+                <i class="fa-solid fa-star scrap-icon"></i>
+            </div>
+            <i class="fa-solid fa-ellipsis-vertical menu-btn"></i>
+        </header>
+        <div class="detail-content">
+            <!-- JS로 상세 내용 생성 -->
+        </div>
+        <div class="comment-input-area">
+            <input type="text" id="comment-input" placeholder="댓글을 입력하세요...">
+            <button id="comment-submit-btn">전송</button>
+        </div>
+    </div>
+
+    <!-- 쪽지 상세 패널 -->
+    <div id="message-detail-panel">
+        <header class="detail-header">
+            <i class="fa-solid fa-chevron-left back-btn"></i>
+            <h2 id="message-sender-name"></h2>
+            <i class="fa-solid fa-ellipsis-vertical menu-btn"></i>
+        </header>
+        <div class="message-detail-content">
+            <!-- JS로 쪽지 내용 생성 -->
+        </div>
+        <div class="message-input-bar">
+            <input type="text" placeholder="메시지 보내기">
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+
+    // --- DATA ---
+    const postsData = [
+        {
+            title: "방금 벚꽃길에서 웬 존잘남 둘이 데이트하는데",
+            content: "와 진짜 무슨 드라마 찍는 줄 알았다... 한 명은 키 크고 냉미남 느낌인데 파란 눈이었고 한 명은 좀 더 귀염상? 둘이 손잡고 걷는데 분위기 장난 아니더라. 우리 학교에 저런 사람들이 있었냐... 눈호강 제대로 함.",
+            author: "익명", date: "03/15 13:40", likes: 152, scraps: 18, comments: 25,
+            comments_json: `[
+                {"user": "익명1", "text": "헐 파란 눈이면 정외과 도윤서 선배 아니냐?", "isOp": false},
+                {"user": "익명2", "text": "ㄹㅇ 그 선배 유명하잖아 집안도 좋고 잘생겨서", "isOp": false},
+                {"user": "익명 (글쓴이)", "text": "헐 맞나봐... 그럼 옆에 있던 사람은 누구지? 시디과 같던데 옷 입는 스타일이", "isOp": true},
+                {"user": "익명3", "text": "시디과에 그런 애가 있었나? 신입생인가?", "isOp": false},
+                {"user": "익명4", "text": "아 둘이 사귀는건가? ㄷㄷ 그림체 대박이네", "isOp": false},
+                {"user": "익명1", "text": "도윤서 선배 애인 있다는 소문 돌긴 했음", "isOp": false}
+            ]`
+        },
+        {
+            title: "갑자기 에그타르트 ㅈㄴ땡긴다 어디가 맛있냐",
+            content: "미치겠다 갑자기 에타에 꽂힘. 학교 근처에 맛집 아는 사람 제발 공유좀... 파삭하고 필링 부드러운 곳 원함",
+            author: "익명", date: "03/15 22:35", likes: 25, scraps: 3, comments: 8,
+            comments_json: `[
+                {"user": "익명1", "text": "후문쪽에 '오후의 타르트' 새로 생겼는데 존맛탱임", "isOp": false},
+                {"user": "익명 (글쓴이)", "text": "오 정보 감사감사", "isOp": true},
+                {"user": "익명2", "text": "나도 거기 가봄. 클래식도 맛있고 치즈도 맛있음", "isOp": false},
+                {"user": "서하늘", "text": "저도 거기 좋아해요!", "isOp": false},
+                {"user": "익명3", "text": "ㄴ 님 혹시 시디과 서하늘? 여기서 보네", "isOp": false}
+            ]`
+        },
+        {
+            title: "시디과 서하늘 아는 사람?",
+            content: "오늘 점심 먹고 나오는데 엄청 행복한 얼굴로 걸어가길래ㅋㅋㅋ 좋은 일 있나봐? 원래 좀 조용하고 낯가리는 이미지였는데 오늘따라 되게 밝아보여서 신기했음. 그리고 누구랑 계속 문자하는 것 같던데.",
+            author: "익명", date: "03/15 15:10", likes: 18, scraps: 1, comments: 5,
+            comments_json: `[
+                {"user": "익명1", "text": "걔 원래 페럿 키웠었다는데 ㄹㅇ임?", "isOp": false},
+                {"user": "익명2", "text": "페럿?? 갑자기 웬 페럿이야 ㅋㅋㅋ", "isOp": false},
+                {"user": "익명 (글쓴이)", "text": "아니 그런거 말고 ㅋㅋㅋ 그냥 궁금해서", "isOp": true},
+                {"user": "익명3", "text": "아까 벚꽃길 글에 나왔던 그 사람 아님?", "isOp": false},
+                {"user": "익명4", "text": "오... 도윤서 선배랑...? 대박사건", "isOp": false}
+            ]`
+        },
+        {
+            title: "[모집] 중앙 밴드 동아리 '크레센도' 신입 부원 모집!",
+            content: "안녕하세요! OO대학교 중앙 밴드 동아리 '크레센도'입니다. 🎸\\n\\n음악에 대한 열정만 있다면 악기를 다루지 못해도 대환영! 보컬, 기타, 베이스, 드럼, 키보드 전 파트 모집합니다.\\n\\n관심 있는 분들은 아래 오픈채팅방으로 편하게 문의주세요!\\n\\nhttps://open.kakao.com/o/gABCDEFG",
+            author: "익명", date: "03/15 17:20", likes: 45, scraps: 15, comments: 6,
+            comments_json: `[
+                {"user": "익명1", "text": "우와 재밌겠다", "isOp": false},
+                {"user": "익명2", "text": "혹시 악기 없어도 지원 가능한가요?", "isOp": false},
+                {"user": "익명 (글쓴이)", "text": "네! 동아리방에 공용 악기 비치되어 있습니다!", "isOp": true},
+                {"user": "익명3", "text": "노래 못하는데 보컬 지원해도 되나요", "isOp": false},
+                {"user": "익명 (글쓴이)", "text": "익명3/ 열정만 있다면 괜찮습니다! 와서 배워봐요!", "isOp": true}
+            ]`
+        },
+        {
+            title: "옆집에서 이상한 소리 들리는데 이거 뭐임?",
+            content: "아니 밤 10시 넘어서부터 남자 둘이서 속닥거리는데... 내용은 잘 안 들리는데 한 명 목소리가 엄청 다정하고... 막 '들어가, 지켜볼게' 이러는데 나한테 하는 말인줄 알고 설렜네 ㅅㅂ. 옆집 쉐어하우스 쪽인 것 같은데 뭔 상황이지?",
+            author: "익명", date: "03/15 22:50", likes: 88, scraps: 5, comments: 10,
+            comments_json: `[
+                {"user": "익명1", "text": "ㅋㅋㅋㅋㅋ글쓴이 김칫국", "isOp": false},
+                {"user": "익명2", "text": "로맨스 드라마 한 편 찍네 옆집에서", "isOp": false},
+                {"user": "익명3", "text": "그 쉐어하우스 존잘들만 산다던데", "isOp": false},
+                {"user": "익명 (글쓴이)", "text": "익명3/ ㄹㅇ? 어쩐지 목소리부터 다르더라...", "isOp": true},
+                {"user": "익명4", "text": "이거 아까 벚꽃길 그 사람들 아니냐 시간대가 비슷한데?", "isOp": false}
+            ]`
+        },
+        {
+            title: "팀플하는데 잠수탄 X 저격합니다.",
+            content: "경영학과 ㄱㅅㅎ. 자료조사 맡았으면 하긴 해야할 거 아냐. 3일째 카톡 안 읽는 건 무슨 심보임? 이 글 보면 당장 연락해라. 교수님한테 이름 빼고 제출하기 전에.",
+            author: "익명", date: "03/15 11:45", likes: 112, scraps: 4, comments: 9,
+            comments_json: `[
+                {"user": "익명1", "text": "힘내라... 팀플 잠수는 진짜 답없다", "isOp": false},
+                {"user": "익명2", "text": "요즘같은 시대에 잠수가 가능함?", "isOp": false},
+                {"user": "익명 (글쓴이)", "text": "그러니까요... 진짜 화나네요", "isOp": true},
+                {"user": "이우경", "text": "ㄱㅅㅎ? 설마...", "isOp": false},
+                {"user": "익명3", "text": "ㄴ 아는 사람이세요?", "isOp": false}
+            ]`
+        },
+        {
+            title: "학식 왜 이따구냐 진짜",
+            content: "오늘 돈까스라길래 기대하고 갔더니 무슨 종이짝을 튀겨놨네. 5500원 돌려줘라 진짜...",
+            image_desc: "[눅눅하고 얇아 보이는 돈까스 사진. 소스는 멀건 갈색이고 옆에는 마카로니 샐러드 몇 알과 단무지가 놓여있다.]",
+            author: "익명", date: "03/15 12:50", likes: 76, scraps: 2, comments: 7,
+            comments_json: `[
+                {"user": "익명1", "text": "오늘 나도 이거 먹었는데 ㄹㅇ 최악", "isOp": false},
+                {"user": "익명2", "text": "차라리 편의점 도시락이 낫겠다", "isOp": false},
+                {"user": "익명3", "text": "ㅋㅋㅋㅋㅋㅋㅋㅋ사진만 봐도 맛없어보임", "isOp": false},
+                {"user": "익명 (글쓴이)", "text": "다들 공감하네... 하...", "isOp": true},
+                {"user": "익명4", "text": "학식은 걍 제육만 먹는게 국룰", "isOp": false}
+            ]`
+        },
+        {
+            title: "캠퍼스에 페럿 돌아다니는 거 본 사람?",
+            content: "한 2주 전인가? 밤에 캠퍼스 벤치 근처에서 흰색 페럿 돌아다니는 거 봤는데... 목줄도 없고 누가 잃어버린 건가? 너무 귀여웠는데 혹시 주인 찾았으려나.",
+            author: "익명", date: "03/15 18:05", likes: 33, scraps: 6, comments: 5,
+            comments_json: `[
+                {"user": "익명1", "text": "헐 야생 페럿은 아닐거고... 유기동물인가 ㅠㅠ", "isOp": false},
+                {"user": "익명2", "text": "그거 어떤 남자가 데려가는 거 본 것 같기도 하고", "isOp": false},
+                {"user": "익명 (글쓴이)", "text": "오 진짜? 다행이다", "isOp": true},
+                {"user": "여서원", "text": "...", "isOp": false},
+                {"user": "익명3", "text": "ㄴ 뭐지 이 점은", "isOp": false}
+            ]`
+        },
+        {
+            title: "수인의 이해 박세연 교수님 수업 어떰?",
+            content: "다음 학기에 교양으로 들을까 하는데... 학점 잘 주시나요? 과제나 시험은 어떤 편인지 궁금합니다. 들어본 선배님들 계시면 후기좀 ㅠㅠ",
+            author: "익명", date: "03/15 19:30", likes: 15, scraps: 8, comments: 5,
+            comments_json: `[
+                {"user": "익명1", "text": "교수님 좋으심. 학점은 꽤 잘 주시는 편인데 과제가 좀 있음", "isOp": false},
+                {"user": "백호현", "text": "수업 내용이 흥미로워서 들을만 합니다. 추천해요.", "isOp": false},
+                {"user": "익명2", "text": "ㄴ 오빠 믿고 신청합니다", "isOp": false},
+                {"user": "익명 (글쓴이)", "text": "감사합니다!!", "isOp": true},
+                {"user": "익명3", "text": "팀플 하나 있는데 조원 잘 만나야 함", "isOp": false}
+            ]`
+        },
+        {
+            title: "다들 엠티 어디로 가고싶냐",
+            content: "곧 과 엠티 시즌인데 장소 투표한대. 어디가 재밌었음? 가평? 대성리? 추천 좀",
+            author: "익명", date: "03/15 20:11", likes: 22, scraps: 1, comments: 4,
+            comments_json: `[
+                {"user": "익명1", "text": "가평이 국룰이지", "isOp": false},
+                {"user": "익명2", "text": "바다 보고 싶다 강릉 ㄱㄱ", "isOp": false},
+                {"user": "익명 (글쓴이)", "text": "강릉 좋네", "isOp": true},
+                {"user": "익명3", "text": "코로나 이후 첫 엠티라 설렌다", "isOp": false}
+            ]`
+        },
+        {
+            title: "[구인] 학교 앞 카페 '달빛' 주말 마감 알바 구합니다",
+            content: "금, 토 18:00 ~ 22:00 주말 마감 타임 알바생 구합니다. 시급은 만원이고, 성실하고 밝은 분 환영합니다. 아래 번호로 간단한 자기소개와 함께 문자 주세요! 010-1234-5678",
+            author: "익명", date: "03/15 14:02", likes: 38, scraps: 22, comments: 4,
+            comments_json: `[
+                {"user": "익명1", "text": "오 시급 만원이면 괜찮네", "isOp": false},
+                {"user": "익명2", "text": "여기 커피 맛있는데", "isOp": false},
+                {"user": "익명3", "text": "경력 없어도 되나요?", "isOp": false},
+                {"user": "익명 (글쓴이)", "text": "네 초보도 가능합니다!", "isOp": true}
+            ]`
+        },
+        {
+            title: "과제 제출 1분 전 내 표정.jpg",
+            content: "ㄹㅇ 나만 이런거 아니지?",
+            image_desc: "[매우 불안하고 초조한 표정으로 컴퓨터 모니터를 보고 있는 고양이 밈 사진. 눈이 동그래져 있고 입을 살짝 벌리고 있다.]",
+            author: "익명", date: "03/15 23:58", likes: 245, scraps: 30, comments: 6,
+            comments_json: `[
+                {"user": "익명1", "text": "ㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋ내얘기인줄", "isOp": false},
+                {"user": "익명2", "text": "새로고침 F5 연타중", "isOp": false},
+                {"user": "익명3", "text": "제출 버튼 눌렀는데 로딩 길어지면 심장 멎음", "isOp": false},
+                {"user": "익명 (글쓴이)", "text": "다들 똑같구나... 위안이 된다...", "isOp": true},
+                {"user": "익명4", "text": "저러다 12시 땡 치면 그냥 해탈함", "isOp": false},
+                {"user": "익명5", "text": "인생...ㅎ", "isOp": false}
+            ]`
+        },
+        {
+            title: "나만 고양이 없어",
+            content: "다들 고양이 있는데 나만 없어... 인생 헛살았다... ㅠㅠㅠ",
+            author: "익명", date: "03/15 09:30", likes: 51, scraps: 0, comments: 5,
+            comments_json: `[
+                {"user": "익명1", "text": "랜선 집사라도 해", "isOp": false},
+                {"user": "익명2", "text": "나도 없어... 같이 울자...", "isOp": false},
+                {"user": "익명 (글쓴이)", "text": "ㅠㅠㅠㅠㅠㅠㅠㅠㅠㅠ", "isOp": true},
+                {"user": "익명3", "text": "학교 길냥이들 보면서 대리만족 중", "isOp": false},
+                {"user": "익명4", "text": "유튜브에 고양이 채널 많잖아", "isOp": false}
+            ]`
+        },
+        {
+            title: "썸남이랑 밥 먹기로 했는데 뭐 입고 가지",
+            content: "인생 첫 썸이라 너무 떨린다... 꾸민 티는 안 나면서 예뻐보이는 거 뭐 없을까? 원피스? 아님 그냥 청바지에 니트? 도와줘 얘들아 ㅠㅠ",
+            author: "익명", date: "03/14 22:15", likes: 67, scraps: 11, comments: 8,
+            comments_json: `[
+                {"user": "익명1", "text": "하늘하늘한 원피스 추천!", "isOp": false},
+                {"user": "익명2", "text": "ㄴㄴ 너무 꾸민 티남. 걍 깔끔하게 슬랙스에 셔츠", "isOp": false},
+                {"user": "익명3", "text": "청바지에 흰 티가 진리다", "isOp": false},
+                {"user": "익명 (글쓴이)", "text": "의견이 다 다르네 ㅋㅋㅋ 더 고민된다", "isOp": true},
+                {"user": "익명4", "text": "뭘 입든 얼굴이 완성함 ㅅㄱ", "isOp": false},
+                {"user": "익명 (글쓴이)", "text": "익명4/ 뼈때리지마...", "isOp": true}
+            ]`
+        },
+        {
+            title: "밤샘 과제할 때 듣기 좋은 플리 추천좀",
+            content: "도서관에서 밤샘해야하는데 너무 졸리다... 잠 깨면서 집중 잘 되는 플레이리스트 아는 사람 있으면 공유 좀 부탁해... Lo-fi, 클래식, 아이돌 노래 다 좋아함",
+            author: "익명", date: "03/14 23:50", likes: 41, scraps: 19, comments: 5,
+            comments_json: `[
+                {"user": "익명1", "text": "유튜브에 lofi girl 검색 ㄱㄱ", "isOp": false},
+                {"user": "익명2", "text": "해리포터 ost 들으면 집중 잘됨", "isOp": false},
+                {"user": "익명3", "text": "전 그냥 신나는 아이돌 노래 메들리 틀어놓고 해요", "isOp": false},
+                {"user": "익명 (글쓴이)", "text": "다들 고마워 들어볼게!", "isOp": true},
+                {"user": "익명4", "text": "스튜디오 지브리 피아노 컬렉션", "isOp": false}
+            ]`
+        },
+    ];
+
+    const messagesData = [
+        {
+            sender: "도윤서", timestamp: "03/15 23:10", unread_count: 0,
+            messages_json: `[
+                {"from": "sender", "text": "집에 잘 들어갔어?", "time": "22:50"},
+                {"from": "me", "text": "네 형! 덕분에 잘 들어왔어요. 오늘 정말 감사했어요 😊", "time": "22:51"},
+                {"from": "sender", "text": "내가 더 고맙지. 오늘 정말 행복했어.", "time": "22:52"},
+                {"from": "sender", "text": "아까 쉐어하우스에서는... 미안. 내가 너무 앞서갔지.", "time": "22:52"},
+                {"from": "me", "text": "아니에요! 저도... 좋았어요..😳", "time": "22:54"},
+                {"from": "sender", "text": "다행이다. 앞으로는 더 조심할게.", "time": "22:55"},
+                {"from": "sender", "text": "푹 쉬고. 내일 학교에서 보자. 또 데리러 갈게.", "time": "22:55"},
+                {"from": "me", "text": "네 형도 잘자요! 내일 봐요💕", "time": "22:56"},
+                {"from": "sender", "text": "잘 자. 좋은 꿈 꿔, 하늘아.", "time": "23:10"}
+            ]`
+        },
+        {
+            sender: "익명", timestamp: "03/15 16:20", unread_count: 2,
+            messages_json: `[
+                {"from": "sender", "text": "저기... 아까 벚꽃길 글 보고 쪽지 드리는데요.", "time": "16:18"},
+                {"from": "sender", "text": "혹시 도윤서 선배랑 사귀세요?", "time": "16:20"}
+            ]`
+        },
+        {
+            sender: "이우경", timestamp: "03/15 23:30", unread_count: 1,
+            messages_json: `[
+                {"from": "sender", "text": "야 너 어제 도윤서 방에서 뭐했냐? ㅎㅎ", "time": "23:30"}
+            ]`
+        },
+        {
+            sender: "백호현", timestamp: "03/15 21:05", unread_count: 0,
+            messages_json: `[
+                {"from": "sender", "text": "하늘아, 지금 어디야? 괜찮아?", "time": "21:02"},
+                {"from": "me", "text": "어 호현이형! 저 괜찮아요. 윤서형이랑 쉐어하우스에 있어요.", "time": "21:04"},
+                {"from": "sender", "text": "그래? 알았어. 무슨 일 있으면 꼭 연락하고.", "time": "21:05"}
+            ]`
+        },
+        {
+            sender: "시디과 동기", timestamp: "03/15 14:00", unread_count: 0,
+            messages_json: `[
+                {"from": "sender", "text": "하늘아! 나 ㅇㅇ인데, 혹시 내일 타이포 과제 뭐였는지 다시 알려줄 수 있어? 내가 메모를 이상하게 해놔서ㅠㅠ", "time": "13:58"},
+                {"from": "me", "text": "응! A타입이랑 B타입 시안 각각 3개씩 만들어서 pdf로 제출하는거야!", "time": "13:59"},
+                {"from": "sender", "text": "아 대박 고마워ㅠㅠㅠ 너밖에없다 진짜 복받을겨", "time": "14:00"}
+            ]`
+        },
+        {
+            sender: "익명의 후배", timestamp: "03/14 18:40", unread_count: 0,
+            messages_json: `[
+                {"from": "sender", "text": "안녕하세요 선배님! 에타 보고 쪽지드려요. 혹시 디자인기초 수업 과제 팁 같은 거 받을 수 있을까요...?", "time": "18:40"}
+            ]`
+        },
+        {
+            sender: "여서원", timestamp: "03/15 18:07", unread_count: 1,
+            messages_json: `[
+                {"from": "sender", "text": "https://www.wildlife.org/study-ferrets-are-picky-eaters", "time": "18:07"}
+            ]`
+        },
+        {
+            sender: "익명", timestamp: "03/13 20:15", unread_count: 0,
+            messages_json: `[
+                {"from": "sender", "text": "저기요", "time": "20:15"}
+            ]`
+        }
+    ];
+
+    // --- DOM Elements ---
+    const loginPage = document.getElementById('login-page');
+    const loginBtn = document.getElementById('login-btn');
+    const mainApp = document.getElementById('main-app');
+    const appContainer = document.getElementById('app-container');
+    
+    const postListPage = document.getElementById('board-page');
+    const postListContainer = postListPage.querySelector('.post-list');
+    const postDetailPanel = document.getElementById('post-detail-panel');
+    const messageDetailPanel = document.getElementById('message-detail-panel');
+    
+    const navItems = document.querySelectorAll('.nav-item');
+    const pages = document.querySelectorAll('.page');
+    const headerTitle = document.getElementById('header-title');
+
+    // --- Functions ---
+    
+    function init() {
+        // Load posts
+        postsData.forEach(post => {
+            const postEl = document.createElement('div');
+            postEl.className = 'post-item';
+            postEl.dataset.title = post.title;
+            postEl.dataset.content = post.content;
+            postEl.dataset.author = post.author;
+            postEl.dataset.date = post.date;
+            postEl.dataset.likes = post.likes;
+            postEl.dataset.scraps = post.scraps;
+            postEl.dataset.commentsCount = post.comments;
+            postEl.dataset.image = post.image_desc || "";
+            postEl.dataset.comments = post.comments_json;
+
+            postEl.innerHTML = `
+                <h3>${post.title}</h3>
+                <p>${post.content.substring(0, 50)}...</p>
+                <div class="post-meta">
+                    <div class="post-meta-left">
+                        <span>${post.author}</span>
+                        <span>${post.date.split(' ')[1]}</span>
+                    </div>
+                    <div class="post-meta-right">
+                        <span class="likes"><i class="fa-regular fa-thumbs-up"></i>${post.likes}</span>
+                        <span class="comments"><i class="fa-regular fa-comment-dots"></i>${post.comments}</span>
+                    </div>
+                </div>
+            `;
+            postEl.addEventListener('click', () => showPostDetail(postEl));
+            postListContainer.appendChild(postEl);
+        });
+
+        // Load messages
+        const messageListContainer = document.querySelector('#messages .message-list');
+        messagesData.forEach(msg => {
+            const messages = JSON.parse(msg.messages_json);
+            const lastMessage = messages[messages.length - 1];
+            
+            const msgEl = document.createElement('div');
+            msgEl.className = 'message-list-item';
+            msgEl.dataset.sender = msg.sender;
+            msgEl.dataset.timestamp = msg.timestamp;
+            msgEl.dataset.unreadCount = msg.unread_count;
+            msgEl.dataset.messages = msg.messages_json;
+
+            msgEl.innerHTML = `
+                <i class="fa-solid fa-circle-user"></i>
+                <div class="message-info">
+                    <div class="message-sender">${msg.sender}</div>
+                    <div class="message-preview">${lastMessage.text.substring(0, 25)}${lastMessage.text.length > 25 ? '...' : ''}</div>
+                </div>
+                <div class="message-meta">
+                    <div class="message-time">${msg.timestamp}</div>
+                    ${msg.unread_count > 0 ? `<div class="unread-badge">+${msg.unread_count}</div>` : ''}
+                </div>
+            `;
+            msgEl.addEventListener('click', () => showMessageDetail(msgEl));
+            messageListContainer.appendChild(msgEl);
+        });
+    }
+
+    function showPostDetail(postEl) {
+        const detailContent = postDetailPanel.querySelector('.detail-content');
+        const comments = JSON.parse(postEl.dataset.comments);
+        
+        let commentsHtml = '';
+        comments.forEach(comment => {
+            const authorClass = comment.isOp ? '익명 <span class="op-tag">(글쓴이)</span>' : comment.user;
+            commentsHtml += `
+                <div class="comment-item">
+                    <img src="https://i.ibb.co/S7w6j0Ts/IMG-1131.jpg" alt="commenter-profile">
+                    <div class="comment-content">
+                        <div class="comment-author">${authorClass}</div>
+                        <div class="comment-text">${comment.text}</div>
+                        <div class="comment-actions">
+                            <span>공감</span>
+                            <span>쪽지</span>
+                            <span>신고</span>
+                        </div>
+                    </div>
+                </div>
+            `;
+        });
+
+        const imageHtml = postEl.dataset.image ? `<div class="post-image-desc">${postEl.dataset.image}</div>` : '';
+        
+        detailContent.innerHTML = `
+            <div class="author-info">
+                <img src="https://i.ibb.co/S7w6j0Ts/IMG-1131.jpg" alt="author-profile">
+                <div class="author-details">
+                    <span class="author-name">${postEl.dataset.author}</span>
+                    <span class="post-date">${postEl.dataset.date}</span>
+                </div>
+            </div>
+            <div class="post-body">
+                <h3 class="post-title">${postEl.dataset.title}</h3>
+                <p class="post-content">${postEl.dataset.content}</p>
+                ${imageHtml}
+            </div>
+            <div class="post-bottom-actions">
+                <span><i class="fa-solid fa-thumbs-up"></i> ${postEl.dataset.likes}</span>
+                <span><i class="fa-solid fa-star"></i> ${postEl.dataset.scraps}</span>
+                <span><i class="fa-solid fa-comment-dots"></i> ${postEl.dataset.commentsCount}</span>
+            </div>
+            <div class="comments-section">${commentsHtml}</div>
+        `;
+        postDetailPanel.classList.add('show');
+    }
+
+    function showMessageDetail(msgEl) {
+        const senderName = msgEl.dataset.sender;
+        const messages = JSON.parse(msgEl.dataset.messages);
+        
+        document.getElementById('message-sender-name').textContent = senderName;
+        const detailContent = messageDetailPanel.querySelector('.message-detail-content');
+        
+        let messagesHtml = '';
+        messages.forEach(msg => {
+            const fromClass = msg.from === 'me' ? 'me' : 'sender';
+            messagesHtml += `
+                <div class="chat-row ${fromClass}">
+                    ${fromClass === 'me' ? `<span class="chat-time">${msg.time}</span>` : ''}
+                    <div class="chat-bubble">${msg.text}</div>
+                    ${fromClass === 'sender' ? `<span class="chat-time">${msg.time}</span>` : ''}
+                </div>
+            `;
+        });
+        detailContent.innerHTML = messagesHtml;
+
+        // Clear unread badge
+        const unreadBadge = msgEl.querySelector('.unread-badge');
+        if (unreadBadge) {
+            unreadBadge.remove();
+        }
+        msgEl.dataset.unreadCount = 0;
+
+        messageDetailPanel.classList.add('show');
+        detailContent.scrollTop = detailContent.scrollHeight; // Scroll to bottom
+    }
+
+    function switchPage(pageId) {
+        pages.forEach(p => p.classList.remove('active'));
+        document.getElementById(pageId).classList.add('active');
+
+        navItems.forEach(n => n.classList.remove('active'));
+        const activeNavItem = document.querySelector(`.nav-item[data-page="${pageId}"]`);
+        if (activeNavItem) {
+            activeNavItem.classList.add('active');
+        }
+
+        const titles = {
+            'board-page': '자유게시판',
+            'timetable-page': '시간표',
+            'notifications-page': '알림',
+            'myinfo-page': '내 정보'
+        };
+        headerTitle.textContent = titles[pageId];
+    }
+    
+    // --- Event Listeners ---
+    loginBtn.addEventListener('click', () => {
+        loginPage.style.display = 'none';
+        mainApp.style.display = 'flex';
+    });
+
+    navItems.forEach(item => {
+        item.addEventListener('click', () => {
+            switchPage(item.dataset.page);
+        });
+    });
+
+    document.getElementById('logout-menu-btn').addEventListener('click', () => {
+        mainApp.style.display = 'none';
+        loginPage.style.display = 'flex';
+        // Reset to default page on next login
+        switchPage('board-page');
+    });
+
+    // Panel close buttons
+    postDetailPanel.querySelector('.back-btn').addEventListener('click', () => postDetailPanel.classList.remove('show'));
+    messageDetailPanel.querySelector('.back-btn').addEventListener('click', () => messageDetailPanel.classList.remove('show'));
+
+    // Notification tabs
+    document.querySelectorAll('.tab-item').forEach(tab => {
+        tab.addEventListener('click', () => {
+            const targetTab = tab.dataset.tab;
+            document.querySelectorAll('.tab-item').forEach(t => t.classList.remove('active'));
+            tab.classList.add('active');
+            
+            document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+            document.getElementById(targetTab).classList.add('active');
+        });
+    });
+
+    // Interaction simulation
+    postDetailPanel.querySelector('.like-icon').addEventListener('click', (e) => e.target.classList.toggle('active'));
+    postDetailPanel.querySelector('.scrap-icon').addEventListener('click', (e) => e.target.classList.toggle('active'));
+
+    document.getElementById('comment-submit-btn').addEventListener('click', () => {
+        const input = document.getElementById('comment-input');
+        const text = input.value.trim();
+        if (text === '') return;
+
+        const commentsSection = postDetailPanel.querySelector('.comments-section');
+        const existingCommentsCount = commentsSection.querySelectorAll('.comment-item').length;
+        const nextCommenterNum = existingCommentsCount; // Simple count for next number
+        
+        const newCommentEl = document.createElement('div');
+        newCommentEl.className = 'comment-item';
+        newCommentEl.innerHTML = `
+            <img src="https://i.ibb.co/S7w6j0Ts/IMG-1131.jpg" alt="commenter-profile">
+            <div class="comment-content">
+                <div class="comment-author">익명${nextCommenterNum}</div>
+                <div class="comment-text">${text}</div>
+                <div class="comment-actions">
+                    <span>공감</span>
+                    <span>쪽지</span>
+                    <span>신고</span>
+                </div>
+            </div>
+        `;
+        commentsSection.appendChild(newCommentEl);
+        input.value = '';
+    });
+    
+    // --- Initial Load ---
+    init();
+});
+</script>
+</body>
+</html>

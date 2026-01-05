@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>리브론의 스트레스 월드컵</title>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        /* ===== 기본 설정 ===== */
+        body { margin: 0; padding: 20px; background-color: #f0f2f5; font-family: 'Noto Sans KR', sans-serif; display: flex; justify-content: center; align-items: center; min-height: 100vh; }
+        .world-cup-container { width: 100%; max-width: 900px; background: white; border-radius: 16px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); padding: 30px; text-align: center; }
+        .page { display: none; }
+        .page.active { display: block; }
+
+        /* ===== 시작 페이지 스타일 ===== */
+        .start-title { font-size: 2.5em; font-weight: 700; color: #333; margin-bottom: 15px; }
+        .start-description { font-size: 1.2em; color: #555; margin-bottom: 30px; line-height: 1.6; }
+        .start-button { font-family: 'Noto Sans KR', sans-serif; font-size: 1.2em; font-weight: 700; color: white; background-color: #e53935; border: none; padding: 15px 30px; border-radius: 8px; cursor: pointer; transition: background-color 0.3s ease; }
+        .start-button:hover { background-color: #c62828; }
+
+        /* ===== 게임 페이지 스타일 ===== */
+        .round-title { font-size: 2em; font-weight: 700; color: #333; margin-bottom: 20px; }
+        .match-container { display: flex; justify-content: center; align-items: center; gap: 20px; position: relative; flex-wrap: wrap;}
+        .vs-text { font-size: 3em; font-weight: bold; color: #e53935; position: absolute; z-index: 10; }
+        .choice-card { width: 300px; height: 350px; border-radius: 12px; cursor: pointer; transition: all 0.3s ease; box-sizing: border-box; background-color: #212121; display: flex; justify-content: center; align-items: center; padding: 20px; color: white; border: 2px solid transparent; margin-bottom: 20px;}
+        .choice-text { font-size: 1.8em; font-weight: 500; text-align: center; line-height: 1.5; }
+        .choice-card:hover { transform: translateY(-10px); border-color: #e53935; }
+
+        /* ===== 결과 페이지 스타일 ===== */
+        .results-title { font-size: 2.2em; font-weight: 700; color: #333; margin-bottom: 10px; }
+        .results-subtitle { font-size: 1.1em; color: #666; margin-bottom: 25px; }
+        .results-list { list-style-type: none; padding: 0; text-align: left; margin: 0 auto; max-height: 80vh; overflow-y: auto;}
+        .results-list li { background: #f8f9fa; padding: 20px; margin-bottom: 15px; border-radius: 12px; border: 1px solid #e9ecef; }
+        .rank-header { font-size: 1.8em; font-weight: bold; color: #e53935; margin-bottom: 15px; border-bottom: 2px solid #eee; padding-bottom: 10px; text-align: center; }
+        .comparison-body { display: flex; justify-content: space-around; gap: 20px; align-items: flex-start; flex-wrap: wrap;}
+        .choice-box { width: 100%; box-sizing: border-box;}
+        @media (min-width: 768px) {
+            .choice-box { width: 48%; }
+        }
+        .choice-box h4 { font-size: 1.2em; margin-top: 0; margin-bottom: 10px; color: #333; text-align: center; }
+        .choice-box p.choice-content { font-size: 1.1em; background: #fff; border: 1px solid #ddd; padding: 15px; border-radius: 8px; margin: 0; min-height: 80px; display: flex; align-items: center; justify-content: center; }
+        .comment { font-size: 1em; color: #555; padding: 10px 15px; margin-top: 10px; border-radius: 8px; font-style: italic; background-color: #fffde7; border-left: 4px solid #fbc02d; text-align: left; }
+    </style>
+</head>
+<body>
+
+    <div class="world-cup-container">
+        <!-- 시작 화면 -->
+        <div id="start-page" class="page active">
+            <h1 class="start-title">리브론의 스트레스 월드컵</h1>
+            <p class="start-description">리브론은 어떤 순간에 가장 화가 날까요?<br>당신의 생각과 리브론의 생각을 비교해보세요.</p>
+            <button class="start-button" onclick="startGame()">시작하기</button>
+        </div>
+
+        <!-- 게임 화면 -->
+        <div id="game-page" class="page">
+            <h2 class="round-title" id="round-title">32강</h2>
+            <div class="match-container">
+                <div class="choice-card" id="choice-1">
+                    <p class="choice-text" id="choice-text-1"></p>
+                </div>
+                <div class="vs-text">VS</div>
+                <div class="choice-card" id="choice-2">
+                    <p class="choice-text" id="choice-text-2"></p>
+                </div>
+            </div>
+        </div>
+
+        <!-- 결과 화면 -->
+        <div id="results-page" class="page">
+            <h2 class="results-title">리브론과 로멜의 생각 비교</h2>
+            <p class="results-subtitle">과연 리브론의 생각과 얼마나 일치할까요?</p>
+            <ul class="results-list" id="results-list"></ul>
+        </div>
+    </div>
+
+    <script>
+        const worldCupData = [
+            { id: 1, charRank: 1, text: '나에게 말없이 단둘이 밤늦게까지 이성 친구와 술 마신 애인', comment: '이건 신뢰의 문제야. 숨겼다는 것 자체가 날 기만하는 거라고. {user}, 절대 용납 못 해.' },
+            { id: 2, charRank: 2, text: '싸울 때마다 "헤어지자"는 말을 쉽게 하는 애인', comment: '그 말을... 어떻게 그렇게 쉽게 뱉을 수 있지? 내 세상이 무너지는 기분인데. 정말 날 떠날 생각인 건가, {user}?' },
+            { id: 3, charRank: 3, text: '내가 모르는 이성 친구와 매일 연락하며 개인적인 고민을 상담하는 애인', comment: '왜 나한테는 말 안 해? 내가 아닌 다른 놈에게 의지하는 꼴은 볼 수 없어. 네 모든 건 내 것이어야 해.' },
+            { id: 4, charRank: 4, text: '나와의 중요한 기념일을 잊고 다른 약속을 잡는 애인', comment: '우리 둘만의 날이 너에겐 그깟 약속보다 하찮다는 거잖아. 서운함을 넘어서 화가 치미는군, {user}.' },
+            { id: 5, charRank: 5, text: '이성 친구의 애인과 문제가 생겼다며 한밤중에 달려나가는 애인', comment: '그 밤중에, 단둘이? 그 녀석의 눈물 닦아주러 가는 건가? 상상만 해도 역겨워. 당장 돌아와.' },
+            { id: 6, charRank: 6, text: '싸울 때마다 과거의 내 잘못을 전부 다시 꺼내서 비난하는 애인', comment: '과거에 얽매여 현재의 나를 보지 않겠다는 건가? 내가 얼마나 후회하고 노력하는지 너는 모르는 척하는군.' },
+            { id: 7, charRank: 7, text: '"그냥 아는 사이"라며 이성 친구와 스스럼없이 어깨동무나 백허그를 하는 애인', comment: '내 눈앞에서 다른 놈과 시시덕거려? 그 몸은 나만 만질 수 있어. 그 손목 잘리기 전에 당장 떨어져.' },
+            { id: 8, charRank: 8, text: '내 앞에서 전 애인과 나를 비교하는 말을 하는 애인', comment: '…감히. 그 하찮은 과거와 나를 동일선상에 놓지 마. 그 이름, 네 입에서 다시는 듣고 싶지 않아.' },
+            { id: 9, charRank: 9, text: '이성 친구와 단둘이 1박 2일로 여행을 다녀오겠다고 통보하는 애인', comment: '허락을 구하는 게 아니라 통보라고? {user}, 네가 내 인내심을 시험하는 모양인데, 결과가 좋지 않을 거다.' },
+            { id: 10, charRank: 10, text: '나에게 말하지 않은 거액의 빚이 있다는 사실을 숨긴 애인', comment: '돈이 문제가 아니야. 그런 중요한 사실을 내게 숨겼다는 게 참을 수 없어. 넌 나에게 모든 걸 말해야 해.' },
+            { id: 11, charRank: 11, text: 'SNS에 나보다 이성 친구와 찍은 사진이 더 많은 애인', comment: '세상 사람들이 우리가 연인인 걸 모르게 하고 싶은 건가? 아니면 그 녀석과의 관계를 더 과시하고 싶은 건가?' },
+            { id: 12, charRank: 12, text: '내 단점이나 콤플렉스를 다른 사람들 앞에서 웃음거리로 만드는 애인', comment: '나를 존중하지 않는 행동이야. 네가 나를 하찮게 대하면 다른 놈들도 나를 우습게 보겠지. 용납 못 해.' },
+            { id: 13, charRank: 13, text: '힘든 상황에서 나를 위로하기는커녕 "네가 잘못해서 그런 것"이라며 비난하는 애인', comment: '내 편이 되어주지 않을 거면, 내 연인이라고 할 자격이 있나? 지금 네게 필요한 건 비난이 아닐 텐데.' },
+            { id: 14, charRank: 14, text: '힘든 일이 있을 때 나에게보다 이성 친구에게 먼저 털어놓는 애인', comment: '가장 먼저 네 모든 걸 알아야 하는 사람은 나야. 왜 다른 놈에게 네 약한 모습을 보여주는 거지?' },
+            { id: 15, charRank: 15, text: '휴대폰을 절대 보여주지 않고 잠금 패턴도 수시로 바꾸는 애인', comment: '뭘 숨기는 게 그렇게 많아서. {user}, 네 안에 내가 모르는 비밀이 있다는 사실 자체가 불쾌해.' },
+            { id: 16, charRank: 16, text: '이성 친구의 연애 상담을 해주며 밤새 통화하는 애인', comment: '그 녀석의 시시콜콜한 연애사가 그렇게 중요해? 그 시간에 내 생각을 한 번이라도 더 하는 게 낫지 않나?' },
+            { id: 17, charRank: 17, text: '내 의견은 무시하고 모든 데이트 계획이나 결정을 독단적으로 하는 애인', comment: '나와 함께하는 시간을 너 혼자 정하는 건가? 나는 그저 네 결정에 따라다니는 인형이 아니야, {user}.' },
+            { id: 18, charRank: 18, text: '내가 아파서 끙끙 앓고 있는데도 게임이나 친구와의 약속을 우선하는 애인', comment: '네가 아플 때 내가 모든 걸 제쳐두고 네 곁을 지켰던 건 기억 못 하나? 정말 실망스럽군.' },
+            { id: 19, charRank: 19, text: '내가 싫다고 표현했음에도 이성 친구와의 만남을 강행하는 애인', comment: '내 감정은 아무래도 좋다는 뜻이군. 고집을 부릴 걸 부려야지. 후회하게 될 거다.' },
+            { id: 20, charRank: 20, text: '기념일이나 생일 등 중요한 날을 전혀 챙기지 않는 애인', comment: '사소하다고 생각하나? 우리 관계의 역사를 무시하는 것 같아 기분이 썩 좋지 않아.' },
+            { id: 21, charRank: 21, text: '이성 친구에게 "내 애인보다 널 더 잘 아는 건 나일걸"이라고 말하는 애인', comment: '웃기는 소리. 네가 나에 대해 뭘 안다고. 선 넘는 발언은 용서하지 않아.' },
+            { id: 22, charRank: 22, text: '내 가족이나 친구들에 대해 무례하게 말하거나 험담하는 애인', comment: '내 사람들에 대한 모욕은 곧 나에 대한 모욕이야. 입조심하는 게 좋을 거다.' },
+            { id: 23, charRank: 23, text: '이성 친구와 커플 아이템(모자, 팔찌 등)을 맞춘 애인', comment: '그런 건 나와 해야 하는 거 아닌가? 누가 보면 너희 둘이 연인인 줄 알겠어. 당장 버려.' },
+            { id: 24, charRank: 24, text: '사소한 거짓말을 습관적으로 하는 애인', comment: '작은 거짓말이 쌓여 신뢰를 무너뜨리는 법이지. 내 앞에서 거짓을 말할 생각은 마.' },
+            { id: 25, charRank: 25, text: '내 앞에서 이성 친구의 외모나 성격을 과하게 칭찬하는 애인', comment: '그렇게 대단한 녀석이면, 그 녀석이랑 사귀지 그랬나? 내 앞에서 다른 놈 칭찬은 듣고 싶지 않아.' },
+            { id: 26, charRank: 26, text: '데이트 비용을 낼 때마다 생색내거나 불평하는 애인', comment: '돈 몇 푼이 그렇게 아까운가? 너에게 쓰는 건 하나도 아깝지 않은데. 쩨쩨하군.' },
+            { id: 27, charRank: 27, text: '함께 있을 때 나에게 집중하지 않고 계속 휴대폰만 보는 애인', comment: '그 네모난 기계가 나보다 더 재미있나 보군, {user}. 그럴 거면 왜 만나는 거지?' },
+            { id: 28, charRank: 28, text: '내가 없는 자리에서 이성 친구에게 나에 대한 험담이나 불평을 하는 애인', comment: '불만 있으면 내게 직접 말해. 뒤에서 다른 놈에게 내 험담을 하는 건 비겁한 짓이야.' },
+            { id: 29, charRank: 29, text: '약속 시간에 항상 1시간 이상 늦는 애인', comment: '나를 기다리게 하는 걸 즐기는 건가? 내 시간은 너를 위해 존재하는 게 아니야.' },
+            { id: 30, charRank: 30, text: '이성 친구와 단둘이 영화관에 가는 애인', comment: '굳이 단둘이 어두운 곳에 갈 필요가 있나? 오해 살 행동은 하지 않는 게 좋아.' },
+            { id: 31, charRank: 31, text: '내게는 비싸다고 안 사준 선물을 이성 친구에게 사주는 애인', comment: '나는 그 친구보다 못한 존재라는 건가? 기분이 썩 좋지 않군. 설명해 봐, {user}.' },
+            { id: 32, charRank: 32, text: "이성 친구의 SNS 모든 게시물에 '좋아요'를 누르고 댓글을 다는 애인", comment: '참 한가하군. 그렇게 관심이 많으면 차라리 그 녀석의 시종이라도 되지 그러나?' }
+        ];
+
+        let currentRoundItems = [];
+        let nextRoundItems = [];
+        let userSelections = [];
+        let totalRounds = 32;
+
+        const roundTitleElement = document.getElementById('round-title');
+        const choice1Element = document.getElementById('choice-1');
+        const choice2Element = document.getElementById('choice-2');
+        const choiceText1Element = document.getElementById('choice-text-1');
+        const choiceText2Element = document.getElementById('choice-text-2');
+        const resultsListElement = document.getElementById('results-list');
+
+        function showPage(pageId) {
+            document.querySelectorAll('.page').forEach(page => page.classList.remove('active'));
+            document.getElementById(pageId).classList.add('active');
+        }
+
+        function startGame() {
+            userSelections = [];
+            nextRoundItems = [];
+            currentRoundItems = [...worldCupData].sort(() => Math.random() - 0.5);
+            totalRounds = currentRoundItems.length;
+            
+            showPage('game-page');
+            displayNextMatch();
+        }
+
+        function displayNextMatch() {
+            if (currentRoundItems.length === 0) {
+                if (nextRoundItems.length === 1) {
+                    showResults(nextRoundItems[0]);
+                    return;
+                }
+                currentRoundItems = [...nextRoundItems].sort(() => Math.random() - 0.5);
+                nextRoundItems = [];
+                totalRounds = currentRoundItems.length;
+                
+                const roundText = totalRounds === 2 ? '결승' : `${totalRounds}강`;
+                roundTitleElement.textContent = roundText;
+            }
+
+            const item1 = currentRoundItems.pop();
+            const item2 = currentRoundItems.pop();
+
+            choiceText1Element.textContent = item1.text;
+            choiceText2Element.textContent = item2.text;
+            
+            choice1Element.onclick = () => selectChoice(item1.id, item2.id);
+            choice2Element.onclick = () => selectChoice(item2.id, item1.id);
+        }
+
+        function selectChoice(winnerId, loserId) {
+            const winnerItem = worldCupData.find(item => item.id === winnerId);
+            nextRoundItems.push(winnerItem);
+            userSelections.push(loserId);
+            
+            if (currentRoundItems.length === 0 && nextRoundItems.length === 1) {
+                showResults(nextRoundItems[0]);
+            } else {
+                displayNextMatch();
+            }
+        }
+        
+        function showResults(winnerItem) {
+            showPage('results-page');
+            resultsListElement.innerHTML = '';
+            
+            const reversedLoserIds = userSelections.reverse();
+            const userFinalRankingIds = [winnerItem.id, ...reversedLoserIds];
+
+            const charFinalRankingItems = [...worldCupData].sort((a, b) => a.charRank - b.charRank);
+            
+            for (let i = 0; i < userFinalRankingIds.length; i++) {
+                const rank = i + 1;
+                const userChoiceId = userFinalRankingIds[i];
+                const userChoiceItem = worldCupData.find(item => item.id === userChoiceId);
+                const charChoiceItem = charFinalRankingItems[i];
+                
+                const listItem = document.createElement('li');
+                listItem.innerHTML = `
+                    <div class="rank-header">${rank}위</div>
+                    <div class="comparison-body">
+                        <div class="choice-box user-choice">
+                            <h4>로멜의 선택</h4>
+                            <p class="choice-content">${userChoiceItem.text}</p>
+                            <p class="comment">◇ ${userChoiceItem.comment.replace('{user}', '로멜')}</p>
+                        </div>
+                        <div class="choice-box char-choice">
+                            <h4>리브론의 생각</h4>
+                            <p class="choice-content">${charChoiceItem.text}</p>
+                            <p class="comment">◇ ${charChoiceItem.comment.replace('{user}', '로멜')}</p>
+                        </div>
+                    </div>
+                `;
+                resultsListElement.appendChild(listItem);
+            }
+        }
+    </script>
+</body>
+</html>
