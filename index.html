@@ -221,7 +221,7 @@
     }
 @media (max-width: 768px) {
       body { 
-        flex-direction: column; /* 사이드바를 위로, 메인을 아래로 배치 */
+        flex-direction: column; 
       }
       
       aside { 
@@ -229,41 +229,49 @@
         height: auto; 
         border-right: none; 
         border-bottom: 1px solid var(--border); 
-        padding: 15px; 
+        padding: 15px 15px 10px 15px; /* 하단 패딩 살짝 줄임 */
         flex-shrink: 0; 
       }
 
       .nav { 
-        flex-direction: row; /* 메뉴를 가로로 나열 */
-        overflow-x: auto;   /* 메뉴가 많으면 옆으로 밀어서 보게 설정 */
+        flex-direction: row; 
+        overflow-x: auto;   
         padding-bottom: 5px; 
         gap: 10px; 
         -webkit-overflow-scrolling: touch;
       }
 
       .nav button { 
-        white-space: nowrap; /* 글자 줄바꿈 방지 */
+        white-space: nowrap; 
         padding: 10px 18px; 
         flex-shrink: 0; 
         background: var(--panel-soft); 
         font-size: 13px;
       }
 
+      /* 1️⃣ 카테고리와의 공백 제거: 상단 고정 및 여백 수정 */
       header { 
         justify-content: center; 
         height: 50px; 
         font-size: 14px; 
-        position: sticky;
-        top: 0;
+        position: relative; /* sticky 대신 relative로 설정하여 aside와 밀착 */
+        margin-top: 0;      /* 상단 여백 제거 */
+        border-top: none;   /* 위쪽 테두리 제거 */
       }
 
+      /* 2️⃣ 메인 글씨 위치 위로 올리기 */
       .home { 
-        margin-top: 20px; 
+        margin-top: -30px;  /* 음수 값을 주어 위로 끌어올림 */
       }
 
       .content { 
-        align-items: flex-start; 
-        padding: 20px; 
+        align-items: center; /* 로고가 화면 가운데 오도록 변경 */
+        padding: 0 20px;     /* 상하 패딩 제거하고 좌우만 유지 */
+        min-height: 50vh;    /* 로고 영역 확보 */
+      }
+
+      .crack-title h1 { 
+        font-size: clamp(28px, 10vw, 40px); /* 모바일에서 글씨 크기 최적화 */
       }
 
       .world-box h2 { 
@@ -271,7 +279,7 @@
       }
 
       .subgrid {
-        grid-template-columns: 1fr; /* 모바일에서는 박스를 한 줄로 */
+        grid-template-columns: 1fr; 
       }
     }
   </style>
